@@ -180,7 +180,7 @@ class CyberpunkPortfolio {
                 <div class="profile-section" style="animation: slideInLeft 0.8s ease;">
                     <div class="profile-header">
                         <div class="avatar-frame">
-                            <div class="avatar-placeholder">BVH3</div>
+                            <div class="avatar-placeholder"><img src="src/images/perfil.png" alt="Avatar BVH3" class="avatar-img"></div>
                         </div>
                         <div class="profile-info">
                             <h3>DESARROLLADOR FULL-STACK</h3>
@@ -233,17 +233,56 @@ class CyberpunkPortfolio {
                     .avatar-frame {
                         width: 80px;
                         height: 80px;
-                        border: 2px solid var(--primary-cyan);
+                        border: 3px solid var(--primary-cyan);
+                        border-radius: 50%;
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         margin-right: 1.5rem;
-                        background: var(--dark-bg);
+                        background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,255,255,0.1) 100%);
+                        box-shadow: 
+                            0 0 20px rgba(0, 255, 255, 0.3),
+                            inset 0 0 20px rgba(0, 255, 255, 0.1);
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    .avatar-frame::before {
+                        content: '';
+                        position: absolute;
+                        top: -2px;
+                        left: -2px;
+                        right: -2px;
+                        bottom: -2px;
+                        background: conic-gradient(var(--primary-cyan), var(--primary-pink), var(--secondary-green), var(--primary-cyan));
+                        border-radius: 50%;
+                        z-index: -1;
+                        animation: rotate 3s linear infinite;
+                    }
+                    @keyframes rotate {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
                     }
                     .avatar-placeholder {
                         font-family: var(--font-primary);
                         font-weight: bold;
                         color: var(--primary-cyan);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        height: 100%;
+                    }
+                    .avatar-img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.5));
+                        transition: all 0.3s ease;
+                        border-radius: 50%;
+                    }
+                    .avatar-img:hover {
+                        filter: drop-shadow(0 0 25px rgba(0, 255, 255, 0.8));
+                        transform: scale(1.1);
                     }
                     .profile-info h3 {
                         color: var(--text-light);
@@ -684,31 +723,30 @@ class CyberpunkPortfolio {
                                     <span class="contact-icon">📧</span>
                                     <div class="contact-details">
                                         <strong>EMAIL</strong>
-                                        <p>info@bvh3industries.com</p>
-                                        <p>desarrollo@bvh3industries.com</p>
+                                        <p>velasquezhuillcab@gmail.com</p>
                                     </div>
                                 </div>
                                 <div class="contact-method">
                                     <span class="contact-icon">📱</span>
                                     <div class="contact-details">
-                                        <strong>TELÉFONO</strong>
-                                        <p>+1 (555) 123-4567</p>
-                                        <p>+1 (555) 765-4321</p>
+                                        <strong>WHATSAPP / TELÉFONO</strong>
+                                        <p>+51 988 514 570 (WhatsApp Principal)</p>
+                                        <p>+51 953 073 477 (Alternativo)</p>
                                     </div>
                                 </div>
                                 <div class="contact-method">
                                     <span class="contact-icon">🌐</span>
                                     <div class="contact-details">
-                                        <strong>REDES SOCIALES</strong>
-                                        <p>GitHub: /BVH3Industries</p>
-                                        <p>LinkedIn: /company/bvh3</p>
+                                        <strong>ENLACES DIRECTOS</strong>
+                                        <p><a href="https://wa.me/51988514570" target="_blank" style="color: var(--secondary-green); text-decoration: none;">💬 WhatsApp Directo</a></p>
+                                        <p><a href="https://github.com/Brauliovh3" target="_blank" style="color: var(--primary-cyan); text-decoration: none;">💻 GitHub: /Brauliovh3</a></p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="contact-form-section">
-                            <h3>ENVIAR MENSAJE</h3>
+                            <h3>ENVIAR MENSAJE VIA WHATSAPP</h3>
                             <form class="cyber-form" id="contactForm">
                                 <div class="form-group">
                                     <label for="name">NOMBRE COMPLETO</label>
@@ -735,7 +773,7 @@ class CyberpunkPortfolio {
                                     <textarea id="message" name="message" rows="5" required></textarea>
                                 </div>
                                 <button type="submit" class="submit-btn">
-                                    <span>ENVIAR MENSAJE</span>
+                                    <span>📱 ENVIAR VIA WHATSAPP</span>
                                     <div class="btn-effect"></div>
                                 </button>
                             </form>
@@ -1047,23 +1085,49 @@ class CyberpunkPortfolio {
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
         
-        // Simulate form processing
+        
+        const whatsappMessage = `
+🚀 *NUEVO CONTACTO - BVH3 INDUSTRIES*
+
+👤 *Nombre:* ${data.name}
+📧 *Email:* ${data.email}
+📋 *Tipo de Proyecto:* ${data.subject}
+
+💬 *Mensaje:*
+${data.message}
+
+---
+_Enviado desde el portafolio cyberpunk BVH3 Industries_
+        `.trim();
+        
+        
+        const encodedMessage = encodeURIComponent(whatsappMessage);
+        const whatsappURL = `https://wa.me/51988514570?text=${encodedMessage}`;
+        
+       
         const submitBtn = e.target.querySelector('.submit-btn');
         const originalText = submitBtn.innerHTML;
         
-        submitBtn.innerHTML = '<span>ENVIANDO...</span>';
+        submitBtn.innerHTML = '<span>CONECTANDO...</span>';
         submitBtn.disabled = true;
         
         setTimeout(() => {
-            submitBtn.innerHTML = '<span>MENSAJE ENVIADO</span>';
+            submitBtn.innerHTML = '<span>REDIRIGIENDO A WHATSAPP...</span>';
             setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                e.target.reset();
-            }, 2000);
-        }, 3000);
+               
+                window.open(whatsappURL, '_blank');
+                
+                
+                submitBtn.innerHTML = '<span>✅ ENVIADO A WHATSAPP</span>';
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    e.target.reset();
+                }, 2000);
+            }, 1000);
+        }, 1500);
         
-        console.log('Form submitted:', data);
+        console.log('Form data prepared for WhatsApp:', data);
     }
 }
 
