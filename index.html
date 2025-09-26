@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BVH3 INDUSTRIES - Cyberpunk Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Matrix Background -->
+    <div id="matrix-bg"></div>
+    
+    <!-- Particle System -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Navigation Bar -->
+    <nav class="cyber-nav" id="mainNav">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-text">BVH3</span>
+                <span class="logo-sub">INDUSTRIES</span>
+            </div>
+            
+            <div class="nav-menu">
+                <button class="nav-btn" data-section="home">
+                    <span class="btn-text">INICIO</span>
+                    <div class="btn-glitch"></div>
+                </button>
+                <button class="nav-btn" data-section="about">
+                    <span class="btn-text">PERFIL</span>
+                    <div class="btn-glitch"></div>
+                </button>
+                <button class="nav-btn" data-section="projects">
+                    <span class="btn-text">PROYECTOS</span>
+                    <div class="btn-glitch"></div>
+                </button>
+                <button class="nav-btn" data-section="skills">
+                    <span class="btn-text">HABILIDADES</span>
+                    <div class="btn-glitch"></div>
+                </button>
+                <button class="nav-btn" data-section="contact">
+                    <span class="btn-text">CONTACTO</span>
+                    <div class="btn-glitch"></div>
+                </button>
+            </div>
+
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Section -->
+        <section class="section active" id="home">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="cyber-title">
+                        <span class="title-line">BIENVENIDO AL</span>
+                        <span class="title-main">FUTURO DIGITAL</span>
+                        <span class="title-sub">BVH3 INDUSTRIES PORTFOLIO</span>
+                    </h1>
+                    <p class="hero-description">
+                        Desarrollador Full-Stack especializado en tecnologías de vanguardia
+                    </p>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <span class="stat-number">150+</span>
+                            <span class="stat-label">PROYECTOS</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">5+</span>
+                            <span class="stat-label">AÑOS EXP</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">CLIENTES</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal System -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+    
+    <!-- About Modal -->
+    <div class="cyber-modal" id="aboutModal">
+        <div class="modal-header">
+            <h2>PERFIL DE USUARIO</h2>
+            <button class="modal-close" data-modal="aboutModal">&times;</button>
+        </div>
+        <div class="modal-content" id="aboutContent">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>CARGANDO DATOS...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Modal -->
+    <div class="cyber-modal" id="projectsModal">
+        <div class="modal-header">
+            <h2>PROYECTOS ACTIVOS</h2>
+            <button class="modal-close" data-modal="projectsModal">&times;</button>
+        </div>
+        <div class="modal-content" id="projectsContent">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>CARGANDO PROYECTOS...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Modal -->
+    <div class="cyber-modal" id="skillsModal">
+        <div class="modal-header">
+            <h2>HABILIDADES TÉCNICAS</h2>
+            <button class="modal-close" data-modal="skillsModal">&times;</button>
+        </div>
+        <div class="modal-content" id="skillsContent">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>ANALIZANDO COMPETENCIAS...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="cyber-modal" id="contactModal">
+        <div class="modal-header">
+            <h2>ESTABLECER CONEXIÓN</h2>
+            <button class="modal-close" data-modal="contactModal">&times;</button>
+        </div>
+        <div class="modal-content" id="contactContent">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>INICIALIZANDO COMUNICACIÓN...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terminal -->
+    <div class="cyber-terminal" id="terminal">
+        <div class="terminal-header">
+            <span>BVH3_SYSTEM v2.3.1</span>
+            <button class="terminal-toggle" id="terminalToggle">_</button>
+        </div>
+        <div class="terminal-body">
+            <div class="terminal-line">
+                <span class="prompt">root@bvh3:~$</span>
+                <span class="cursor">_</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="cyber-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>BVH3 INDUSTRIES</h3>
+                <p>Desarrollando el futuro digital</p>
+            </div>
+            <div class="footer-section">
+                <h3>CONTACTO</h3>
+                <p>velasquezhuillcab@gmail.com</p>
+                <p>+51 953 073 477</p>
+            </div>
+            <div class="footer-section">
+                <h3>SEGUIR</h3>
+                <div class="social-links">
+                    <a href="https://github.com/Brauliovh3" class="social-link">GITHUB</a>
+                    <a href="https://wa.me/51988514570" class="social-link">WHATSAPP</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 BVH3 INDUSTRIES. Todos los derechos reservados.</p>
+            <p>Diseñado con tecnología cyberpunk del futuro.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
