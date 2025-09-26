@@ -196,11 +196,11 @@ class CyberpunkPortfolio {
                         <h4 style="margin-top: 2rem;">ESPECIALIDADES</h4>
                         <div class="specialties-grid">
                             <div class="specialty-item">JAVASCRIPT/ES6+</div>
-                            <div class="specialty-item">REACT/NEXT.JS</div>
+                            <div class="specialty-item">REACT/LARAVEL</div>
                             <div class="specialty-item">NODE.JS</div>
                             <div class="specialty-item">PYTHON</div>
                             <div class="specialty-item">DATABASES</div>
-                            <div class="specialty-item">CLOUD/AWS</div>
+                            <div class="specialty-item">JAVA/AWS</div>
                         </div>
 
                         <h4 style="margin-top: 2rem;">STATS</h4>
@@ -302,15 +302,15 @@ class CyberpunkPortfolio {
                 <div class="projects-grid" style="animation: slideInRight 0.8s ease;">
                     <div class="project-card">
                         <div class="project-header">
-                            <h3>NEURAL NETWORK AI</h3>
+                            <h3>HATSUNE MIKU BOT</h3>
                             <span class="project-status active">ACTIVO</span>
                         </div>
                         <div class="project-description">
-                            <p>Sistema de inteligencia artificial avanzada con capacidades de deep learning para análisis predictivo.</p>
+                            <p>Sistema de inteligencia Automatica de comandos descargas y juegos disponible para whatsapp</p>
                             <div class="project-tech">
-                                <span>PYTHON</span>
-                                <span>TENSORFLOW</span>
-                                <span>REACT</span>
+                                <span>JavaScript</span>
+                                <span>JSON</span>
+                                <span>Node.js</span>
                             </div>
                         </div>
                         <div class="project-progress">
@@ -323,15 +323,15 @@ class CyberpunkPortfolio {
 
                     <div class="project-card">
                         <div class="project-header">
-                            <h3>BLOCKCHAIN WALLET</h3>
+                            <h3>PROGRAMA ACTAS GOBIERNO REGIONAL</h3>
                             <span class="project-status completed">COMPLETADO</span>
                         </div>
                         <div class="project-description">
-                            <p>Cartera digital segura con soporte para múltiples criptomonedas y contratos inteligentes.</p>
+                            <p>Prograam pagina web pero con funciones de manejo de actas modales registros importacion y más.</p>
                             <div class="project-tech">
-                                <span>SOLIDITY</span>
-                                <span>WEB3.JS</span>
-                                <span>NODE.JS</span>
+                                <span>JS</span>
+                                <span>PHP</span>
+                                <span>MySQL</span>
                             </div>
                         </div>
                         <div class="project-progress">

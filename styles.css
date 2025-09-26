@@ -99,6 +99,18 @@ body {
     font-weight: 900;
 }
 
+.logo-img {
+    height: 50px;
+    width: auto;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3));
+}
+
+.logo-img:hover {
+    filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.6));
+    transform: scale(1.05);
+}
+
 .logo-text {
     font-size: 2rem;
     color: var(--primary-cyan);
@@ -681,6 +693,10 @@ body {
 @media (max-width: 480px) {
     .nav-container {
         padding: 0 1rem;
+    }
+
+    .logo-img {
+        height: 40px;
     }
 
     .logo-text {
