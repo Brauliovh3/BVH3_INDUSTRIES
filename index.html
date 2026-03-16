@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BVH3 INDUSTRIES - Cyberpunk Portfolio</title>
+    <title>BVH3 INDUSTRIES</title>
     
     <!-- Favicon - Logo BVH3 Industries -->
-    <link rel="icon" type="image/svg+xml" href="src/images/favicon.svg">
-    <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAADpklEQVR4nO2XSWgUQRSGv+okuySKRhNNNCYeXFDcwI3gAi4YV1wQXBBBxYNeFBQXENy34wY36oK4oOLy4gJeFDeCqCiKuKMoLhGN+4YbDfqQVzMz3TXT6UxmEvyh6a6qV7/++l+9V/0P//8FLEwqjMEHgX4oWEUqzMNnsI9EmAr0RcFCUmEmXo/bQEGw9PQY0L9YhHZAQBsgjbD0BnoDsARvGHDvgQGF2wGd0QG/Sx9FXJwFPAGeAbVALhABsoBhwERgFVAKHDBa3QMqBvZ5mUCCNjBWcJ7gFdYoJgI5jhvzNb+u9MH9AKrCveBMFJyLgBvAJ+An8AV4C9wDSoA+jjv1K34A3y0vYCVEG+ADOgfJi4G5jru0P3wHXprp1HxCRgEXKXrwBj7gJ/ANeMwKjjIXNWnwHKjMJIxmHgpbEwzJi1kBixjDBOYyWgdUYzS7WcRcJtNe0L9YhM12FwWJOw2UO5IvoqOaKzm4kNFatFiVsJANJcU/OJOSsQGwvHB14KCVZb7gTIy7VHD+wS38iq2n7Vq8JlJXFBN6BfyCN8dZO4wQz8l2M0HjLUPBOtbgfGpYnVQEOsKJoCHaRSKJqOwpZG2fWJ5A8FnAF/x5wNLCxYDnTjkFbAUKgFzgDnDHEV5d8TtZjJ8EfmEQcJGpOkBa9qIkBD8VyOTvvZnAWaDAEe8QHAeKCygI7sBUhNdEH0T8j8BUVgNtnPGFwFdgLF4r/oJzCVhQ+Az2AWV2FwTNfMF7TS88IrxXwBynwmrT9QY+Aw8j/pXdNdAxykFRsw5/j7Pv+Qj8bXgvOE9oFCdCn9hdbMNfAtzEe4iWYhMjQp/dRaA78Ap/l5bEgIJi0YVRPIeRjAjbhU5xXZgNPAQ+2J+hHhgCLAdmAQOAj3h1wFIKgqUb7LZhpA4YagcJJr3Anw8sITBAROiYHVAALCJswdcdK3jL8G1czcaQ5a9jdVDPsH0T3sSd9xfhrSPMKOhXvGa60Z9Qp+D8JOOtwXwSsY7VvA6anQ78VvyV8N0cVwjvJT5/x7+LjNGJhPzgCj4CvwivaRNt3mQlmXDQV+K1ZgMdEjHnpFWvBfYBhUD/BOyMw7aAfOAYcMtxaGwMtInhgOi6C6wBcpMIqSW1Br7axV0CVgPZbezNbIfNIms/zWz9x9biGmC7dZwcO5iy7V22s5OqLfD96d0swP8A4xctNfAhiWIAAAAASUVORK5CYII=">
-    <link rel="shortcut icon" href="src/images/favicon.ico">
-    <meta name="theme-color" content="#00ffff">
+    <link rel="icon" type="image/png" sizes="32x32" href="src/images/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="src/images/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="src/images/apple-touch-icon.png">
+
+    <meta name="theme-color" content="#00e5ff">
     <meta name="msapplication-TileColor" content="#000000">
     <link rel="manifest" href="manifest.json">
     
@@ -32,7 +33,7 @@
     <nav class="cyber-nav" id="mainNav">
         <div class="nav-container">
             <div class="logo">
-                <img src="src/images/logo.svg" alt="BVH3 INDUSTRIES" class="logo-img">
+                <img src="src/images/logo.png" alt="BVH3 INDUSTRIES" class="logo-img" decoding="async">
             </div>
             
             <div class="nav-menu">
@@ -46,6 +47,10 @@
                 </button>
                 <button class="nav-btn" data-section="projects">
                     <span class="btn-text">PROYECTOS</span>
+                    <div class="btn-glitch"></div>
+                </button>
+                <button class="nav-btn" data-section="apps">
+                    <span class="btn-text">APLICACIONES</span>
                     <div class="btn-glitch"></div>
                 </button>
                 <button class="nav-btn" data-section="skills">
@@ -72,10 +77,13 @@
         <section class="section active" id="home">
             <div class="container">
                 <div class="hero-content">
+                    <div class="hero-logo" aria-hidden="true">
+                        <img src="src/images/logo.png" alt="" class="hero-logo-img" decoding="async">
+                    </div>
                     <h1 class="cyber-title">
-                        <span class="title-line">BIENVENIDO AL</span>
-                        <span class="title-main">FUTURO DIGITAL</span>
-                        <span class="title-sub">BVH3 INDUSTRIES PORTFOLIO</span>
+                        <span class="title-line">BIENVENIDO A</span>
+                        <span class="title-main">LA SOLUCION A TUS PROBLEMAS</span>
+                        <span class="title-sub">BVH3 INDUSTRIES </span>
                     </h1>
                     <p class="hero-description">
                         Desarrollador Full-Stack especializado en tecnologías de vanguardia
@@ -97,66 +105,98 @@
                 </div>
             </div>
         </section>
+
+        <!-- About Section -->
+        <section class="section" id="about">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">PERFIL</h2>
+                    <p class="section-subtitle">Identidad, experiencia y enfoque de desarrollo.</p>
+                </header>
+                <div class="section-body" id="aboutContent">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>CARGANDO DATOS...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section class="section" id="projects">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">PROYECTOS</h2>
+                    <p class="section-subtitle">Sistemas, productos y experiencias en construcción.</p>
+                </header>
+                <div class="section-body" id="projectsContent">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>CARGANDO PROYECTOS...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Project View (Full) -->
+        <section class="section" id="project-view">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title" id="projectViewTitle">PROYECTO</h2>
+                    <p class="section-subtitle" id="projectViewSubtitle">Detalles y enlaces oficiales.</p>
+                </header>
+                <div class="section-body" id="projectViewBody"></div>
+            </div>
+        </section>
+
+        <!-- Apps Section -->
+        <section class="section" id="apps">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">APLICACIONES</h2>
+                    <p class="section-subtitle">Descargas oficiales y builds públicas.</p>
+                </header>
+                <div class="section-body" id="appsContent">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>CARGANDO APLICACIONES...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section class="section" id="skills">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">HABILIDADES</h2>
+                    <p class="section-subtitle">Stack, herramientas y nivel de dominio.</p>
+                </header>
+                <div class="section-body" id="skillsContent">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>ANALIZANDO COMPETENCIAS...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="section" id="contact">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">CONTACTO</h2>
+                    <p class="section-subtitle">Canales directos para propuestas y soporte.</p>
+                </header>
+                <div class="section-body" id="contactContent">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>INICIALIZANDO COMUNICACIÓN...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
-
-    <!-- Modal System -->
-    <div class="modal-overlay" id="modalOverlay"></div>
-    
-    <!-- About Modal -->
-    <div class="cyber-modal" id="aboutModal">
-        <div class="modal-header">
-            <h2>PERFIL DE USUARIO</h2>
-            <button class="modal-close" data-modal="aboutModal">&times;</button>
-        </div>
-        <div class="modal-content" id="aboutContent">
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>CARGANDO DATOS...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Projects Modal -->
-    <div class="cyber-modal" id="projectsModal">
-        <div class="modal-header">
-            <h2>PROYECTOS ACTIVOS</h2>
-            <button class="modal-close" data-modal="projectsModal">&times;</button>
-        </div>
-        <div class="modal-content" id="projectsContent">
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>CARGANDO PROYECTOS...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Skills Modal -->
-    <div class="cyber-modal" id="skillsModal">
-        <div class="modal-header">
-            <h2>HABILIDADES TÉCNICAS</h2>
-            <button class="modal-close" data-modal="skillsModal">&times;</button>
-        </div>
-        <div class="modal-content" id="skillsContent">
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>ANALIZANDO COMPETENCIAS...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Contact Modal -->
-    <div class="cyber-modal" id="contactModal">
-        <div class="modal-header">
-            <h2>ESTABLECER CONEXIÓN</h2>
-            <button class="modal-close" data-modal="contactModal">&times;</button>
-        </div>
-        <div class="modal-content" id="contactContent">
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>INICIALIZANDO COMUNICACIÓN...</p>
-            </div>
-        </div>
-    </div>
 
     <!-- Terminal -->
     <div class="cyber-terminal" id="terminal">

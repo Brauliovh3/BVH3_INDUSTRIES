@@ -1,4 +1,4 @@
-// Cyberpunk Portfolio JavaScript
+﻿// Cyberpunk Portfolio JavaScript
 class CyberpunkPortfolio {
     constructor() {
         this.init();
@@ -6,12 +6,13 @@ class CyberpunkPortfolio {
         this.startParticles();
         this.startTerminal();
         this.loadContent();
+        this.navigateFromHash();
     }
 
     init() {
-        // Initialize variables
-        this.isModalOpen = false;
-        this.currentModal = null;
+        this.loadedSections = new Set();
+        this.activeSection = 'home';
+        this.prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
         this.particles = [];
         this.terminalLines = [
             'BVH3 INDUSTRIES SYSTEM INITIALIZED...',
@@ -23,7 +24,7 @@ class CyberpunkPortfolio {
         ];
         this.currentTerminalLine = 0;
 
-        // Add glitch effect to title
+       
         const titleMain = document.querySelector('.title-main');
         if (titleMain) {
             titleMain.setAttribute('data-text', titleMain.textContent);
@@ -32,939 +33,511 @@ class CyberpunkPortfolio {
     }
 
     setupEventListeners() {
-        // Navigation buttons
+        const navMenu = document.querySelector('.nav-menu');
+        const navToggle = document.getElementById('navToggle');
+
+       
         const navBtns = document.querySelectorAll('.nav-btn');
         navBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const section = e.target.getAttribute('data-section') || e.target.parentElement.getAttribute('data-section');
+                const section = e.currentTarget.getAttribute('data-section');
                 this.handleNavigation(section);
+
+                
+                navMenu?.classList.remove('active');
+                navToggle?.classList.remove('active');
             });
         });
 
-        // Modal close buttons
-        const closeButtons = document.querySelectorAll('.modal-close');
-        closeButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const modal = e.target.getAttribute('data-modal');
-                this.closeModal(modal);
-            });
-        });
-
-        // Modal overlay
-        const modalOverlay = document.getElementById('modalOverlay');
-        modalOverlay.addEventListener('click', () => {
-            if (this.currentModal) {
-                this.closeModal(this.currentModal);
-            }
-        });
-
-        // Terminal toggle
+        
         const terminalToggle = document.getElementById('terminalToggle');
         terminalToggle.addEventListener('click', () => {
             this.toggleTerminal();
         });
 
-        // Mobile menu toggle
-        const navToggle = document.getElementById('navToggle');
-        const navMenu = document.querySelector('.nav-menu');
+        
         navToggle.addEventListener('click', () => {
             navMenu.classList.toggle('active');
             navToggle.classList.toggle('active');
-        });
-
-        // Escape key to close modals
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isModalOpen) {
-                this.closeModal(this.currentModal);
-            }
         });
 
         // Window resize
         window.addEventListener('resize', () => {
             this.handleResize();
         });
+
+        window.addEventListener('hashchange', () => {
+            this.navigateFromHash();
+        });
     }
 
     handleNavigation(section) {
+        if (!section) return;
+        const activeSection = this.showSection(section);
+        this.loadSectionContentOnce(activeSection);
+    }
+
+    navigateFromHash() {
+        const section = (window.location.hash || '').replace('#', '');
+        if (!section) return;
+        this.handleNavigation(section);
+    }
+
+    showSection(section) {
+        if (!document.getElementById(section)) {
+            section = 'home';
+        }
+        const allSections = document.querySelectorAll('.section');
+        allSections.forEach(s => s.classList.toggle('active', s.id === section));
+
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const activeNavSection = section === 'project-view' ? 'projects' : section;
+        navBtns.forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-section') === activeNavSection));
+
+        this.activeSection = section;
         if (section === 'home') {
-            // Close any open modal and return to home
-            if (this.isModalOpen) {
-                this.closeModal(this.currentModal);
-            }
-            return;
+            history.replaceState(null, '', window.location.pathname);
+        } else {
+            history.replaceState(null, '', `#${section}`);
         }
 
-        // Open corresponding modal
-        const modalId = `${section}Modal`;
-        this.openModal(modalId);
-        this.loadModalContent(section);
+        return section;
     }
 
-    openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        const overlay = document.getElementById('modalOverlay');
-
-        if (modal) {
-            // Close current modal if open
-            if (this.isModalOpen && this.currentModal) {
-                this.closeModal(this.currentModal);
-                setTimeout(() => {
-                    this.showModal(modal, overlay, modalId);
-                }, 300);
-            } else {
-                this.showModal(modal, overlay, modalId);
-            }
-        }
+    loadSectionContentOnce(section) {
+        if (section === 'home') return;
+        if (this.loadedSections.has(section)) return;
+        this.loadedSections.add(section);
+        this.loadSectionContent(section);
     }
 
-    showModal(modal, overlay, modalId) {
-        overlay.classList.add('active');
-        modal.classList.add('active');
-        this.isModalOpen = true;
-        this.currentModal = modalId;
-        document.body.style.overflow = 'hidden';
-
-        // Add opening animation
-        setTimeout(() => {
-            modal.style.transform = 'translate(-50%, -50%) scale(1)';
-        }, 50);
-    }
-
-    closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        const overlay = document.getElementById('modalOverlay');
-
-        if (modal) {
-            modal.classList.remove('active');
-            overlay.classList.remove('active');
-            this.isModalOpen = false;
-            this.currentModal = null;
-            document.body.style.overflow = 'auto';
-        }
-    }
-
-    async loadModalContent(section) {
+    async loadSectionContent(section) {
         const contentId = `${section}Content`;
         const contentElement = document.getElementById(contentId);
 
         if (!contentElement) return;
 
-        // Show loading spinner
+        const loadingText = {
+            about: 'CARGANDO PERFIL...',
+            projects: 'CARGANDO PROYECTOS...',
+            apps: 'CARGANDO APLICACIONES...',
+            skills: 'ANALIZANDO COMPETENCIAS...',
+            contact: 'INICIALIZANDO COMUNICACIÓN...'
+        }[section] || 'CARGANDO...';
+
         contentElement.innerHTML = `
             <div class="loading-spinner">
                 <div class="spinner"></div>
-                <p>CARGANDO DATOS...</p>
+                <p>${loadingText}</p>
             </div>
         `;
 
-        // Simulate AJAX loading with setTimeout
         setTimeout(() => {
             const content = this.getContentForSection(section);
-            this.animateContentLoad(contentElement, content);
+            this.animateContentLoad(contentElement, content, () => {
+                this.onSectionRendered(section, contentElement);
+            });
         }, 1500);
     }
 
-    animateContentLoad(element, content) {
+    animateContentLoad(element, content, afterRender) {
         // Fade out loading spinner
         element.style.opacity = '0';
         setTimeout(() => {
             element.innerHTML = content;
             element.style.opacity = '1';
             element.style.transition = 'opacity 0.5s ease';
+            afterRender?.();
         }, 300);
     }
 
+    onSectionRendered(section, contentElement) {
+        if (section === 'contact') {
+            const contactForm = contentElement.querySelector('#contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleFormSubmission(e);
+                });
+            }
+        }
+
+        if (section === 'projects') {
+            const buttons = contentElement.querySelectorAll('.project-view-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const title = btn.getAttribute('data-title') || 'PROYECTO';
+                    const description = btn.getAttribute('data-description') || '';
+                    const links = [
+                        { label: 'Grupo', url: btn.getAttribute('data-group-url') || '' },
+                        { label: 'Canal', url: btn.getAttribute('data-channel-url') || '' },
+                        { label: 'Creador', url: btn.getAttribute('data-creator-url') || '' },
+                        { label: 'Bot', url: btn.getAttribute('data-bot-url') || '' }
+                    ].filter(l => l.url);
+
+                    this.openProjectView({ title, description, links });
+                });
+            });
+        }
+
+        const anchors = contentElement.querySelectorAll('a[href^="#"]');
+        anchors.forEach(anchor => {
+            anchor.addEventListener('click', (e) => {
+                const href = e.currentTarget.getAttribute('href') || '';
+                const target = href.replace('#', '');
+                if (!target) return;
+                e.preventDefault();
+                this.handleNavigation(target);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    }
+
+    openProjectView(project) {
+        const titleEl = document.getElementById('projectViewTitle');
+        const subtitleEl = document.getElementById('projectViewSubtitle');
+        const bodyEl = document.getElementById('projectViewBody');
+
+        if (!titleEl || !subtitleEl || !bodyEl) return;
+
+        titleEl.textContent = project.title;
+        subtitleEl.textContent = project.description || 'Detalles y enlaces oficiales.';
+
+        const linksBlock = project.links?.length
+            ? `
+                <div class="project-links-grid" aria-label="Enlaces">
+                    ${project.links
+                        .map(
+                            l => `
+                                <a class="project-link-card" href="${l.url}" target="_blank" rel="noopener">
+                                    <span class="project-link-label">${l.label}</span>
+                                    <span class="project-link-url">${l.url}</span>
+                                </a>
+                            `
+                        )
+                        .join('')}
+                </div>
+            `
+            : '<p class="muted">No hay enlaces disponibles.</p>';
+
+        bodyEl.innerHTML = `
+            <div class="project-view-actions">
+                <button type="button" class="cta-btn cta-btn--ghost project-back-btn">VOLVER A PROYECTOS</button>
+            </div>
+            <div class="panel panel--glass project-view-panel">
+                ${linksBlock}
+            </div>
+        `;
+
+        const backBtn = bodyEl.querySelector('.project-back-btn');
+        backBtn?.addEventListener('click', () => {
+            this.handleNavigation('projects');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        this.showSection('project-view');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     getContentForSection(section) {
         const content = {
             about: `
-                <div class="profile-section" style="animation: slideInLeft 0.8s ease;">
-                    <div class="profile-header">
-                        <div class="avatar-frame">
-                            <div class="avatar-placeholder"><img src="src/images/perfil.png" alt="Avatar BVH3" class="avatar-img"></div>
-                        </div>
-                        <div class="profile-info">
-                            <h3>DESARROLLADOR FULL-STACK</h3>
-                            <p class="profile-status">STATUS: <span style="color: var(--secondary-green);">ONLINE</span></p>
-                            <p class="profile-level">NIVEL: <span style="color: var(--primary-cyan);">SENIOR</span></p>
-                        </div>
-                    </div>
-                    
-                    <div class="profile-details">
-                        <h4>BIOGRAFÍA</h4>
-                        <p>Especialista en desarrollo web con más de 5 años de experiencia creando aplicaciones robustas y escalables. Experto en tecnologías front-end y back-end modernas.</p>
-                        
-                        <h4 style="margin-top: 2rem;">ESPECIALIDADES</h4>
-                        <div class="specialties-grid">
-                            <div class="specialty-item">JAVASCRIPT/ES6+</div>
-                            <div class="specialty-item">REACT/LARAVEL</div>
-                            <div class="specialty-item">NODE.JS</div>
-                            <div class="specialty-item">PYTHON</div>
-                            <div class="specialty-item">DATABASES</div>
-                            <div class="specialty-item">JAVA/AWS</div>
+                <div class="layout-grid layout-grid--2">
+                    <div class="panel panel--glass">
+                        <div class="about-head">
+                            <div class="avatar-ring" aria-hidden="true">
+                                <img src="src/images/logo.png" alt="" class="avatar-img" decoding="async">
+                            </div>
+                            <div class="about-meta">
+                                <h3 class="neo-title">BVH3 INDUSTRIES</h3>
+                                <p class="neo-subtitle">Full-Stack • Automatización • UI/UX Futurista</p>
+                                <div class="pill-row" aria-label="Especialidades">
+                                    <span class="pill pill--cyan">JAVASCRIPT</span>
+                                    <span class="pill pill--pink">FRONTEND</span>
+                                    <span class="pill pill--green">BACKEND</span>
+                                    <span class="pill pill--purple">CLOUD</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <h4 style="margin-top: 2rem;">STATS</h4>
-                        <div class="stats-bars">
-                            <div class="stat-bar">
-                                <span>CREATIVIDAD</span>
-                                <div class="bar"><div class="fill" style="width: 95%"></div></div>
+                        <p class="lead">
+                            Construyo interfaces rápidas, visualmente potentes y sistemas listos para producción. Enfoque: performance,
+                            seguridad, automatización y una estética cyberpunk limpia.
+                        </p>
+
+                        <div class="kpi-grid" aria-label="Indicadores">
+                            <div class="kpi">
+                                <span class="kpi-number">5+</span>
+                                <span class="kpi-label">AÑOS</span>
                             </div>
-                            <div class="stat-bar">
-                                <span>PROBLEMA SOLVING</span>
-                                <div class="bar"><div class="fill" style="width: 98%"></div></div>
+                            <div class="kpi">
+                                <span class="kpi-number">150+</span>
+                                <span class="kpi-label">PROYECTOS</span>
                             </div>
-                            <div class="stat-bar">
-                                <span>TEAMWORK</span>
-                                <div class="bar"><div class="fill" style="width: 92%"></div></div>
+                            <div class="kpi">
+                                <span class="kpi-number">24/7</span>
+                                <span class="kpi-label">SOPORTE</span>
                             </div>
                         </div>
+
+                        <div class="cta-row">
+                            <a class="cta-btn cta-btn--primary" href="#projects">VER PROYECTOS</a>
+                            <a class="cta-btn cta-btn--ghost" href="#contact">CONTACTAR</a>
+                        </div>
+                    </div>
+
+                    <div class="panel panel--scan">
+                        <h4 class="panel-title">Líneas de trabajo</h4>
+                        <ul class="scan-list">
+                            <li><span class="scan-dot" aria-hidden="true"></span>Web Apps: SPA / dashboards / landing premium</li>
+                            <li><span class="scan-dot" aria-hidden="true"></span>APIs: integración, auth, pagos, automatización</li>
+                            <li><span class="scan-dot" aria-hidden="true"></span>Optimización: Core Web Vitals y UX</li>
+                            <li><span class="scan-dot" aria-hidden="true"></span>Deploy: dominios, SSL, CI/CD</li>
+                        </ul>
+
+                        <div class="divider"></div>
+
+                        <h4 class="panel-title">Objetivo</h4>
+                        <p class="muted">Entregar productos con estética futurista, consistencia visual y código mantenible.</p>
                     </div>
                 </div>
-                
-                <style>
-                    .profile-header {
-                        display: flex;
-                        align-items: center;
-                        margin-bottom: 2rem;
-                        padding: 1.5rem;
-                        background: rgba(0, 255, 255, 0.05);
-                        border: 1px solid var(--primary-cyan);
-                    }
-                    .avatar-frame {
-                        width: 80px;
-                        height: 80px;
-                        border: 3px solid var(--primary-cyan);
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        margin-right: 1.5rem;
-                        background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,255,255,0.1) 100%);
-                        box-shadow: 
-                            0 0 20px rgba(0, 255, 255, 0.3),
-                            inset 0 0 20px rgba(0, 255, 255, 0.1);
-                        position: relative;
-                        overflow: hidden;
-                    }
-                    .avatar-frame::before {
-                        content: '';
-                        position: absolute;
-                        top: -2px;
-                        left: -2px;
-                        right: -2px;
-                        bottom: -2px;
-                        background: conic-gradient(var(--primary-cyan), var(--primary-pink), var(--secondary-green), var(--primary-cyan));
-                        border-radius: 50%;
-                        z-index: -1;
-                        animation: rotate 3s linear infinite;
-                    }
-                    @keyframes rotate {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                    .avatar-placeholder {
-                        font-family: var(--font-primary);
-                        font-weight: bold;
-                        color: var(--primary-cyan);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .avatar-img {
-                        width: 100%;
-                        height: 100%;
-                        object-fit: cover;
-                        filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.5));
-                        transition: all 0.3s ease;
-                        border-radius: 50%;
-                    }
-                    .avatar-img:hover {
-                        filter: drop-shadow(0 0 25px rgba(0, 255, 255, 0.8));
-                        transform: scale(1.1);
-                    }
-                    .profile-info h3 {
-                        color: var(--text-light);
-                        margin-bottom: 0.5rem;
-                        font-family: var(--font-primary);
-                    }
-                    .profile-details h4 {
-                        color: var(--secondary-green);
-                        margin-bottom: 1rem;
-                        font-family: var(--font-primary);
-                        font-size: 1.1rem;
-                    }
-                    .specialties-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                        gap: 1rem;
-                        margin-bottom: 1rem;
-                    }
-                    .specialty-item {
-                        padding: 0.8rem;
-                        background: rgba(255, 0, 110, 0.1);
-                        border: 1px solid var(--primary-pink);
-                        text-align: center;
-                        font-family: var(--font-primary);
-                        font-size: 0.9rem;
-                        color: var(--primary-pink);
-                    }
-                    .stats-bars {
-                        margin-top: 1rem;
-                    }
-                    .stat-bar {
-                        margin-bottom: 1rem;
-                    }
-                    .stat-bar span {
-                        display: block;
-                        margin-bottom: 0.5rem;
-                        color: var(--text-muted);
-                        font-size: 0.9rem;
-                    }
-                    .bar {
-                        width: 100%;
-                        height: 8px;
-                        background: var(--light-gray);
-                        position: relative;
-                    }
-                    .fill {
-                        height: 100%;
-                        background: linear-gradient(90deg, var(--secondary-green), var(--primary-cyan));
-                        transition: width 2s ease;
-                        box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-                    }
-                </style>
             `,
-            
+
             projects: `
-                <div class="projects-grid" style="animation: slideInRight 0.8s ease;">
-                    <div class="project-card">
-                        <div class="project-header">
-                            <h3>HATSUNE MIKU BOT</h3>
-                            <span class="project-status active">ACTIVO</span>
+                <div class="card-grid">
+                    <article class="card card--hover">
+                        <div class="card-top">
+                            <h3 class="card-title">HATSUNE MIKU BOT</h3>
+                            <span class="badge badge--green">ACTIVO</span>
                         </div>
-                        <div class="project-description">
-                            <p>Sistema de inteligencia Automatica de comandos descargas y juegos disponible para whatsapp</p>
-                            <div class="project-tech">
-                                <span>JavaScript</span>
-                                <span>JSON</span>
-                                <span>Node.js</span>
-                            </div>
+                        <p class="card-text">Bot con comandos, descargas y juegos para WhatsApp. Automatización y respuestas rápidas.</p>
+                        <div class="tag-row" aria-label="Stack">
+                            <span class="tag">Node.js</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">JSON</span>
                         </div>
-                        <div class="project-progress">
-                            <span>Progreso: 95%</span>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 95%"></div>
-                            </div>
-                        </div>
-                    </div>
+                        <button
+                            type="button"
+                            class="card-action project-view-btn"
+                            data-title="HATSUNE MIKU BOT"
+                            data-description="Accesos rápidos al grupo, canal, creador y número del bot."
+                            data-group-url="https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE?mode=gi_t"
+                            data-channel-url="https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o"
+                            data-creator-url="https://wa.me/5198851470"
+                            data-bot-url="https://wa.me/51926017929"
+                        >
+                            VER
+                        </button>
+                        <div class="meter" aria-label="Progreso 95%"><span class="meter-fill" style="width:95%"></span></div>
+                    </article>
 
-                    <div class="project-card">
-                        <div class="project-header">
-                            <h3>PROGRAMA ACTAS GOBIERNO REGIONAL</h3>
-                            <span class="project-status completed">COMPLETADO</span>
+                    <article class="card card--hover">
+                        <div class="card-top">
+                            <h3 class="card-title">SISTEMA DE ACTAS (GORE)</h3>
+                            <span class="badge badge--cyan">COMPLETADO</span>
                         </div>
-                        <div class="project-description">
-                            <p>Prograam pagina web pero con funciones de manejo de actas modales registros importacion y más.</p>
-                            <div class="project-tech">
-                                <span>JS</span>
-                                <span>PHP</span>
-                                <span>MySQL</span>
-                            </div>
+                        <p class="card-text">Gestión de actas con registros, importación y módulos administrativos.</p>
+                        <div class="tag-row" aria-label="Stack">
+                            <span class="tag">PHP</span>
+                            <span class="tag">MySQL</span>
+                            <span class="tag">JS</span>
                         </div>
-                        <div class="project-progress">
-                            <span>Progreso: 100%</span>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%"></div>
-                            </div>
-                        </div>
-                    </div>
+                        <div class="meter" aria-label="Progreso 100%"><span class="meter-fill" style="width:100%"></span></div>
+                    </article>
 
-                    <div class="project-card">
-                        <div class="project-header">
-                            <h3>CYBERSECURITY DASHBOARD</h3>
-                            <span class="project-status development">EN DESARROLLO</span>
+                    <article class="card card--hover">
+                        <div class="card-top">
+                            <h3 class="card-title">CYBERSECURITY DASHBOARD</h3>
+                            <span class="badge badge--pink">EN DESARROLLO</span>
                         </div>
-                        <div class="project-description">
-                            <p>Panel de control en tiempo real para monitoreo de amenazas y análisis de seguridad.</p>
-                            <div class="project-tech">
-                                <span>ANGULAR</span>
-                                <span>D3.JS</span>
-                                <span>ELASTIC</span>
-                            </div>
+                        <p class="card-text">Panel de monitoreo en tiempo real para análisis de eventos y amenazas.</p>
+                        <div class="tag-row" aria-label="Stack">
+                            <span class="tag">Angular</span>
+                            <span class="tag">D3</span>
+                            <span class="tag">Elastic</span>
                         </div>
-                        <div class="project-progress">
-                            <span>Progreso: 67%</span>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 67%"></div>
-                            </div>
-                        </div>
-                    </div>
+                        <div class="meter" aria-label="Progreso 67%"><span class="meter-fill" style="width:67%"></span></div>
+                    </article>
 
-                    <div class="project-card">
-                        <div class="project-header">
-                            <h3>QUANTUM SIMULATOR</h3>
-                            <span class="project-status planning">PLANEANDO</span>
+                    <article class="card card--hover">
+                        <div class="card-top">
+                            <h3 class="card-title">QUANTUM SIMULATOR</h3>
+                            <span class="badge badge--purple">PLANEANDO</span>
                         </div>
-                        <div class="project-description">
-                            <p>Simulador cuántico para pruebas de algoritmos y computación experimental.</p>
-                            <div class="project-tech">
-                                <span>QISKIT</span>
-                                <span>C++</span>
-                                <span>CUDA</span>
-                            </div>
+                        <p class="card-text">Exploración de algoritmos y simulación de escenarios para pruebas experimentales.</p>
+                        <div class="tag-row" aria-label="Stack">
+                            <span class="tag">Qiskit</span>
+                            <span class="tag">C++</span>
+                            <span class="tag">CUDA</span>
                         </div>
-                        <div class="project-progress">
-                            <span>Progreso: 15%</span>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 15%"></div>
-                            </div>
-                        </div>
-                    </div>
+                        <div class="meter" aria-label="Progreso 15%"><span class="meter-fill" style="width:15%"></span></div>
+                    </article>
                 </div>
+            `,
 
-                <style>
-                    .projects-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                        gap: 2rem;
-                    }
-                    .project-card {
-                        background: rgba(0, 0, 0, 0.7);
-                        border: 2px solid var(--primary-cyan);
-                        padding: 1.5rem;
-                        transition: all 0.3s ease;
-                        position: relative;
-                        overflow: hidden;
-                    }
-                    .project-card:hover {
-                        border-color: var(--primary-pink);
-                        box-shadow: 0 0 30px rgba(255, 0, 110, 0.3);
-                        transform: translateY(-5px);
-                    }
-                    .project-header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 1rem;
-                    }
-                    .project-header h3 {
-                        font-family: var(--font-primary);
-                        color: var(--text-light);
-                        font-size: 1.1rem;
-                    }
-                    .project-status {
-                        padding: 0.3rem 0.8rem;
-                        font-size: 0.8rem;
-                        font-family: var(--font-primary);
-                        border-radius: 0;
-                    }
-                    .project-status.active {
-                        background: var(--secondary-green);
-                        color: var(--dark-bg);
-                    }
-                    .project-status.completed {
-                        background: var(--primary-cyan);
-                        color: var(--dark-bg);
-                    }
-                    .project-status.development {
-                        background: var(--primary-pink);
-                        color: var(--text-light);
-                    }
-                    .project-status.planning {
-                        background: var(--secondary-purple);
-                        color: var(--text-light);
-                    }
-                    .project-description p {
-                        color: var(--text-muted);
-                        line-height: 1.6;
-                        margin-bottom: 1rem;
-                    }
-                    .project-tech {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 0.5rem;
-                        margin-bottom: 1.5rem;
-                    }
-                    .project-tech span {
-                        background: rgba(0, 255, 255, 0.1);
-                        color: var(--primary-cyan);
-                        padding: 0.3rem 0.8rem;
-                        font-size: 0.8rem;
-                        border: 1px solid var(--primary-cyan);
-                    }
-                    .project-progress span {
-                        color: var(--text-muted);
-                        font-size: 0.9rem;
-                    }
-                    .progress-bar {
-                        width: 100%;
-                        height: 6px;
-                        background: var(--light-gray);
-                        margin-top: 0.5rem;
-                        position: relative;
-                    }
-                    .progress-fill {
-                        height: 100%;
-                        background: linear-gradient(90deg, var(--secondary-green), var(--primary-cyan));
-                        transition: width 2s ease;
-                        box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-                    }
-                </style>
+            apps: `
+                <div class="card-grid card-grid--apps">
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
+                            <div class="app-tile-head">
+                                <span class="app-tile-icon" aria-hidden="true">
+                                    <img src="src/images/logo.png" alt="" decoding="async">
+                                </span>
+                                <div>
+                                    <h3 class="card-title">BVH3 WALLPAPER</h3>
+                                    <p class="app-tile-sub">Android • APK</p>
+                                </div>
+                            </div>
+                            <span class="badge badge--pink">APK</span>
+                        </div>
+
+                        <p class="card-text">Wallpapers cyberpunk para Android.</p>
+
+                        <div class="tag-row" aria-label="Etiquetas">
+                            <span class="tag">ANDROID</span>
+                            <span class="tag">CYBERPUNK</span>
+                        </div>
+
+                        <div class="app-tile-footer">
+                            <a class="app-download-btn app-download-btn--sm" href="src/apps/BVH3_WALLPAPER.apk" download>DESCARGAR</a>
+                            <span class="app-note-inline">Si Android bloquea: Seguridad → Apps desconocidas</span>
+                        </div>
+                    </article>
+                </div>
             `,
 
             skills: `
-                <div class="skills-container" style="animation: fadeInUp 0.8s ease;">
-                    <div class="skills-categories">
-                        <div class="skill-category">
-                            <h3>DESARROLLO FRONTEND</h3>
-                            <div class="skill-items">
-                                <div class="skill-item">
-                                    <span class="skill-name">HTML5/CSS3</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 98%"></div>
-                                        <span class="skill-percentage">98%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">JavaScript/ES6+</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 95%"></div>
-                                        <span class="skill-percentage">95%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">React/Next.js</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 92%"></div>
-                                        <span class="skill-percentage">92%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">Vue.js</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 85%"></div>
-                                        <span class="skill-percentage">85%</span>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="layout-grid layout-grid--3">
+                    <div class="panel panel--glass">
+                        <h3 class="panel-title">Frontend</h3>
+                        <div class="skill">
+                            <div class="skill-top"><span>HTML/CSS</span><span class="skill-pct">98%</span></div>
+                            <div class="meter"><span class="meter-fill" style="width:98%"></span></div>
                         </div>
-
-                        <div class="skill-category">
-                            <h3>DESARROLLO BACKEND</h3>
-                            <div class="skill-items">
-                                <div class="skill-item">
-                                    <span class="skill-name">Node.js</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 90%"></div>
-                                        <span class="skill-percentage">90%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">Python</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 88%"></div>
-                                        <span class="skill-percentage">88%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">PHP</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 82%"></div>
-                                        <span class="skill-percentage">82%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">Java</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 75%"></div>
-                                        <span class="skill-percentage">75%</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="skill">
+                            <div class="skill-top"><span>JavaScript</span><span class="skill-pct">95%</span></div>
+                            <div class="meter"><span class="meter-fill" style="width:95%"></span></div>
                         </div>
-
-                        <div class="skill-category">
-                            <h3>BASE DE DATOS</h3>
-                            <div class="skill-items">
-                                <div class="skill-item">
-                                    <span class="skill-name">MongoDB</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 93%"></div>
-                                        <span class="skill-percentage">93%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">MySQL</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 89%"></div>
-                                        <span class="skill-percentage">89%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">PostgreSQL</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 85%"></div>
-                                        <span class="skill-percentage">85%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">Redis</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 80%"></div>
-                                        <span class="skill-percentage">80%</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="skill">
+                            <div class="skill-top"><span>React</span><span class="skill-pct">92%</span></div>
+                            <div class="meter"><span class="meter-fill" style="width:92%"></span></div>
                         </div>
+                    </div>
 
-                        <div class="skill-category">
-                            <h3>HERRAMIENTAS & CLOUD</h3>
-                            <div class="skill-items">
-                                <div class="skill-item">
-                                    <span class="skill-name">AWS/Azure</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 87%"></div>
-                                        <span class="skill-percentage">87%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">Docker</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 91%"></div>
-                                        <span class="skill-percentage">91%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">Git/GitHub</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 96%"></div>
-                                        <span class="skill-percentage">96%</span>
-                                    </div>
-                                </div>
-                                <div class="skill-item">
-                                    <span class="skill-name">CI/CD</span>
-                                    <div class="skill-level">
-                                        <div class="skill-bar" style="width: 83%"></div>
-                                        <span class="skill-percentage">83%</span>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="panel panel--glass">
+                        <h3 class="panel-title">Backend</h3>
+                        <div class="skill">
+                            <div class="skill-top"><span>Node/Express</span><span class="skill-pct">94%</span></div>
+                            <div class="meter"><span class="meter-fill" style="width:94%"></span></div>
+                        </div>
+                        <div class="skill">
+                            <div class="skill-top"><span>PHP/Laravel</span><span class="skill-pct">90%</span></div>
+                            <div class="meter"><span class="meter-fill" style="width:90%"></span></div>
+                        </div>
+                        <div class="skill">
+                            <div class="skill-top"><span>Python</span><span class="skill-pct">88%</span></div>
+                            <div class="meter"><span class="meter-fill" style="width:88%"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel--glass">
+                        <h3 class="panel-title">Cloud / DevOps</h3>
+                        <div class="skill">
+                            <div class="skill-top"><span>Linux</span><span class="skill-pct">90%</span></div>
+                            <div class="meter"><span class="meter-fill" style="width:90%"></span></div>
+                        </div>
+                        <div class="skill">
+                            <div class="skill-top"><span>Docker</span><span class="skill-pct">85%</span></div>
+                            <div class="meter"><span class="meter-fill" style="width:85%"></span></div>
+                        </div>
+                        <div class="skill">
+                            <div class="skill-top"><span>CI/CD</span><span class="skill-pct">78%</span></div>
+                            <div class="meter"><span class="meter-fill" style="width:78%"></span></div>
                         </div>
                     </div>
                 </div>
-
-                <style>
-                    .skills-categories {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                        gap: 2rem;
-                    }
-                    .skill-category {
-                        background: rgba(0, 0, 0, 0.5);
-                        border: 2px solid var(--secondary-green);
-                        padding: 1.5rem;
-                    }
-                    .skill-category h3 {
-                        font-family: var(--font-primary);
-                        color: var(--secondary-green);
-                        margin-bottom: 1.5rem;
-                        font-size: 1.1rem;
-                        text-align: center;
-                        text-shadow: 0 0 10px var(--secondary-green);
-                    }
-                    .skill-items {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 1rem;
-                    }
-                    .skill-item {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 1rem;
-                    }
-                    .skill-name {
-                        color: var(--text-light);
-                        font-weight: 600;
-                        min-width: 120px;
-                    }
-                    .skill-level {
-                        flex: 1;
-                        margin-left: 1rem;
-                        display: flex;
-                        align-items: center;
-                        gap: 1rem;
-                    }
-                    .skill-bar {
-                        height: 8px;
-                        background: linear-gradient(90deg, var(--primary-cyan), var(--primary-pink));
-                        flex: 1;
-                        box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-                        transition: width 2s ease;
-                    }
-                    .skill-percentage {
-                        color: var(--primary-cyan);
-                        font-family: var(--font-primary);
-                        font-weight: bold;
-                        min-width: 40px;
-                    }
-                </style>
             `,
 
             contact: `
-                <div class="contact-container" style="animation: slideInUp 0.8s ease;">
-                    <div class="contact-info">
-                        <div class="contact-section">
-                            <h3>INFORMACIÓN DE CONTACTO</h3>
-                            <div class="contact-methods">
-                                <div class="contact-method">
-                                    <span class="contact-icon">📧</span>
-                                    <div class="contact-details">
-                                        <strong>EMAIL</strong>
-                                        <p>velasquezhuillcab@gmail.com</p>
-                                    </div>
-                                </div>
-                                <div class="contact-method">
-                                    <span class="contact-icon">📱</span>
-                                    <div class="contact-details">
-                                        <strong>WHATSAPP / TELÉFONO</strong>
-                                        <p>+51 988 514 570 (WhatsApp Principal)</p>
-                                        <p>+51 953 073 477 (Alternativo)</p>
-                                    </div>
-                                </div>
-                                <div class="contact-method">
-                                    <span class="contact-icon">🌐</span>
-                                    <div class="contact-details">
-                                        <strong>ENLACES DIRECTOS</strong>
-                                        <p><a href="https://wa.me/51988514570" target="_blank" style="color: var(--secondary-green); text-decoration: none;">💬 WhatsApp Directo</a></p>
-                                        <p><a href="https://github.com/Brauliovh3" target="_blank" style="color: var(--primary-cyan); text-decoration: none;">💻 GitHub: /Brauliovh3</a></p>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="layout-grid layout-grid--2">
+                    <div class="panel panel--scan">
+                        <h3 class="panel-title">Canales</h3>
+                        <p class="muted">Elige un canal. Respuesta rápida por WhatsApp.</p>
+
+                        <div class="contact-cards">
+                            <a class="contact-card" href="mailto:velasquezhuillcab@gmail.com">
+                                <span class="contact-icon" aria-hidden="true">✉</span>
+                                <span class="contact-main">
+                                    <span class="contact-label">Email</span>
+                                    <span class="contact-value">velasquezhuillcab@gmail.com</span>
+                                </span>
+                            </a>
+                            <a class="contact-card" href="https://wa.me/51988514570" target="_blank" rel="noopener">
+                                <span class="contact-icon" aria-hidden="true">☎</span>
+                                <span class="contact-main">
+                                    <span class="contact-label">WhatsApp</span>
+                                    <span class="contact-value">+51 988 514 570</span>
+                                </span>
+                            </a>
+                            <a class="contact-card" href="https://github.com/Brauliovh3" target="_blank" rel="noopener">
+                                <span class="contact-icon" aria-hidden="true">⌂</span>
+                                <span class="contact-main">
+                                    <span class="contact-label">GitHub</span>
+                                    <span class="contact-value">github.com/Brauliovh3</span>
+                                </span>
+                            </a>
                         </div>
 
-                        <div class="contact-form-section">
-                            <h3>ENVIAR MENSAJE VIA WHATSAPP</h3>
-                            <form class="cyber-form" id="contactForm">
+                        <div class="availability">
+                            <span class="status-indicator" aria-hidden="true"></span>
+                            <span>DISPONIBLE PARA NUEVOS PROYECTOS</span>
+                        </div>
+                    </div>
+
+                    <div class="panel panel--glass">
+                        <h3 class="panel-title">Enviar mensaje</h3>
+                        <form class="contact-form" id="contactForm">
+                            <div class="form-row">
                                 <div class="form-group">
-                                    <label for="name">NOMBRE COMPLETO</label>
-                                    <input type="text" id="name" name="name" required>
+                                    <label for="name">NOMBRE</label>
+                                    <input id="name" type="text" name="name" autocomplete="name" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="email">EMAIL</label>
-                                    <input type="email" id="email" name="email" required>
+                                    <input id="email" type="email" name="email" autocomplete="email" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="subject">ASUNTO</label>
-                                    <select id="subject" name="subject" required>
-                                        <option value="">Seleccionar tipo de proyecto</option>
-                                        <option value="web">Desarrollo Web</option>
-                                        <option value="mobile">Aplicación Móvil</option>
-                                        <option value="ai">Inteligencia Artificial</option>
-                                        <option value="blockchain">Blockchain</option>
-                                        <option value="consulting">Consultoría</option>
-                                        <option value="other">Otro</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="message">MENSAJE</label>
-                                    <textarea id="message" name="message" rows="5" required></textarea>
-                                </div>
-                                <button type="submit" class="submit-btn">
-                                    <span>📱 ENVIAR VIA WHATSAPP</span>
-                                    <div class="btn-effect"></div>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div class="contact-map">
-                        <h3>LOCALIZACIÓN</h3>
-                        <div class="map-placeholder">
-                            <div class="map-grid"></div>
-                            <div class="location-marker">
-                                <div class="marker-pulse"></div>
-                                <span>BVH3 INDUSTRIES HQ</span>
                             </div>
-                        </div>
+
+                            <div class="form-group">
+                                <label for="subject">TIPO DE PROYECTO</label>
+                                <select id="subject" name="subject" required>
+                                    <option value="" selected>Seleccionar…</option>
+                                    <option value="Desarrollo Web">Desarrollo Web</option>
+                                    <option value="App Móvil">App Móvil</option>
+                                    <option value="Automatización">Automatización</option>
+                                    <option value="Consultoría">Consultoría</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="message">MENSAJE</label>
+                                <textarea id="message" name="message" rows="5" required placeholder="Cuéntame qué necesitas…"></textarea>
+                            </div>
+
+                            <button type="submit" class="submit-btn">
+                                <span>ENVIAR A WHATSAPP</span>
+                                <div class="btn-glitch"></div>
+                            </button>
+                        </form>
                     </div>
                 </div>
-
-                <style>
-                    .contact-container {
-                        display: grid;
-                        grid-template-columns: 2fr 1fr;
-                        gap: 3rem;
-                        margin-bottom: 2rem;
-                    }
-                    .contact-info {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 2rem;
-                    }
-                    .contact-section,
-                    .contact-form-section {
-                        background: rgba(0, 0, 0, 0.7);
-                        border: 2px solid var(--primary-cyan);
-                        padding: 2rem;
-                    }
-                    .contact-section h3,
-                    .contact-form-section h3,
-                    .contact-map h3 {
-                        font-family: var(--font-primary);
-                        color: var(--primary-cyan);
-                        margin-bottom: 1.5rem;
-                        text-shadow: 0 0 10px var(--primary-cyan);
-                    }
-                    .contact-methods {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 1.5rem;
-                    }
-                    .contact-method {
-                        display: flex;
-                        align-items: center;
-                        gap: 1rem;
-                        padding: 1rem;
-                        background: rgba(0, 255, 255, 0.05);
-                        border: 1px solid rgba(0, 255, 255, 0.2);
-                    }
-                    .contact-icon {
-                        font-size: 2rem;
-                        width: 60px;
-                        text-align: center;
-                    }
-                    .contact-details strong {
-                        color: var(--secondary-green);
-                        display: block;
-                        margin-bottom: 0.5rem;
-                        font-family: var(--font-primary);
-                    }
-                    .contact-details p {
-                        color: var(--text-muted);
-                        margin-bottom: 0.3rem;
-                    }
-                    .cyber-form {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 1.5rem;
-                    }
-                    .form-group {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 0.5rem;
-                    }
-                    .form-group label {
-                        color: var(--secondary-green);
-                        font-family: var(--font-primary);
-                        font-size: 0.9rem;
-                        letter-spacing: 1px;
-                    }
-                    .form-group input,
-                    .form-group select,
-                    .form-group textarea {
-                        background: rgba(0, 0, 0, 0.8);
-                        border: 2px solid var(--light-gray);
-                        color: var(--text-light);
-                        padding: 1rem;
-                        font-family: var(--font-secondary);
-                        transition: all 0.3s ease;
-                    }
-                    .form-group input:focus,
-                    .form-group select:focus,
-                    .form-group textarea:focus {
-                        outline: none;
-                        border-color: var(--primary-cyan);
-                        box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-                    }
-                    .submit-btn {
-                        position: relative;
-                        background: transparent;
-                        border: 2px solid var(--primary-pink);
-                        color: var(--text-light);
-                        padding: 1rem 2rem;
-                        font-family: var(--font-primary);
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        overflow: hidden;
-                        text-transform: uppercase;
-                        letter-spacing: 1px;
-                    }
-                    .submit-btn:hover {
-                        color: var(--dark-bg);
-                        background: var(--primary-pink);
-                        box-shadow: 0 0 30px var(--primary-pink);
-                    }
-                    .contact-map {
-                        background: rgba(0, 0, 0, 0.7);
-                        border: 2px solid var(--secondary-green);
-                        padding: 2rem;
-                        height: fit-content;
-                    }
-                    .map-placeholder {
-                        height: 300px;
-                        background: var(--dark-bg);
-                        position: relative;
-                        border: 1px solid var(--secondary-green);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        overflow: hidden;
-                    }
-                    .map-grid {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background-image: 
-                            linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);
-                        background-size: 20px 20px;
-                        animation: gridMove 10s linear infinite;
-                    }
-                    @keyframes gridMove {
-                        0% { transform: translate(0, 0); }
-                        100% { transform: translate(20px, 20px); }
-                    }
-                    .location-marker {
-                        position: relative;
-                        text-align: center;
-                        color: var(--secondary-green);
-                        font-family: var(--font-primary);
-                        z-index: 10;
-                    }
-                    .marker-pulse {
-                        width: 20px;
-                        height: 20px;
-                        background: var(--secondary-green);
-                        border-radius: 50%;
-                        margin: 0 auto 1rem;
-                        animation: pulse 2s infinite;
-                    }
-                    @keyframes pulse {
-                        0% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.7); }
-                        70% { box-shadow: 0 0 0 20px rgba(0, 255, 65, 0); }
-                        100% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0); }
-                    }
-                    
-                    @media (max-width: 768px) {
-                        .contact-container {
-                            grid-template-columns: 1fr;
-                            gap: 2rem;
-                        }
-                    }
-                </style>
             `
         };
 
         return content[section] || '<p>Contenido no disponible</p>';
     }
-
     startParticles() {
+        if (this.prefersReducedMotion) return;
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');
         
@@ -976,8 +549,10 @@ class CyberpunkPortfolio {
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
+        const particleCount = Math.max(40, Math.min(90, Math.floor((window.innerWidth * window.innerHeight) / 20000)));
+
         // Create particles
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < particleCount; i++) {
             this.particles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
@@ -1066,19 +641,8 @@ class CyberpunkPortfolio {
     }
 
     loadContent() {
-        // Simulate initial content loading
         console.log('BVH3 INDUSTRIES - Cyberpunk Portfolio Loaded');
-        
-        // Add contact form handler
-        setTimeout(() => {
-            const contactForm = document.getElementById('contactForm');
-            if (contactForm) {
-                contactForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.handleFormSubmission(e);
-                });
-            }
-        }, 1000);
+        this.showSection(this.activeSection);
     }
 
     handleFormSubmission(e) {
@@ -1137,38 +701,34 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Add some global effects
-document.addEventListener('mousemove', (e) => {
-    const cursor = document.querySelector('.cursor-effect');
-    if (!cursor) {
-        const cursorEffect = document.createElement('div');
-        cursorEffect.className = 'cursor-effect';
-        cursorEffect.style.cssText = `
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            background: radial-gradient(circle, rgba(0,255,255,0.3) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10000;
-            mix-blend-mode: screen;
-            transition: transform 0.1s ease;
-        `;
-        document.body.appendChild(cursorEffect);
-    }
-    
-    const cursorEffect = document.querySelector('.cursor-effect');
-    cursorEffect.style.left = e.clientX - 10 + 'px';
-    cursorEffect.style.top = e.clientY - 10 + 'px';
-});
+const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
+const hasFinePointer = window.matchMedia?.('(pointer: fine)')?.matches ?? true;
+
+if (!prefersReducedMotion && hasFinePointer) {
+    document.addEventListener('mousemove', (e) => {
+        const cursor = document.querySelector('.cursor-effect');
+        if (!cursor) {
+            const cursorEffect = document.createElement('div');
+            cursorEffect.className = 'cursor-effect';
+            document.body.appendChild(cursorEffect);
+        }
+
+        const cursorEffect = document.querySelector('.cursor-effect');
+        cursorEffect.style.left = e.clientX - 10 + 'px';
+        cursorEffect.style.top = e.clientY - 10 + 'px';
+    });
+}
 
 // Add glitch effect to random elements
-setInterval(() => {
-    const elements = document.querySelectorAll('h1, h2, h3');
-    const randomElement = elements[Math.floor(Math.random() * elements.length)];
-    if (randomElement && !randomElement.classList.contains('glitching')) {
-        randomElement.classList.add('glitching');
-        setTimeout(() => {
-            randomElement.classList.remove('glitching');
-        }, 500);
-    }
-}, 15000);
+if (!prefersReducedMotion) {
+    setInterval(() => {
+        const elements = document.querySelectorAll('h1, h2, h3');
+        const randomElement = elements[Math.floor(Math.random() * elements.length)];
+        if (randomElement && !randomElement.classList.contains('glitching')) {
+            randomElement.classList.add('glitching');
+            setTimeout(() => {
+                randomElement.classList.remove('glitching');
+            }, 500);
+        }
+    }, 15000);
+}
