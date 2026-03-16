@@ -9,10 +9,6 @@ Portafolio web futurista (estilo cyberpunk) con navegación por secciones, part�
 - Partículas en canvas + cursor effect (respeta `prefers-reduced-motion`)
 - Descarga de APK desde la sección **Aplicaciones**
 
-## 🧩 Editar enlaces del “HATSUNE MIKU BOT”
-
-Los enlaces del botón **VER** (Grupo/Canal/Creador/Bot) están en `script.js` dentro del template de `projects`.
-
 ## 📁 Estructura
 
 ```
