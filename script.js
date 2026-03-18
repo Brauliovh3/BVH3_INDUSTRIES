@@ -322,7 +322,7 @@ class CyberpunkPortfolio {
                             data-description="Accesos rápidos al grupo, canal, creador y número del bot."
                             data-group-url="https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE?mode=gi_t"
                             data-channel-url="https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o"
-                            data-creator-url="https://wa.me/5198851470"
+                            data-creator-url="https://wa.me/51988514570"
                             data-bot-url="https://wa.me/51926017929"
                         >
                             VER
