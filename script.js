@@ -1,5 +1,4 @@
-﻿// Cyberpunk Portfolio JavaScript
-class CyberpunkPortfolio {
+﻿class CyberpunkPortfolio {
     constructor() {
         this.init();
         this.setupEventListeners();
@@ -23,6 +22,13 @@ class CyberpunkPortfolio {
             'WELCOME TO THE FUTURE...'
         ];
         this.currentTerminalLine = 0;
+
+        // Modal NSFW
+        this.nsfwModal = document.getElementById('nsfw-modal');
+        this.nsfwCloseBtn = document.querySelector('.nsfw-close-btn');
+        this.nsfwSubmitBtn = document.getElementById('nsfw-submit-btn');
+        this.nsfwPasswordInput = document.getElementById('nsfw-password');
+        this.nsfwErrorMessage = document.getElementById('nsfw-error-message');
 
        
         const titleMain = document.querySelector('.title-main');
@@ -61,6 +67,21 @@ class CyberpunkPortfolio {
             navToggle.classList.toggle('active');
         });
 
+       
+        this.nsfwCloseBtn?.addEventListener('click', () => this.hideNsfwModal());
+        this.nsfwSubmitBtn?.addEventListener('click', () => this.checkNsfwPassword());
+        this.nsfwPasswordInput?.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                this.checkNsfwPassword();
+            }
+        });
+        
+        window.addEventListener('click', (e) => {
+            if (e.target == this.nsfwModal) {
+                this.hideNsfwModal();
+            }
+        });
+
         // Window resize
         window.addEventListener('resize', () => {
             this.handleResize();
@@ -73,8 +94,52 @@ class CyberpunkPortfolio {
 
     handleNavigation(section) {
         if (!section) return;
+
+        if (section === 'forbidden-zone') {
+            this.showNsfwModal();
+            return;
+        }
+
         const activeSection = this.showSection(section);
         this.loadSectionContentOnce(activeSection);
+    }
+
+    showNsfwModal() {
+        if (!this.nsfwModal) return;
+        this.nsfwModal.style.display = 'flex';
+        this.nsfwPasswordInput.focus();
+    }
+
+    hideNsfwModal() {
+        if (!this.nsfwModal) return;
+        this.nsfwModal.style.display = 'none';
+        this.nsfwPasswordInput.value = '';
+        this.nsfwErrorMessage.textContent = '';
+    }
+
+    checkNsfwPassword() {
+        const enteredPassword = this.nsfwPasswordInput.value.trim().toLowerCase().replace('-', '');
+        const expectedPassword = 'bvh32006';
+
+        if (enteredPassword === expectedPassword) {
+            this.hideNsfwModal();
+            const activeSection = this.showSection('forbidden-zone');
+            this.loadSectionContentOnce(activeSection);
+        } else {
+            this.nsfwErrorMessage.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
+            this.nsfwPasswordInput.value = '';
+            // Añadir un efecto de "sacudida" para feedback visual
+            this.nsfwModal.querySelector('.nsfw-modal-content').animate([
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(-10px)' },
+                { transform: 'translateX(10px)' },
+                { transform: 'translateX(-10px)' },
+                { transform: 'translateX(0)' }
+            ], {
+                duration: 300,
+                easing: 'ease-in-out'
+            });
+        }
     }
 
     navigateFromHash() {
@@ -122,7 +187,9 @@ class CyberpunkPortfolio {
             projects: 'CARGANDO PROYECTOS...',
             apps: 'CARGANDO APLICACIONES...',
             skills: 'ANALIZANDO COMPETENCIAS...',
-            contact: 'INICIALIZANDO COMUNICACIÓN...'
+            contact: 'INICIALIZANDO COMUNICACIÓN...',
+            'forbidden-zone': 'ACCESO CONCEDIDO...',
+            'memories': 'CARGANDO RECUERDOS...'
         }[section] || 'CARGANDO...';
 
         contentElement.innerHTML = `
@@ -371,6 +438,62 @@ class CyberpunkPortfolio {
                         </div>
                         <div class="meter" aria-label="Progreso 15%"><span class="meter-fill" style="width:15%"></span></div>
                     </article>
+                </div>
+            `,
+
+            'forbidden-zone': `
+                <div class="card-grid">
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
+                            <h3 class="card-title">Cyber Lust</h3>
+                            <span class="badge badge--pink">V 0.2A</span>
+                        </div>
+                        <div class="h-game-image-placeholder"></div>
+                        <p class="card-text">Una novela visual en un futuro distópico donde las decisiones importan.</p>
+                        <div class="tag-row">
+                            <span class="tag">H-Game</span>
+                            <span class="tag">NSFW</span>
+                            <span class="tag">Visual Novel</span>
+                        </div>
+                        <a class="app-download-btn app-download-btn--sm" href="#" download>DESCARGAR</a>
+                    </article>
+
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
+                            <h3 class="card-title">Project Seraphina</h3>
+                            <span class="badge badge--pink">EN DESARROLLO</span>
+                        </div>
+                        <div class="h-game-image-placeholder"></div>
+                        <p class="card-text">Explora un mundo de fantasía con elementos para adultos.</p>
+                        <div class="tag-row">
+                            <span class="tag">H-Game</span>
+                            <span class="tag">RPG</span>
+                            <span class="tag">NSFW</span>
+                        </div>
+                        <a class="app-download-btn app-download-btn--sm" href="#" download>DESCARGAR</a>
+                    </article>
+                    
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
+                            <h3 class="card-title">Netherworld Night</h3>
+                            <span class="badge badge--pink">PROXIMAMENTE</span>
+                        </div>
+                        <div class="h-game-image-placeholder"></div>
+                        <p class="card-text">Un juego de puzzles con una historia picante.</p>
+                        <div class="tag-row">
+                            <span class="tag">H-Game</span>
+                            <span class="tag">Puzzle</span>
+                            <span class="tag">NSFW</span>
+                        </div>
+                        <a class="app-download-btn app-download-btn--sm" href="#" download>DESCARGAR</a>
+                    </article>
+                </div>
+            `,
+
+            'memories': `
+                <div class="panel panel--glass">
+                    <h3 class="panel-title">Recuerdos</h3>
+                    <p>Aquí se mostrará una colección de momentos y logros importantes.</p>
                 </div>
             `,
 
@@ -661,7 +784,7 @@ class CyberpunkPortfolio {
 ${data.message}
 
 ---
-_Enviado desde el portafolio cyberpunk BVH3 Industries_
+_Enviado desde el portafolio BVH3 Industries_
         `.trim();
         
         
