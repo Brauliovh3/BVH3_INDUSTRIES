@@ -9,7 +9,6 @@
     }
 
     init() {
-        this.loadedSections = new Set();
         this.activeSection = 'home';
         this.prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
         this.particles = [];
@@ -29,6 +28,12 @@
         this.nsfwSubmitBtn = document.getElementById('nsfw-submit-btn');
         this.nsfwPasswordInput = document.getElementById('nsfw-password');
         this.nsfwErrorMessage = document.getElementById('nsfw-error-message');
+        this.nsfwTogglePasswordBtn = document.getElementById('nsfw-toggle-password');
+
+        // Media Viewer
+        this.mediaViewer = document.getElementById('media-viewer');
+        this.mediaViewerContent = document.getElementById('media-viewer-content');
+        this.mediaViewerCloseBtn = document.getElementById('media-viewer-close-btn');
 
        
         const titleMain = document.querySelector('.title-main');
@@ -70,6 +75,7 @@
        
         this.nsfwCloseBtn?.addEventListener('click', () => this.hideNsfwModal());
         this.nsfwSubmitBtn?.addEventListener('click', () => this.checkNsfwPassword());
+        this.nsfwTogglePasswordBtn?.addEventListener('click', () => this.toggleNsfwPassword());
         this.nsfwPasswordInput?.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') {
                 this.checkNsfwPassword();
@@ -79,6 +85,14 @@
         window.addEventListener('click', (e) => {
             if (e.target == this.nsfwModal) {
                 this.hideNsfwModal();
+            }
+        });
+
+        // Media Viewer
+        this.mediaViewerCloseBtn?.addEventListener('click', () => this.hideMediaViewer());
+        window.addEventListener('click', (e) => {
+            if (e.target == this.mediaViewer) {
+                this.hideMediaViewer();
             }
         });
 
@@ -101,7 +115,7 @@
         }
 
         const activeSection = this.showSection(section);
-        this.loadSectionContentOnce(activeSection);
+        this.loadSectionContent(activeSection);
     }
 
     showNsfwModal() {
@@ -124,7 +138,7 @@
         if (enteredPassword === expectedPassword) {
             this.hideNsfwModal();
             const activeSection = this.showSection('forbidden-zone');
-            this.loadSectionContentOnce(activeSection);
+            this.loadSectionContent(activeSection);
         } else {
             this.nsfwErrorMessage.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
             this.nsfwPasswordInput.value = '';
@@ -140,6 +154,13 @@
                 easing: 'ease-in-out'
             });
         }
+    }
+
+    toggleNsfwPassword() {
+        if (!this.nsfwPasswordInput || !this.nsfwTogglePasswordBtn) return;
+        const isPassword = this.nsfwPasswordInput.type === 'password';
+        this.nsfwPasswordInput.type = isPassword ? 'text' : 'password';
+        this.nsfwTogglePasswordBtn.textContent = isPassword ? '🙈' : '👁';
     }
 
     navigateFromHash() {
@@ -169,53 +190,22 @@
         return section;
     }
 
-    loadSectionContentOnce(section) {
-        if (section === 'home') return;
-        if (this.loadedSections.has(section)) return;
-        this.loadedSections.add(section);
-        this.loadSectionContent(section);
-    }
-
     async loadSectionContent(section) {
+        if (section === 'home') return;
         const contentId = `${section}Content`;
         const contentElement = document.getElementById(contentId);
 
         if (!contentElement) return;
 
-        const loadingText = {
-            about: 'CARGANDO PERFIL...',
-            projects: 'CARGANDO PROYECTOS...',
-            apps: 'CARGANDO APLICACIONES...',
-            skills: 'ANALIZANDO COMPETENCIAS...',
-            contact: 'INICIALIZANDO COMUNICACIÓN...',
-            'forbidden-zone': 'ACCESO CONCEDIDO...',
-            'memories': 'CARGANDO RECUERDOS...'
-        }[section] || 'CARGANDO...';
-
-        contentElement.innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>${loadingText}</p>
-            </div>
-        `;
-
-        setTimeout(() => {
-            const content = this.getContentForSection(section);
-            this.animateContentLoad(contentElement, content, () => {
-                this.onSectionRendered(section, contentElement);
-            });
-        }, 1500);
+        const content = this.getContentForSection(section);
+        this.animateContentLoad(contentElement, content, () => {
+            this.onSectionRendered(section, contentElement);
+        });
     }
 
     animateContentLoad(element, content, afterRender) {
-        // Fade out loading spinner
-        element.style.opacity = '0';
-        setTimeout(() => {
-            element.innerHTML = content;
-            element.style.opacity = '1';
-            element.style.transition = 'opacity 0.5s ease';
-            afterRender?.();
-        }, 300);
+        element.innerHTML = content;
+        afterRender?.();
     }
 
     onSectionRendered(section, contentElement) {
@@ -243,6 +233,17 @@
                     ].filter(l => l.url);
 
                     this.openProjectView({ title, description, links });
+                });
+            });
+        }
+
+        if (section === 'memories') {
+            const memoryCards = contentElement.querySelectorAll('.memory-card');
+            memoryCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const type = card.getAttribute('data-type');
+                    const src = card.getAttribute('data-src');
+                    this.showMediaViewer(type, src);
                 });
             });
         }
@@ -305,6 +306,25 @@
         this.showSection('project-view');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    showMediaViewer(type, src) {
+        if (!this.mediaViewer || !this.mediaViewerContent) return;
+
+        if (type === 'image') {
+            this.mediaViewerContent.innerHTML = `<img src="${src}" alt="Memory Image">`;
+        } else if (type === 'video') {
+            this.mediaViewerContent.innerHTML = `<video src="${src}" controls autoplay loop></video>`;
+        }
+
+        this.mediaViewer.style.display = 'flex';
+    }
+
+    hideMediaViewer() {
+        if (!this.mediaViewer || !this.mediaViewerContent) return;
+        this.mediaViewer.style.display = 'none';
+        this.mediaViewerContent.innerHTML = '';
+    }
+
     getContentForSection(section) {
         const content = {
             about: `
@@ -491,9 +511,45 @@
             `,
 
             'memories': `
-                <div class="panel panel--glass">
-                    <h3 class="panel-title">Recuerdos</h3>
-                    <p>Aquí se mostrará una colección de momentos y logros importantes.</p>
+                <div class="card-grid">
+                    <article class="card card--hover memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/00e5ff/000000?text=Cyberpunk+City">
+                        <div class="card-top">
+                            <h3 class="card-title">CIUDAD NEON</h3>
+                            <span class="badge badge--cyan">IMAGEN</span>
+                        </div>
+                        <img src="https://via.placeholder.com/400x225.png/00e5ff/000000?text=Cyberpunk+City" alt="Ciudad Cyberpunk" class="memory-thumbnail">
+                        <p class="card-text">Vistas nocturnas de una metrópolis futurista.</p>
+                    </article>
+
+                    <article class="card card--hover memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/ff2bd6/000000?text=Hacker+Lair">
+                        <div class="card-top">
+                            <h3 class="card-title">GUARIDA DEL HACKER</h3>
+                            <span class="badge badge--cyan">IMAGEN</span>
+                        </div>
+                        <img src="https://via.placeholder.com/400x225.png/ff2bd6/000000?text=Hacker+Lair" alt="Guarida del Hacker" class="memory-thumbnail">
+                        <p class="card-text">El lugar de nacimiento de la rebelión digital.</p>
+                    </article>
+
+                    <article class="card card--hover memory-card" data-type="video" data-src="https://www.w3schools.com/html/mov_bbb.mp4">
+                        <div class="card-top">
+                            <h3 class="card-title">TRANSMISIÓN PIRATA</h3>
+                            <span class="badge badge--pink">VIDEO</span>
+                        </div>
+                        <div class="memory-thumbnail">
+                            <video src="https://www.w3schools.com/html/mov_bbb.mp4#t=0.5" preload="metadata"></video>
+                            <div class="play-icon">▶</div>
+                        </div>
+                        <p class="card-text">Un mensaje codificado para los despiertos.</p>
+                    </article>
+                    
+                    <article class="card card--hover memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/8b5cf6/000000?text=Android+Dream">
+                        <div class="card-top">
+                            <h3 class="card-title">SUEÑO DE ANDROIDE</h3>
+                            <span class="badge badge--cyan">IMAGEN</span>
+                        </div>
+                        <img src="https://via.placeholder.com/400x225.png/8b5cf6/000000?text=Android+Dream" alt="Sueño de Androide" class="memory-thumbnail">
+                        <p class="card-text">Reflexiones sobre la conciencia artificial.</p>
+                    </article>
                 </div>
             `,
 
