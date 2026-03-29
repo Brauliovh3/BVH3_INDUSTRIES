@@ -49,6 +49,14 @@
                     <span class="btn-text">PROYECTOS</span>
                     <div class="btn-glitch"></div>
                 </button>
+                <button class="nav-btn" data-section="forbidden-zone">
+                    <span class="btn-text">ZONA PROHIBIDA</span>
+                    <div class="btn-glitch"></div>
+                </button>
+                <button class="nav-btn" data-section="memories">
+                    <span class="btn-text">RECUERDOS</span>
+                    <div class="btn-glitch"></div>
+                </button>
                 <button class="nav-btn" data-section="apps">
                     <span class="btn-text">APLICACIONES</span>
                     <div class="btn-glitch"></div>
@@ -82,8 +90,8 @@
                     </div>
                     <h1 class="cyber-title">
                         <span class="title-line">BIENVENIDO A</span>
-                        <span class="title-main">LA SOLUCION A TUS PROBLEMAS</span>
-                        <span class="title-sub">BVH3 INDUSTRIES </span>
+                        <span class="title-main">BVH3 INDUSTRIES</span>
+                        <span class="title-sub">LA SOLUCION A TUS PROBLEMAS</span>
                     </h1>
                     <p class="hero-description">
                         Desarrollador Full-Stack especializado en tecnologías de vanguardia
@@ -149,6 +157,38 @@
             </div>
         </section>
 
+        <!-- Forbidden Zone Section -->
+        <section class="section" id="forbidden-zone">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">ZONA PROHIBIDA</h2>
+                    <p class="section-subtitle">Contenido exclusivo y proyectos experimentales.</p>
+                </header>
+                <div class="section-body" id="forbiddenZoneContent">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>ACCESO DENEGADO...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Memories Section -->
+        <section class="section" id="memories">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">RECUERDOS</h2>
+                    <p class="section-subtitle">Una colección de momentos y logros.</p>
+                </header>
+                <div class="section-body" id="memoriesContent">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>CARGANDO RECUERDOS...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Apps Section -->
         <section class="section" id="apps">
             <div class="container">
@@ -196,6 +236,20 @@
                 </div>
             </div>
         </section>
+        <!-- NSFW Password Modal -->
+        <div id="nsfw-modal" class="nsfw-modal">
+            <div class="nsfw-modal-content">
+                <span class="nsfw-close-btn">&times;</span>
+                <h2 class="nsfw-title">Acceso Restringido</h2>
+                <p class="nsfw-subtitle">Esta zona contiene material no apto para menores de 18 años.</p>
+                <p>Introduce el código para continuar:</p>
+                <div class="nsfw-input-container">
+                    <input type="password" id="nsfw-password" class="nsfw-password-input" placeholder="CÓDIGO DE ACCESO">
+                    <button id="nsfw-submit-btn" class.bind="nsfw-submit-btn">ENTRAR</button>
+                </div>
+                <p id="nsfw-error-message" class="nsfw-error-message"></p>
+            </div>
+        </div>
     </main>
 
     <!-- Terminal -->
