@@ -167,7 +167,7 @@
                 <div class="section-body" id="forbiddenZoneContent">
                     <div class="loading-spinner">
                         <div class="spinner"></div>
-                        <p>ACCESO DENEGADO...</p>
+                        <p>AUTENTICACIÓN REQUERIDA...</p>
                     </div>
                 </div>
             </div>
@@ -245,6 +245,7 @@
                 <p>Introduce el código para continuar:</p>
                 <div class="nsfw-input-container">
                     <input type="password" id="nsfw-password" class="nsfw-password-input" placeholder="CÓDIGO DE ACCESO">
+                    <button id="nsfw-toggle-password" class="nsfw-toggle-password-btn">👁</button>
                     <button id="nsfw-submit-btn" class.bind="nsfw-submit-btn">ENTRAR</button>
                 </div>
                 <p id="nsfw-error-message" class="nsfw-error-message"></p>
@@ -291,6 +292,12 @@
             <p>Diseñado con tecnología cyberpunk del futuro.</p>
         </div>
     </footer>
+
+    <!-- Media Viewer Modal -->
+    <div id="media-viewer" class="media-viewer">
+        <span id="media-viewer-close-btn" class="media-viewer-close-btn">&times;</span>
+        <div id="media-viewer-content" class="media-viewer-content"></div>
+    </div>
 
     <!-- Scripts -->
     <script src="script.js"></script>
