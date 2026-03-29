@@ -30,6 +30,11 @@
         this.nsfwErrorMessage = document.getElementById('nsfw-error-message');
         this.nsfwTogglePasswordBtn = document.getElementById('nsfw-toggle-password');
 
+        // Forbidden Content Modal
+        this.forbiddenContentModal = document.getElementById('forbidden-content-modal');
+        this.forbiddenContentBody = document.getElementById('forbidden-content-body');
+        this.forbiddenContentCloseBtn = document.querySelector('.forbidden-content-close-btn');
+
         // Media Viewer
         this.mediaViewer = document.getElementById('media-viewer');
         this.mediaViewerContent = document.getElementById('media-viewer-content');
@@ -86,7 +91,13 @@
             if (e.target == this.nsfwModal) {
                 this.hideNsfwModal();
             }
+            if (e.target == this.forbiddenContentModal) {
+                this.hideForbiddenContentModal();
+            }
         });
+
+        // Forbidden Content
+        this.forbiddenContentCloseBtn?.addEventListener('click', () => this.hideForbiddenContentModal());
 
         // Media Viewer
         this.mediaViewerCloseBtn?.addEventListener('click', () => this.hideMediaViewer());
@@ -111,6 +122,7 @@
 
         if (section === 'forbidden-zone') {
             this.showNsfwModal();
+            // Do not proceed to showSection, as content is now handled in a modal
             return;
         }
 
@@ -137,8 +149,7 @@
 
         if (enteredPassword === expectedPassword) {
             this.hideNsfwModal();
-            const activeSection = this.showSection('forbidden-zone');
-            this.loadSectionContent(activeSection);
+            this.loadAndShowForbiddenContent();
         } else {
             this.nsfwErrorMessage.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
             this.nsfwPasswordInput.value = '';
@@ -155,6 +166,25 @@
             });
         }
     }
+
+    loadAndShowForbiddenContent() {
+        if (!this.forbiddenContentBody) return;
+        const content = this.getContentForSection('forbidden-zone');
+        this.forbiddenContentBody.innerHTML = content;
+        this.showForbiddenContentModal();
+    }
+
+    showForbiddenContentModal() {
+        if (!this.forbiddenContentModal) return;
+        this.forbiddenContentModal.style.display = 'flex';
+    }
+
+    hideForbiddenContentModal() {
+        if (!this.forbiddenContentModal) return;
+        this.forbiddenContentModal.style.display = 'none';
+        this.forbiddenContentBody.innerHTML = ''; // Clear content on close
+    }
+
 
     toggleNsfwPassword() {
         if (!this.nsfwPasswordInput || !this.nsfwTogglePasswordBtn) return;
@@ -468,7 +498,9 @@
                             <h3 class="card-title">Cyber Lust</h3>
                             <span class="badge badge--pink">V 0.2A</span>
                         </div>
-                        <div class="h-game-image-placeholder"></div>
+                        <div class="h-game-image-placeholder">
+                            <img src="https://via.placeholder.com/400x225.png/ff2bd6/000000?text=Cyber+Lust" alt="Cyber Lust Thumbnail">
+                        </div>
                         <p class="card-text">Una novela visual en un futuro distópico donde las decisiones importan.</p>
                         <div class="tag-row">
                             <span class="tag">H-Game</span>
@@ -480,10 +512,33 @@
 
                     <article class="card card--hover card--rgb app-tile">
                         <div class="card-top">
+                            <h3 class="card-title">Lonely Girl</h3>
+                            <span class="badge badge--pink">V 1.0</span>
+                        </div>
+                        <div class="h-game-image-placeholder">
+                            <img src="https://techylist.com/wp-content/uploads/2023/11/Lonely-Girl.jpeg" alt="Lonely Girl Thumbnail">
+                        </div>
+                        <p class="card-text">Una experiencia inmersiva de simulación de citas con múltiples finales.</p>
+                        <div class="tag-row">
+                            <span class="tag">H-Game</span>
+                            <span class="tag">NSFW</span>
+                            <span class="tag">Simulación</span>
+                        </div>
+                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Lonely Girl.apk" download>DESCARGAR</a>
+                    </article>
+
+                    <!-- BVH3 WALLPAPER movido a la Zona Prohibida -->
+                    <!-- Si el BVH3 WALLPAPER debe estar aquí, asegúrate de que su contenido esté presente. -->
+                    <!-- Si no, este comentario es solo una referencia de discusiones anteriores. -->
+
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
                             <h3 class="card-title">Project Seraphina</h3>
                             <span class="badge badge--pink">EN DESARROLLO</span>
                         </div>
-                        <div class="h-game-image-placeholder"></div>
+                        <div class="h-game-image-placeholder">
+                            <img src="https://via.placeholder.com/400x225.png/8b5cf6/000000?text=Project+Seraphina" alt="Project Seraphina Thumbnail">
+                        </div>
                         <p class="card-text">Explora un mundo de fantasía con elementos para adultos.</p>
                         <div class="tag-row">
                             <span class="tag">H-Game</span>
@@ -498,7 +553,9 @@
                             <h3 class="card-title">Netherworld Night</h3>
                             <span class="badge badge--pink">PROXIMAMENTE</span>
                         </div>
-                        <div class="h-game-image-placeholder"></div>
+                        <div class="h-game-image-placeholder">
+                            <img src="https://via.placeholder.com/400x225.png/00ff7a/000000?text=Netherworld+Night" alt="Netherworld Night Thumbnail">
+                        </div>
                         <p class="card-text">Un juego de puzzles con una historia picante.</p>
                         <div class="tag-row">
                             <span class="tag">H-Game</span>
@@ -540,6 +597,18 @@
                             <div class="play-icon">▶</div>
                         </div>
                         <p class="card-text">Un mensaje codificado para los despiertos.</p>
+                    </article>
+
+                    <article class="card card--hover memory-card" data-type="video" data-src="https://files.catbox.moe/utqyjf.mp4">
+                        <div class="card-top">
+                            <h3 class="card-title">ARTE NO COMPRENDIDO</h3>
+                            <span class="badge badge--pink">VIDEO</span>
+                        </div>
+                        <div class="memory-thumbnail">
+                            <video src="https://files.catbox.moe/utqyjf.mp4#t=0.5" preload="metadata"></video>
+                            <div class="play-icon">▶</div>
+                        </div>
+                        <p class="card-text">Una pieza de arte digital.</p>
                     </article>
                     
                     <article class="card card--hover memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/8b5cf6/000000?text=Android+Dream">
