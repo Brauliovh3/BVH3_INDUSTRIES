@@ -611,6 +611,23 @@
                         </div>
                         <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Fapwall.apk" download>DESCARGAR</a>
                     </article>
+
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
+                            <h3 class="card-title">Drain Mansion</h3>
+                            <span class="badge badge--pink">V 1.0</span>
+                        </div>
+                        <div class="h-game-image-placeholder">
+                            <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/bundles/31193/x8io6kdx01qsf4wp/header_586x192.jpg" alt="Drain Mansion Thumbnail">
+                        </div>
+                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
+                        <div class="tag-row">
+                            <span class="tag">H-Game</span>
+                            <span class="tag">NSFW</span>
+                            <span class="tag">Aventura</span>
+                        </div>
+                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Drain-Mansion.apk" download>DESCARGAR</a>
+                    </article>
                 </div>
             `,
 
