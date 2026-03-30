@@ -560,6 +560,23 @@
                         </div>
                         <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Coco-nut_shake.apk" download>DESCARGAR</a>
                     </article>
+
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
+                            <h3 class="card-title">Tatsumaki-TH</h3>
+                            <span class="badge badge--pink">V 1.0</span>
+                        </div>
+                        <div class="h-game-image-placeholder">
+                            <img src="https://i.ytimg.com/vi/iyyotHXIkBs/maxresdefault.jpg" alt="Tatsumaki-TH Thumbnail">
+                        </div>
+                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
+                        <div class="tag-row">
+                            <span class="tag">H-Game</span>
+                            <span class="tag">NSFW</span>
+                            <span class="tag">Aventura</span>
+                        </div>
+                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Tatsumaki-TH.apk" download>DESCARGAR</a>
+                    </article>
                 </div>
             `,
 
