@@ -577,6 +577,40 @@
                         </div>
                         <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Tatsumaki-TH.apk" download>DESCARGAR</a>
                     </article>
+
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
+                            <h3 class="card-title">Nicole v1</h3>
+                            <span class="badge badge--pink">V 1.17</span>
+                        </div>
+                        <div class="h-game-image-placeholder">
+                            <img src="https://files.catbox.moe/nxcu8y.jfif" alt="Nicole v1 Thumbnail">
+                        </div>
+                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
+                        <div class="tag-row">
+                            <span class="tag">H-Game</span>
+                            <span class="tag">NSFW</span>
+                            <span class="tag">Aventura</span>
+                        </div>
+                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Nicole v1.17.apk" download>DESCARGAR</a>
+                    </article>
+
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
+                            <h3 class="card-title">Fapwall</h3>
+                            <span class="badge badge--pink">V 1.0</span>
+                        </div>
+                        <div class="h-game-image-placeholder">
+                            <img src="https://uploads.ungrounded.net/tmp/img/736000/iu_736248_3166037.webp" alt="Fapwall Thumbnail">
+                        </div>
+                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
+                        <div class="tag-row">
+                            <span class="tag">H-Game</span>
+                            <span class="tag">NSFW</span>
+                            <span class="tag">Aventura</span>
+                        </div>
+                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Fapwall.apk" download>DESCARGAR</a>
+                    </article>
                 </div>
             `,
 
