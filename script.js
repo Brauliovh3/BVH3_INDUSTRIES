@@ -543,6 +543,23 @@
                         </div>
                         <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/KAGUYA_PLAYER.apk" download>DESCARGAR</a>
                     </article>
+                    
+                    <article class="card card--hover card--rgb app-tile">
+                        <div class="card-top">
+                            <h3 class="card-title">Coco-nut Shake</h3>
+                            <span class="badge badge--pink">V 1.5</span>
+                        </div>
+                        <div class="h-game-image-placeholder">
+                            <img src="https://img.itch.zone/aW1nLzM3MjgzMzkucG5n/315x250%23c/NjGtao.png" alt="Coco-nut Shake Thumbnail">
+                        </div>
+                        <p class="card-text">Un juego de ritmo con personajes encantadores.</p>
+                        <div class="tag-row">
+                            <span class="tag">H-Game</span>
+                            <span class="tag">NSFW</span>
+                            <span class="tag">Ritmo</span>
+                        </div>
+                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Coco-nut_shake.apk" download>DESCARGAR</a>
+                    </article>
                 </div>
             `,
 
