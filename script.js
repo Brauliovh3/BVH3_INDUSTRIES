@@ -495,23 +495,6 @@
                 <div class="card-grid">
                     <article class="card card--hover card--rgb app-tile">
                         <div class="card-top">
-                            <h3 class="card-title">Cyber Lust</h3>
-                            <span class="badge badge--pink">V 0.2A</span>
-                        </div>
-                        <div class="h-game-image-placeholder">
-                            <img src="https://via.placeholder.com/400x225.png/ff2bd6/000000?text=Cyber+Lust" alt="Cyber Lust Thumbnail">
-                        </div>
-                        <p class="card-text">Una novela visual en un futuro distópico donde las decisiones importan.</p>
-                        <div class="tag-row">
-                            <span class="tag">H-Game</span>
-                            <span class="tag">NSFW</span>
-                            <span class="tag">Visual Novel</span>
-                        </div>
-                        <a class="app-download-btn app-download-btn--sm" href="#" download>DESCARGAR</a>
-                    </article>
-
-                    <article class="card card--hover card--rgb app-tile">
-                        <div class="card-top">
                             <h3 class="card-title">Lonely Girl</h3>
                             <span class="badge badge--pink">V 1.0</span>
                         </div>
@@ -527,42 +510,38 @@
                         <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Lonely Girl.apk" download>DESCARGAR</a>
                     </article>
 
-                    <!-- BVH3 WALLPAPER movido a la Zona Prohibida -->
-                    <!-- Si el BVH3 WALLPAPER debe estar aquí, asegúrate de que su contenido esté presente. -->
-                    <!-- Si no, este comentario es solo una referencia de discusiones anteriores. -->
-
                     <article class="card card--hover card--rgb app-tile">
                         <div class="card-top">
-                            <h3 class="card-title">Project Seraphina</h3>
-                            <span class="badge badge--pink">EN DESARROLLO</span>
+                            <h3 class="card-title">FHB</h3>
+                            <span class="badge badge--pink">V 1.0</span>
                         </div>
                         <div class="h-game-image-placeholder">
-                            <img src="https://via.placeholder.com/400x225.png/8b5cf6/000000?text=Project+Seraphina" alt="Project Seraphina Thumbnail">
+                            <img src="https://files.catbox.moe/h3j5j2.png" alt="FHB Thumbnail">
                         </div>
-                        <p class="card-text">Explora un mundo de fantasía con elementos para adultos.</p>
+                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
                         <div class="tag-row">
                             <span class="tag">H-Game</span>
-                            <span class="tag">RPG</span>
                             <span class="tag">NSFW</span>
+                            <span class="tag">Aventura</span>
                         </div>
-                        <a class="app-download-btn app-download-btn--sm" href="#" download>DESCARGAR</a>
+                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/FHBQuickieHalloween Mavis.apk" download>DESCARGAR</a>
                     </article>
                     
                     <article class="card card--hover card--rgb app-tile">
                         <div class="card-top">
-                            <h3 class="card-title">Netherworld Night</h3>
-                            <span class="badge badge--pink">PROXIMAMENTE</span>
+                            <h3 class="card-title">Kaguya Player</h3>
+                            <span class="badge badge--pink">V 2.0</span>
                         </div>
                         <div class="h-game-image-placeholder">
-                            <img src="https://via.placeholder.com/400x225.png/00ff7a/000000?text=Netherworld+Night" alt="Netherworld Night Thumbnail">
+                            <img src="https://img.40407.com/upload/202411/18/18104137af89dQEw7eL6SgUwjvc.jpg" alt="Kaguya Player Thumbnail">
                         </div>
-                        <p class="card-text">Un juego de puzzles con una historia picante.</p>
+                        <p class="card-text">Un juego de estrategia con personajes encantadores.</p>
                         <div class="tag-row">
                             <span class="tag">H-Game</span>
-                            <span class="tag">Puzzle</span>
                             <span class="tag">NSFW</span>
+                            <span class="tag">Estrategia</span>
                         </div>
-                        <a class="app-download-btn app-download-btn--sm" href="#" download>DESCARGAR</a>
+                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/KAGUYA_PLAYER.apk" download>DESCARGAR</a>
                     </article>
                 </div>
             `,
