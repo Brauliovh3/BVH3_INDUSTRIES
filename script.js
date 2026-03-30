@@ -614,11 +614,11 @@
 
                     <article class="card card--hover card--rgb app-tile">
                         <div class="card-top">
-                            <h3 class="card-title">Drain Mansion</h3>
+                            <h3 class="card-title">Fuckerwatch</h3>
                             <span class="badge badge--pink">V 1.0</span>
                         </div>
                         <div class="h-game-image-placeholder">
-                            <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/bundles/31193/x8io6kdx01qsf4wp/header_586x192.jpg" alt="Drain Mansion Thumbnail">
+                            <img src="https://www.yunnx.com/upload/20250417/9c4fc637906a66.png" alt="Fuckerwatch Thumbnail">
                         </div>
                         <p class="card-text">Un juego emocionante con una experiencia única.</p>
                         <div class="tag-row">
@@ -626,7 +626,7 @@
                             <span class="tag">NSFW</span>
                             <span class="tag">Aventura</span>
                         </div>
-                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Drain-Mansion.apk" download>DESCARGAR</a>
+                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/FUCKERWATCH.apk" download>DESCARGAR</a>
                     </article>
                 </div>
             `,
