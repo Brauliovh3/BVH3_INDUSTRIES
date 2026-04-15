@@ -6,6 +6,17 @@
         this.startTerminal();
         this.loadContent();
         this.navigateFromHash();
+        this.musicPlayer = null;
+        this.isPlaying = false;
+        this.currentTrack = 0;
+        this.tracks = [
+            {
+                file: 'cyberpunk.mp3',
+                title: 'Cyberpunk: Edgerunners',
+                artist: 'This Fire by Franz Ferdinand',
+                duration: '3:45'
+            }
+        ];
     }
 
     init() {
@@ -769,6 +780,348 @@
                 </div>
             `,
 
+            depool: `
+                <div class="brain-interface">
+                    <!-- Brain Container -->
+                    <div class="brain-container">
+                        <!-- Central Brain -->
+                        <div class="central-brain">
+                            <div class="brain-hemisphere left-hemisphere"></div>
+                            <div class="brain-hemisphere right-hemisphere"></div>
+                            <div class="brain-stem"></div>
+                            <div class="cerebellum"></div>
+                            
+                            <!-- Brain Core -->
+                            <div class="brain-core">
+                                <div class="brain-label">DEPOOL</div>
+                                <div class="brain-subtitle">SISTEMA CEREBRAL</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Neural Network -->
+                        <div class="neural-network">
+                            <!-- Music Neural Path -->
+                            <div class="neural-connection music-connection">
+                                <div class="neural-path music-path"></div>
+                                <div class="neural-node music-node">
+                                    <div class="node-icon">♪</div>
+                                    <div class="node-label">MUSICA</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Games Neural Path -->
+                            <div class="neural-connection games-connection">
+                                <div class="neural-path games-path"></div>
+                                <div class="neural-node games-node">
+                                    <div class="node-icon">🎮</div>
+                                    <div class="node-label">JUEGOS</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Tastes Neural Path -->
+                            <div class="neural-connection tastes-connection">
+                                <div class="neural-path tastes-path"></div>
+                                <div class="neural-node tastes-node">
+                                    <div class="node-icon">♥</div>
+                                    <div class="node-label">GUSTOS</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Brain Activity Indicators -->
+                        <div class="brain-activity">
+                            <div class="activity-indicator music-activity">
+                                <div class="indicator-dot"></div>
+                                <span class="indicator-label">AUDIO</span>
+                            </div>
+                            <div class="activity-indicator games-activity">
+                                <div class="indicator-dot"></div>
+                                <span class="indicator-label">GAMING</span>
+                            </div>
+                            <div class="activity-indicator tastes-activity">
+                                <div class="indicator-dot"></div>
+                                <span class="indicator-label">CREATIVE</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Display -->
+                    <div class="content-display">
+                        <!-- Music Section -->
+                        <div class="section-display music-display">
+                            <div class="section-header">
+                                <h3 class="section-title">MUSICA</h3>
+                                <div class="section-status">ACTIVE</div>
+                                <div class="section-controls">
+                                    <button class="control-btn play-btn">▶</button>
+                                    <button class="control-btn pause-btn">⏸</button>
+                                    <button class="control-btn next-btn">⏭</button>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <audio id="musicPlayer" preload="auto"></audio>
+                                <div class="audio-visualizer">
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                </div>
+                                <div class="track-info">
+                                    <p class="track-name">Cyberpunk: Edgerunners</p>
+                                    <p class="artist-name">This Fire by Franz Ferdinand</p>
+                                    <div class="track-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progressFill"></div>
+                                        </div>
+                                        <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+                                    </div>
+                                </div>
+                                <div class="playlist" id="musicPlaylist">
+                                    <div class="playlist-item active" data-track="cyberpunk.mp3">
+                                        <div class="disc-card">
+                                            <div class="disc-container">
+                                                <div class="disc-cover">
+                                                    <div class="disc-artwork">
+                                                        <div class="disc-center"></div>
+                                                        <div class="disc-grooves"></div>
+                                                    </div>
+                                                    <div class="disc-overlay"></div>
+                                                </div>
+                                                <button class="disc-play-btn active" onclick="playTrack('cyberpunk.mp3', this)">
+                                                    <span class="play-icon">▶</span>
+                                                    <span class="pause-icon">⏸</span>
+                                                </button>
+                                            </div>
+                                            <div class="disc-info">
+                                                <div class="disc-title">Cyberpunk: Edgerunners</div>
+                                                <div class="disc-artist">This Fire by Franz Ferdinand</div>
+                                                <div class="disc-meta">
+                                                    <span class="disc-duration">3:45</span>
+                                                    <span class="disc-status">PLAYING</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="playlist-item" data-track="Let it happen.mp3">
+                                        <div class="disc-card">
+                                            <div class="disc-container">
+                                                <div class="disc-cover">
+                                                    <div class="disc-artwork">
+                                                        <div class="disc-center"></div>
+                                                        <div class="disc-grooves"></div>
+                                                    </div>
+                                                    <div class="disc-overlay"></div>
+                                                </div>
+                                                <button class="disc-play-btn" onclick="playTrack('Let it happen.mp3', this)">
+                                                    <span class="play-icon">▶</span>
+                                                    <span class="pause-icon">⏸</span>
+                                                </button>
+                                            </div>
+                                            <div class="disc-info">
+                                                <div class="disc-title">Let It Happen</div>
+                                                <div class="disc-artist">Tame Impala</div>
+                                                <div class="disc-meta">
+                                                    <span class="disc-duration">7:47</span>
+                                                    <span class="disc-status">READY</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="playlist-item" data-track="DARE.mp3">
+                                        <div class="disc-card">
+                                            <div class="disc-container">
+                                                <div class="disc-cover">
+                                                    <div class="disc-artwork">
+                                                        <div class="disc-center"></div>
+                                                        <div class="disc-grooves"></div>
+                                                    </div>
+                                                    <div class="disc-overlay"></div>
+                                                </div>
+                                                <button class="disc-play-btn" onclick="playTrack('DARE.mp3', this)">
+                                                    <span class="play-icon">▶</span>
+                                                    <span class="pause-icon">⏸</span>
+                                                </button>
+                                            </div>
+                                            <div class="disc-info">
+                                                <div class="disc-title">Dare</div>
+                                                <div class="disc-artist">Sayfalse, TRXVELER & DJ ALIM</div>
+                                                <div class="disc-meta">
+                                                    <span class="disc-duration">4:23</span>
+                                                    <span class="disc-status">READY</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Games Section -->
+                        <div class="section-display games-display">
+                            <div class="section-header">
+                                <h3 class="section-title">JUEGOS</h3>
+                                <div class="section-status">ACTIVE</div>
+                                <div class="section-stats">
+                                    <span class="stat-item">12 GAMES</span>
+                                    <span class="stat-item">85% COMPLETE</span>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="games-showcase">
+                                    <div class="featured-game">
+                                        <div class="game-preview">
+                                            <div class="game-thumbnail">🎮</div>
+                                            <div class="game-overlay">
+                                                <div class="game-title-large">CYBER RUN</div>
+                                                <div class="game-description">Corre por la ciudad cyberpunk evitando drones de seguridad</div>
+                                                <button class="game-launch-btn">LAUNCH</button>
+                                            </div>
+                                        </div>
+                                        <div class="game-stats">
+                                            <div class="game-stat">
+                                                <span class="stat-label">LEVEL</span>
+                                                <span class="stat-value">12</span>
+                                            </div>
+                                            <div class="game-stat">
+                                                <span class="stat-label">SCORE</span>
+                                                <span class="stat-value">8,450</span>
+                                            </div>
+                                            <div class="game-stat">
+                                                <span class="stat-label">TIME</span>
+                                                <span class="stat-value">2:34</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="games-grid">
+                                        <div class="game-item">
+                                            <div class="game-icon">🎯</div>
+                                            <div class="game-title">NEURAL ARENA</div>
+                                            <div class="game-genre">FPS</div>
+                                            <div class="game-rating">★★★★★</div>
+                                        </div>
+                                        <div class="game-item">
+                                            <div class="game-icon">⚔</div>
+                                            <div class="game-title">MATRIX QUEST</div>
+                                            <div class="game-genre">RPG</div>
+                                            <div class="game-rating">★★★★</div>
+                                        </div>
+                                        <div class="game-item">
+                                            <div class="game-icon">🏎</div>
+                                            <div class="game-title">QUANTUM RUSH</div>
+                                            <div class="game-genre">RACING</div>
+                                            <div class="game-rating">★★★★★</div>
+                                        </div>
+                                        <div class="game-item">
+                                            <div class="game-icon">⚡</div>
+                                            <div class="game-title">CYBER NINJA</div>
+                                            <div class="game-genre">ACTION</div>
+                                            <div class="game-rating">★★★★</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tastes Section -->
+                        <div class="section-display tastes-display">
+                            <div class="section-header">
+                                <h3 class="section-title">GUSTOS</h3>
+                                <div class="section-status">ACTIVE</div>
+                                <div class="section-filter">
+                                    <button class="filter-btn active">ALL</button>
+                                    <button class="filter-btn">TECH</button>
+                                    <button class="filter-btn">ART</button>
+                                </div>
+                            </div>
+                            <div class="section-content">
+                                <div class="tastes-showcase">
+                                    <div class="taste-category">
+                                        <h4 class="category-title">TECNOLOGÍA</h4>
+                                        <div class="taste-items">
+                                            <div class="taste-item featured">
+                                                <div class="taste-icon">🎨</div>
+                                                <div class="taste-info">
+                                                    <div class="taste-name">DISEÑO CYBERPUNK</div>
+                                                    <div class="taste-description">Estética futurista con neón y tecnología avanzada</div>
+                                                    <div class="taste-tags">
+                                                        <span class="tag">UI/UX</span>
+                                                        <span class="tag">FUTURISTA</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="taste-item">
+                                                <div class="taste-icon">⚛</div>
+                                                <div class="taste-info">
+                                                    <div class="taste-name">TECNOLOGIA CUANTICA</div>
+                                                    <div class="taste-description">Computación cuántica y procesamiento paralelo</div>
+                                                    <div class="taste-tags">
+                                                        <span class="tag">QUANTUM</span>
+                                                        <span class="tag">INNOVACION</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="taste-category">
+                                        <h4 class="category-title">CREATIVIDAD</h4>
+                                        <div class="taste-items">
+                                            <div class="taste-item featured">
+                                                <div class="taste-icon">🥽</div>
+                                                <div class="taste-info">
+                                                    <div class="taste-name">REALIDAD VIRTUAL</div>
+                                                    <div class="taste-description">Inmersión total en mundos digitales</div>
+                                                    <div class="taste-tags">
+                                                        <span class="tag">VR</span>
+                                                        <span class="tag">IMMERSIVE</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="taste-item">
+                                                <div class="taste-icon">✎</div>
+                                                <div class="taste-info">
+                                                    <div class="taste-name">ARTE DIGITAL</div>
+                                                    <div class="taste-description">Creación de arte con herramientas digitales</div>
+                                                    <div class="taste-tags">
+                                                        <span class="tag">DIGITAL</span>
+                                                        <span class="tag">CREATIVE</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Neural Activity -->
+                    <div class="neural-activity">
+                        <div class="activity-pulse pulse-1"></div>
+                        <div class="activity-pulse pulse-2"></div>
+                        <div class="activity-pulse pulse-3"></div>
+                        <div class="activity-pulse pulse-4"></div>
+                        <div class="activity-pulse pulse-5"></div>
+                        <div class="activity-pulse pulse-6"></div>
+                        <div class="activity-pulse pulse-7"></div>
+                        <div class="activity-pulse pulse-8"></div>
+                    </div>
+                    
+                    <!-- Background Effects -->
+                    <div class="brain-background">
+                        <div class="circuit-lines"></div>
+                        <div class="data-particles"></div>
+                        <div class="glitch-effect"></div>
+                    </div>
+                </div>
+            `,
+
             contact: `
                 <div class="layout-grid layout-grid--2">
                     <div class="panel panel--scan">
@@ -1044,3 +1397,445 @@ if (!prefersReducedMotion) {
         }
     }, 15000);
 }
+
+// Music Player Functionality
+class MusicPlayer {
+    constructor() {
+        this.player = null;
+        this.isPlaying = false;
+        this.currentTrack = 0;
+        this.tracks = [
+            {
+                file: 'cyberpunk.mp3',
+                title: 'Cyberpunk: Edgerunners',
+                artist: 'This Fire by Franz Ferdinand',
+                duration: '3:45'
+            }
+        ];
+        this.init();
+    }
+
+    init() {
+        // Initialize when DEPOOL section is loaded
+        const checkInterval = setInterval(() => {
+            if (document.getElementById('musicPlayer')) {
+                clearInterval(checkInterval);
+                this.setupPlayer();
+                this.setupEventListeners();
+                console.log('MusicPlayer initialized');
+            }
+        }, 100);
+    }
+
+    setupPlayer() {
+        this.player = document.getElementById('musicPlayer');
+        if (!this.player) {
+            console.error('Music player element not found');
+            return;
+        }
+
+        // Set initial volume
+        this.player.volume = 0.7;
+
+        // Add event listeners
+        this.player.addEventListener('loadedmetadata', () => {
+            console.log('Audio metadata loaded');
+            this.updateTimeDisplay();
+            // Auto play when loaded
+            setTimeout(() => this.play(), 500);
+        });
+
+        this.player.addEventListener('timeupdate', () => {
+            this.updateProgress();
+        });
+
+        this.player.addEventListener('ended', () => {
+            console.log('Audio ended');
+            this.nextTrack();
+        });
+
+        this.player.addEventListener('error', (e) => {
+            console.error('Audio error:', e);
+            console.error('Audio src:', this.player.src);
+        });
+
+        this.player.addEventListener('canplay', () => {
+            console.log('Audio can play');
+        });
+
+        // Load first track
+        this.loadTrack();
+    }
+
+    setupEventListeners() {
+        const playBtn = document.querySelector('.play-btn');
+        const pauseBtn = document.querySelector('.pause-btn');
+        const nextBtn = document.querySelector('.next-btn');
+
+        if (playBtn) {
+            playBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Play button clicked');
+                this.play();
+            });
+        }
+
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Pause button clicked');
+                this.pause();
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Next button clicked');
+                this.nextTrack();
+            });
+        }
+
+        // Playlist items
+        const playlistItems = document.querySelectorAll('.playlist-item');
+        playlistItems.forEach((item, index) => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Playlist item clicked:', index);
+                this.selectTrack(index);
+            });
+        });
+    }
+
+    play() {
+        if (!this.player) {
+            console.error('Player not available');
+            return;
+        }
+        
+        console.log('Attempting to play audio...');
+        console.log('Current src:', this.player.src);
+        
+        // Try to load and play
+        const playPromise = this.player.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log('Audio playing successfully');
+                this.isPlaying = true;
+                this.updatePlayPauseButtons();
+                this.startVisualizer();
+            }).catch(error => {
+                console.error('Error playing audio:', error);
+                console.log('Trying to reload audio...');
+                // Try reloading
+                this.player.load();
+                setTimeout(() => {
+                    this.player.play().then(() => {
+                        this.isPlaying = true;
+                        this.updatePlayPauseButtons();
+                        this.startVisualizer();
+                    }).catch(e => console.error('Still failed:', e));
+                }, 500);
+            });
+        } else {
+            this.isPlaying = true;
+            this.updatePlayPauseButtons();
+            this.startVisualizer();
+        }
+    }
+
+    pause() {
+        if (!this.player) return;
+        
+        console.log('Pausing audio');
+        this.player.pause();
+        this.isPlaying = false;
+        this.updatePlayPauseButtons();
+        this.stopVisualizer();
+    }
+
+    nextTrack() {
+        this.currentTrack = (this.currentTrack + 1) % this.tracks.length;
+        this.loadTrack();
+    }
+
+    selectTrack(index) {
+        this.currentTrack = index;
+        this.loadTrack();
+    }
+
+    loadTrack() {
+        if (!this.player) return;
+
+        const track = this.tracks[this.currentTrack];
+        const audioPath = `src/musicas/${track.file}`;
+        
+        console.log('Loading track:', audioPath);
+        
+        this.player.src = audioPath;
+        this.player.load(); // Force reload
+        
+        // Update UI
+        const trackNameEl = document.querySelector('.track-name');
+        const artistNameEl = document.querySelector('.artist-name');
+        
+        if (trackNameEl) trackNameEl.textContent = track.title;
+        if (artistNameEl) artistNameEl.textContent = track.artist;
+        
+        // Update playlist active state
+        const playlistItems = document.querySelectorAll('.playlist-item');
+        playlistItems.forEach((item, index) => {
+            item.classList.toggle('active', index === this.currentTrack);
+        });
+
+        // Auto play if was playing
+        if (this.isPlaying) {
+            setTimeout(() => this.play(), 500);
+        }
+    }
+
+    updatePlayPauseButtons() {
+        const playBtn = document.querySelector('.play-btn');
+        const pauseBtn = document.querySelector('.pause-btn');
+        
+        if (this.isPlaying) {
+            playBtn?.classList.add('hidden');
+            pauseBtn?.classList.remove('hidden');
+        } else {
+            playBtn?.classList.remove('hidden');
+            pauseBtn?.classList.add('hidden');
+        }
+    }
+
+    updateProgress() {
+        if (!this.player) return;
+
+        const progress = (this.player.currentTime / this.player.duration) * 100;
+        const progressFill = document.getElementById('progressFill');
+        if (progressFill) {
+            progressFill.style.width = `${progress}%`;
+        }
+
+        this.updateTimeDisplay();
+    }
+
+    updateTimeDisplay() {
+        if (!this.player) return;
+
+        const current = this.formatTime(this.player.currentTime);
+        const duration = this.formatTime(this.player.duration);
+        const timeDisplay = document.getElementById('timeDisplay');
+        if (timeDisplay) {
+            timeDisplay.textContent = `${current} / ${duration}`;
+        }
+    }
+
+    formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    startVisualizer() {
+        const bars = document.querySelectorAll('.wave-bar');
+        bars.forEach(bar => {
+            bar.style.animationPlayState = 'running';
+        });
+        
+        // Create audio context for real visualization
+        if (!this.audioContext && this.player) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.analyser = this.audioContext.createAnalyser();
+            this.source = this.audioContext.createMediaElementSource(this.player);
+            this.source.connect(this.analyser);
+            this.analyser.connect(this.audioContext.destination);
+            this.analyser.fftSize = 256;
+            
+            this.visualize();
+        }
+    }
+
+    stopVisualizer() {
+        const bars = document.querySelectorAll('.wave-bar');
+        bars.forEach(bar => {
+            bar.style.animationPlayState = 'paused';
+        });
+    }
+
+    visualize() {
+        if (!this.analyser) return;
+        
+        const bufferLength = this.analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        const bars = document.querySelectorAll('.wave-bar');
+        
+        const draw = () => {
+            if (!this.isPlaying) return;
+            
+            requestAnimationFrame(draw);
+            this.analyser.getByteFrequencyData(dataArray);
+            
+            bars.forEach((bar, index) => {
+                const value = dataArray[index * 2] || 0;
+                const height = Math.max(20, (value / 255) * 100);
+                bar.style.height = `${height}%`;
+            });
+        };
+        
+        draw();
+    }
+}
+
+// Available tracks for preloading
+const musicTracks = [
+    'cyberpunk.mp3',
+    'Let it happen.mp3',
+    'DARE.mp3'
+];
+
+// Preload all tracks
+const preloadedAudio = {};
+
+// Initialize music player when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing audio...');
+    
+    // Preload all tracks for instant playback
+    musicTracks.forEach(track => {
+        const audio = new Audio();
+        audio.src = `src/musicas/${track}`;
+        audio.preload = 'auto';
+        preloadedAudio[track] = audio;
+    });
+    console.log('Preloaded tracks:', Object.keys(preloadedAudio));
+    
+    // Ultra-simple audio initialization
+    const initAudio = () => {
+        const audioPlayer = document.getElementById('musicPlayer');
+        const playBtn = document.querySelector('.play-btn');
+        const pauseBtn = document.querySelector('.pause-btn');
+        
+        console.log('Elements found:', {
+            audioPlayer: !!audioPlayer,
+            playBtn: !!playBtn,
+            pauseBtn: !!pauseBtn
+        });
+        
+        if (audioPlayer && playBtn && pauseBtn) {
+            // Set volume
+            audioPlayer.volume = 0.7;
+            
+            // Set initial track
+            audioPlayer.src = 'src/musicas/cyberpunk.mp3';
+            
+            // Simple play function
+            window.playAudio = () => {
+                console.log('Playing audio...');
+                audioPlayer.play().then(() => {
+                    console.log('Audio playing successfully');
+                    playBtn.style.display = 'none';
+                    pauseBtn.style.display = 'flex';
+                }).catch(error => {
+                    console.error('Error playing audio:', error);
+                });
+            };
+            
+            // Simple pause function
+            window.pauseAudio = () => {
+                console.log('Pausing audio...');
+                audioPlayer.pause();
+                playBtn.style.display = 'flex';
+                pauseBtn.style.display = 'none';
+            };
+            
+            // Event listeners
+            playBtn.addEventListener('click', window.playAudio);
+            pauseBtn.addEventListener('click', window.pauseAudio);
+            
+            console.log('Audio player initialized successfully');
+        } else {
+            console.error('Missing elements for audio player');
+        }
+    };
+    
+    // Try initialization repeatedly until DEPOOL section is loaded
+    const checkInterval = setInterval(() => {
+        const audioPlayer = document.getElementById('musicPlayer');
+        const playBtn = document.querySelector('.play-btn');
+        const pauseBtn = document.querySelector('.pause-btn');
+        
+        if (audioPlayer && playBtn && pauseBtn) {
+            clearInterval(checkInterval);
+            initAudio();
+        }
+    }, 500);
+});
+
+// Global function to play individual tracks
+window.playTrack = function(trackFile, buttonElement) {
+    const audioPlayer = document.getElementById('musicPlayer');
+    const allButtons = document.querySelectorAll('.disc-play-btn');
+    const allItems = document.querySelectorAll('.playlist-item');
+    const allStatuses = document.querySelectorAll('.disc-status');
+    
+    // Reset all buttons and items
+    allButtons.forEach(btn => btn.classList.remove('active'));
+    allItems.forEach(item => item.classList.remove('active'));
+    allStatuses.forEach(status => {
+        status.textContent = 'READY';
+        status.style.color = 'var(--secondary-green)';
+    });
+    
+    // Set current track as active
+    buttonElement.classList.add('active');
+    const currentItem = buttonElement.closest('.playlist-item');
+    currentItem.classList.add('active');
+    
+    const currentStatus = currentItem.querySelector('.disc-status');
+    currentStatus.textContent = 'PLAYING';
+    currentStatus.style.color = 'var(--primary-cyan)';
+    
+    // Update audio source
+    const trackPath = `src/musicas/${trackFile}`;
+    
+    // Pause current audio
+    audioPlayer.pause();
+    
+    // Load new track with minimal delay
+    audioPlayer.src = trackPath;
+    audioPlayer.load();
+    
+    // Play immediately when ready
+    const playWhenReady = () => {
+        audioPlayer.play().then(() => {
+            console.log(`Playing track: ${trackFile}`);
+        }).catch(error => {
+            console.error('Error playing track:', error);
+        });
+        audioPlayer.removeEventListener('canplay', playWhenReady);
+    };
+    
+    audioPlayer.addEventListener('canplay', playWhenReady);
+    
+    // Update main track info
+    const trackTitle = currentItem.querySelector('.disc-title').textContent;
+    const trackArtist = currentItem.querySelector('.disc-artist').textContent;
+    document.querySelector('.track-name').textContent = trackTitle;
+    document.querySelector('.artist-name').textContent = trackArtist;
+};
+
+// Horizontal scroll with mouse wheel
+document.addEventListener('DOMContentLoaded', () => {
+    const playlist = document.getElementById('musicPlaylist');
+    if (playlist) {
+        playlist.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                playlist.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+    }
+});
