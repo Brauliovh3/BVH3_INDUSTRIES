@@ -73,6 +73,16 @@
                 
                 navMenu?.classList.remove('active');
                 navToggle?.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            // Add touch feedback for mobile
+            btn.addEventListener('touchstart', (e) => {
+                e.currentTarget.style.transform = 'scale(0.98)';
+            });
+            
+            btn.addEventListener('touchend', (e) => {
+                e.currentTarget.style.transform = '';
             });
         });
 
@@ -84,8 +94,38 @@
 
         
         navToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-            navToggle.classList.toggle('active');
+            this.toggleMobileMenu(navMenu, navToggle);
+        });
+
+        // Add touch support for hamburger menu
+        navToggle.addEventListener('touchstart', (e) => {
+            e.currentTarget.style.transform = 'scale(0.9)';
+        });
+        
+        navToggle.addEventListener('touchend', (e) => {
+            e.currentTarget.style.transform = '';
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && 
+                navMenu.classList.contains('active') &&
+                !navMenu.contains(e.target) &&
+                !navToggle.contains(e.target)) {
+                this.closeMobileMenu(navMenu, navToggle);
+            }
+        });
+
+        // Handle escape key to close mobile menu
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+                this.closeMobileMenu(navMenu, navToggle);
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.handleResize();
         });
 
        
@@ -1297,11 +1337,31 @@
         }
     }
 
+    toggleMobileMenu(navMenu, navToggle) {
+        navMenu.classList.toggle('active');
+        navToggle.classList.toggle('active');
+        
+        // Prevent body scroll when menu is open on mobile
+        if (navMenu.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+
+    closeMobileMenu(navMenu, navToggle) {
+        navMenu.classList.remove('active');
+        navToggle.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
     handleResize() {
         // Handle responsive behavior
         const navMenu = document.querySelector('.nav-menu');
+        const navToggle = document.getElementById('navToggle');
+        
         if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
+            this.closeMobileMenu(navMenu, navToggle);
         }
     }
 
