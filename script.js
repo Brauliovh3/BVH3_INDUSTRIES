@@ -17,6 +17,11 @@
                 duration: '3:45'
             }
         ];
+        
+        // Performance optimizations
+        this.isLowEndDevice = this.detectLowEndDevice();
+        this.performanceMode = this.getPerformanceMode();
+        this.setupPerformanceOptimizations();
     }
 
     init() {
@@ -232,9 +237,24 @@
 
     loadAndShowForbiddenContent() {
         if (!this.forbiddenContentBody) return;
-        const content = this.getContentForSection('forbidden-zone');
-        this.forbiddenContentBody.innerHTML = content;
+        
+        // Show loading state
+        this.forbiddenContentBody.innerHTML = `
+            <div class="forbidden-loading">
+                <div class="loading-spinner"></div>
+                <p>CARGANDO COLECCIÓN EXCLUSIVA...</p>
+            </div>
+        `;
+        
         this.showForbiddenContentModal();
+        
+        // Load content with performance optimization
+        setTimeout(() => {
+            const content = this.getContentForSection('forbidden-zone');
+            this.forbiddenContentBody.innerHTML = content;
+            this.setupForbiddenZoneInteractions();
+            this.setupLazyLoadingForGames();
+        }, this.isLowEndDevice ? 300 : 100);
     }
 
     showForbiddenContentModal() {
@@ -340,11 +360,15 @@
                     const src = card.getAttribute('data-src');
                     this.showMediaViewer(type, src);
                 });
+                
+                // Implement lazy loading for video thumbnails
+                this.setupLazyVideoThumbnail(card);
             });
         }
 
         if (section === 'depool') {
             this.initDepoolAndroid(contentElement);
+            this.initDiscordMusicPlayer();
         }
 
         const anchors = contentElement.querySelectorAll('a[href^="#"]');
@@ -455,27 +479,1077 @@
             this.handleNavigation('projects');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-
-        this.showSection('project-view');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     showMediaViewer(type, src) {
         if (!this.mediaViewer || !this.mediaViewerContent) return;
 
+        // Check device performance and adjust quality
+        const isLowEndDevice = this.detectLowEndDevice();
+        
         if (type === 'image') {
-            this.mediaViewerContent.innerHTML = `<img src="${src}" alt="Memory Image">`;
+            this.mediaViewerContent.innerHTML = `<img src="${src}" alt="Memory Image" loading="lazy">`;
         } else if (type === 'video') {
-            this.mediaViewerContent.innerHTML = `<video src="${src}" controls autoplay loop></video>`;
+            // Show loading indicator
+            this.mediaViewerContent.innerHTML = `
+                <div class="video-loading">
+                    <div class="loading-spinner"></div>
+                    <p>CARGANDO VIDEO...</p>
+                </div>
+            `;
+            
+            // Create video element with optimized attributes for low-end devices
+            const videoElement = document.createElement('video');
+            
+            // Adjust video source based on device capabilities
+            const optimizedSrc = isLowEndDevice ? this.getOptimizedVideoSrc(src) : src;
+            videoElement.src = optimizedSrc;
+            
+            // Performance optimizations
+            videoElement.controls = true;
+            videoElement.autoplay = !isLowEndDevice; // Disable autoplay on low-end devices
+            videoElement.loop = true;
+            videoElement.playsInline = true; // Important for iOS/Android
+            videoElement.muted = true; // Allow autoplay on most platforms
+            videoElement.preload = 'none'; // Don't preload until user interaction
+            videoElement.setAttribute('data-optimized', isLowEndDevice ? 'true' : 'false');
+            
+            // Set video dimensions for better performance
+            videoElement.style.maxWidth = '100%';
+            videoElement.style.maxHeight = '100%';
+            videoElement.style.objectFit = 'contain';
+            
+            // Add performance monitoring
+            this.addVideoPerformanceMonitoring(videoElement);
+            
+            // Handle video load events with performance optimizations
+            videoElement.addEventListener('loadeddata', () => {
+                // Remove loading indicator
+                const loadingIndicator = this.mediaViewerContent.querySelector('.video-loading');
+                if (loadingIndicator) {
+                    loadingIndicator.remove();
+                }
+                
+                // Try to play the video with fallback for low-end devices
+                if (!isLowEndDevice) {
+                    videoElement.play().catch(error => {
+                        console.log('Autoplay prevented:', error);
+                        videoElement.controls = true;
+                    });
+                } else {
+                    // For low-end devices, show a play button overlay
+                    this.addPlayButtonOverlay(videoElement);
+                }
+            });
+            
+            videoElement.addEventListener('error', (e) => {
+                console.error('Video error:', e);
+                this.mediaViewerContent.innerHTML = `<div style="color: #ff2bd6; text-align: center; padding: 2rem;">
+                    <p>Error loading video</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">The video file may be corrupted or not supported</p>
+                    <button class="cta-btn cta-btn--ghost" onclick="this.parentElement.parentElement.parentElement.showMediaViewer('video', '${src}')">REINTENTAR</button>
+                </div>`;
+            });
+            
+            // Clear loading indicator and add video
+            setTimeout(() => {
+                this.mediaViewerContent.innerHTML = '';
+                this.mediaViewerContent.appendChild(videoElement);
+                
+                // Start loading the video after a small delay to improve perceived performance
+                if (videoElement.preload === 'none') {
+                    videoElement.load();
+                }
+            }, isLowEndDevice ? 100 : 50);
         }
 
         this.mediaViewer.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
     }
 
     hideMediaViewer() {
         if (!this.mediaViewer || !this.mediaViewerContent) return;
         this.mediaViewer.style.display = 'none';
         this.mediaViewerContent.innerHTML = '';
+        document.body.style.overflow = ''; // Restore body scrolling
+        
+        // Stop any playing videos
+        const videos = this.mediaViewerContent.querySelectorAll('video');
+        videos.forEach(video => {
+            video.pause();
+            video.currentTime = 0;
+        });
+    }
+
+    detectLowEndDevice() {
+        // Check for low-end device indicators
+        const checks = {
+            // Memory check (approximate)
+            lowMemory: navigator.deviceMemory && navigator.deviceMemory <= 2,
+            // CPU cores check
+            lowCores: navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2,
+            // Connection speed check
+            slowConnection: navigator.connection && (
+                navigator.connection.effectiveType === 'slow-2g' ||
+                navigator.connection.effectiveType === '2g' ||
+                navigator.connection.downlink < 1
+            ),
+            // Mobile device check
+            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+            // Screen resolution check
+            lowResolution: window.screen.width * window.screen.height <= 800 * 600
+        };
+
+        // Count how many low-end indicators are true
+        const lowEndCount = Object.values(checks).filter(Boolean).length;
+        
+        // Consider device low-end if 3 or more indicators are true
+        return lowEndCount >= 3 || checks.slowConnection || (checks.isMobile && checks.lowMemory);
+    }
+
+    getOptimizedVideoSrc(originalSrc) {
+        // For demo purposes, we'll add a quality parameter
+        // In a real implementation, you would have different video files
+        const separator = originalSrc.includes('?') ? '&' : '?';
+        return `${originalSrc}${separator}quality=low&optimize=true`;
+    }
+
+    addVideoPerformanceMonitoring(videoElement) {
+        let startTime = performance.now();
+        let frameCount = 0;
+        let lastFrameTime = startTime;
+        
+        // Monitor video performance
+        const monitorFrame = () => {
+            frameCount++;
+            const currentTime = performance.now();
+            const deltaTime = currentTime - lastFrameTime;
+            
+            // Check if video is struggling (low FPS)
+            if (deltaTime > 100) { // More than 100ms per frame = less than 10 FPS
+                console.warn('Video performance issue detected, reducing quality');
+                this.reduceVideoQuality(videoElement);
+            }
+            
+            lastFrameTime = currentTime;
+            
+            if (videoElement.readyState >= 2 && !videoElement.paused) {
+                requestAnimationFrame(monitorFrame);
+            }
+        };
+        
+        videoElement.addEventListener('play', () => {
+            startTime = performance.now();
+            frameCount = 0;
+            requestAnimationFrame(monitorFrame);
+        });
+        
+        // Log loading performance
+        videoElement.addEventListener('loadeddata', () => {
+            const loadTime = performance.now() - startTime;
+            console.log(`Video loaded in ${loadTime.toFixed(2)}ms`);
+        });
+    }
+
+    addPlayButtonOverlay(videoElement) {
+        const playButton = document.createElement('div');
+        playButton.className = 'video-play-overlay';
+        playButton.innerHTML = `
+            <div class="play-button-large">
+                <span>PLAY</span>
+            </div>
+            <p class="play-hint">Click to play (optimized for your device)</p>
+        `;
+        
+        playButton.addEventListener('click', () => {
+            videoElement.play().then(() => {
+                playButton.style.display = 'none';
+            }).catch(error => {
+                console.error('Play failed:', error);
+            });
+        });
+        
+        videoElement.parentElement.appendChild(playButton);
+    }
+
+    reduceVideoQuality(videoElement) {
+        // Reduce video quality dynamically
+        if (videoElement.dataset.optimized === 'false') {
+            console.log('Reducing video quality for better performance');
+            const currentSrc = videoElement.src;
+            const optimizedSrc = this.getOptimizedVideoSrc(currentSrc);
+            const currentTime = videoElement.currentTime;
+            const wasPlaying = !videoElement.paused;
+            
+            videoElement.src = optimizedSrc;
+            videoElement.dataset.optimized = 'true';
+            
+            videoElement.addEventListener('loadeddata', () => {
+                videoElement.currentTime = currentTime;
+                if (wasPlaying) {
+                    videoElement.play();
+                }
+            }, { once: true });
+        }
+    }
+
+    setupLazyVideoThumbnail(card) {
+        const type = card.getAttribute('data-type');
+        if (type !== 'video') return;
+
+        const thumbnail = card.querySelector('.memory-thumbnail video');
+        if (!thumbnail) return;
+
+        // Add loading state
+        card.classList.add('loading');
+
+        // Create intersection observer for lazy loading
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    this.loadVideoThumbnail(thumbnail, card);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            rootMargin: '50px', // Start loading 50px before visible
+            threshold: 0.1
+        });
+
+        observer.observe(card);
+    }
+
+    loadVideoThumbnail(thumbnail, card) {
+        const isLowEndDevice = this.detectLowEndDevice();
+        const src = thumbnail.src || thumbnail.getAttribute('src');
+        
+        if (!src) return;
+
+        // For low-end devices, use poster image instead of video thumbnail
+        if (isLowEndDevice) {
+            this.createVideoPoster(thumbnail, card);
+            return;
+        }
+
+        // Load video thumbnail with performance optimization
+        thumbnail.preload = 'metadata';
+        thumbnail.muted = true;
+        thumbnail.playsInline = true;
+
+        thumbnail.addEventListener('loadeddata', () => {
+            // Seek to a frame that shows good preview
+            thumbnail.currentTime = 0.5;
+            
+            thumbnail.addEventListener('seeked', () => {
+                card.classList.remove('loading');
+                card.classList.add('loaded');
+                
+                // Pause after loading the preview frame
+                thumbnail.pause();
+            }, { once: true });
+        });
+
+        thumbnail.addEventListener('error', () => {
+            console.warn('Video thumbnail failed to load, using fallback');
+            this.createVideoPoster(thumbnail, card);
+        });
+
+        // Start loading
+        thumbnail.load();
+    }
+
+    createVideoPoster(thumbnail, card) {
+        // Create a poster image for low-end devices or fallback
+        const poster = document.createElement('img');
+        poster.src = 'https://via.placeholder.com/400x225.png/ff2bd6/000000?text=VIDEO';
+        poster.alt = 'Video thumbnail';
+        poster.className = 'video-poster-fallback';
+        poster.style.cssText = `
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        `;
+
+        thumbnail.style.display = 'none';
+        thumbnail.parentElement.appendChild(poster);
+        
+        card.classList.remove('loading');
+        card.classList.add('loaded');
+    }
+
+    optimizeMemoryUsage() {
+        // Clean up unused video elements to free memory
+        const videos = document.querySelectorAll('.memory-thumbnail video');
+        videos.forEach(video => {
+            const card = video.closest('.memory-card');
+            if (!card || !card.classList.contains('loaded')) {
+                video.src = '';
+                video.load();
+            }
+        });
+    }
+
+    getPerformanceMode() {
+        if (this.isLowEndDevice) {
+            return 'low';
+        }
+        
+        // Check connection speed
+        if (navigator.connection) {
+            const connection = navigator.connection;
+            if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
+                return 'low';
+            } else if (connection.effectiveType === '3g') {
+                return 'medium';
+            }
+        }
+        
+        // Check battery level if available
+        if (navigator.getBattery) {
+            navigator.getBattery().then(battery => {
+                if (battery.level < 0.2) {
+                    this.performanceMode = 'low';
+                    this.setupLowPowerMode();
+                }
+            });
+        }
+        
+        return 'high';
+    }
+
+    setupPerformanceOptimizations() {
+        // Add performance class to body
+        document.body.classList.add(`performance-${this.performanceMode}`);
+        
+        if (this.isLowEndDevice) {
+            document.body.classList.add('low-end-device');
+            this.setupLowEndOptimizations();
+        }
+        
+        // Setup network-aware loading
+        if (navigator.connection) {
+            this.setupNetworkAwareLoading();
+        }
+        
+        // Setup memory optimization interval
+        setInterval(() => {
+            this.optimizeMemoryUsage();
+        }, 30000); // Every 30 seconds
+    }
+
+    setupLowEndOptimizations() {
+        // Reduce particle count for low-end devices
+        if (this.particles && this.particles.length > 50) {
+            this.particles = this.particles.slice(0, 50);
+        }
+        
+        // Disable heavy animations
+        document.body.style.setProperty('--animation-duration', '0.3s');
+        
+        // Reduce quality of background effects
+        const matrixBg = document.getElementById('matrix-bg');
+        if (matrixBg) {
+            matrixBg.style.opacity = '0.5';
+        }
+    }
+
+    setupLowPowerMode() {
+        // Further reduce performance when battery is low
+        document.body.classList.add('low-power-mode');
+        
+        // Disable animations completely
+        document.body.style.setProperty('--animation-duration', '0s');
+        
+        // Reduce background effects
+        const matrixBg = document.getElementById('matrix-bg');
+        const particlesCanvas = document.getElementById('particles-canvas');
+        if (matrixBg) matrixBg.style.opacity = '0.3';
+        if (particlesCanvas) particlesCanvas.style.display = 'none';
+    }
+
+    setupNetworkAwareLoading() {
+        const connection = navigator.connection;
+        if (!connection) return;
+        
+        // Add slow connection class
+        if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
+            document.body.classList.add('slow-connection');
+        }
+        
+        // Listen for network changes
+        connection.addEventListener('change', () => {
+            const newMode = this.getPerformanceMode();
+            if (newMode !== this.performanceMode) {
+                this.performanceMode = newMode;
+                this.setupPerformanceOptimizations();
+            }
+        });
+    }
+
+    setupForbiddenZoneInteractions() {
+        const gameCards = document.querySelectorAll('.h-game-card');
+        const downloadButtons = document.querySelectorAll('.game-btn--primary');
+        
+        // Setup card hover effects with performance optimization
+        gameCards.forEach(card => {
+            if (!this.isLowEndDevice) {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0) scale(1)';
+                });
+            }
+            
+            // Add touch feedback for mobile
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+            });
+            
+            card.addEventListener('touchend', () => {
+                card.style.transform = '';
+            });
+        });
+        
+        // Setup download buttons with tracking
+        downloadButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleGameDownload(btn);
+            });
+        });
+    }
+
+    setupLazyLoadingForGames() {
+        const gameImages = document.querySelectorAll('.game-image');
+        
+        // Create intersection observer for lazy loading
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    const card = img.closest('.h-game-card');
+                    
+                    // Add loading state
+                    card.classList.add('loading');
+                    
+                    img.addEventListener('load', () => {
+                        card.classList.remove('loading');
+                        card.classList.add('loaded');
+                    });
+                    
+                    img.addEventListener('error', () => {
+                        this.handleImageError(img);
+                    });
+                    
+                    observer.unobserve(img);
+                }
+            });
+        }, {
+            rootMargin: '50px',
+            threshold: 0.1
+        });
+        
+        gameImages.forEach(img => observer.observe(img));
+    }
+
+    handleGameDownload(button) {
+        const downloadUrl = button.getAttribute('data-download');
+        const gameTitle = button.closest('.h-game-card').querySelector('.game-title').textContent;
+        
+        // Show loading state
+        button.innerHTML = `
+            <span class="btn-icon">LOADING</span>
+            <span class="btn-text">PREPARANDO...</span>
+        `;
+        button.disabled = true;
+        
+        // Track download
+        this.trackGameDownload(gameTitle);
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = '';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        // Simulate preparation time
+        setTimeout(() => {
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show success state
+            button.innerHTML = `
+                <span class="btn-icon">CHECK</span>
+                <span class="btn-text">DESCARGADO</span>
+            `;
+            button.classList.add('success');
+            
+            // Reset button after delay
+            setTimeout(() => {
+                button.innerHTML = `
+                    <span class="btn-icon">DOWNLOAD</span>
+                    <span class="btn-text">DESCARGAR</span>
+                `;
+                button.disabled = false;
+                button.classList.remove('success');
+            }, 3000);
+        }, this.isLowEndDevice ? 1500 : 800);
+    }
+
+    handleImageError(img) {
+        const card = img.closest('.h-game-card');
+        const fallbackSrc = 'https://via.placeholder.com/400x225.png/ff2bd6/000000?text=GAME';
+        
+        img.src = fallbackSrc;
+        img.classList.add('fallback-image');
+        
+        img.addEventListener('load', () => {
+            card.classList.remove('loading');
+            card.classList.add('loaded');
+        }, { once: true });
+    }
+
+    trackGameDownload(gameTitle) {
+        // Simple tracking for analytics
+        console.log(`Game download initiated: ${gameTitle}`);
+        
+        // Store in localStorage for download history
+        const downloadHistory = JSON.parse(localStorage.getItem('gameDownloads') || '[]');
+        downloadHistory.push({
+            game: gameTitle,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent
+        });
+        
+        // Keep only last 50 downloads
+        if (downloadHistory.length > 50) {
+            downloadHistory.shift();
+        }
+        
+        localStorage.setItem('gameDownloads', JSON.stringify(downloadHistory));
+    }
+
+    // Discord-style music player functions
+    initDiscordMusicPlayer() {
+        const audioPlayer = document.getElementById('musicPlayer');
+        const globalPlayBtn = document.getElementById('globalPlayBtn');
+        const globalPauseBtn = document.getElementById('globalPauseBtn');
+        const globalNextBtn = document.getElementById('globalNextBtn');
+        const visualizer = document.querySelector('.audio-visualizer');
+        
+        if (!audioPlayer) return;
+        
+        // Track list for Discord-style player
+        this.discordTracks = [
+            { file: 'cyberpunk.mp3', title: 'Cyberpunk: Edgerunners', artist: 'This Fire by Franz Ferdinand', duration: '3:45' },
+            { file: 'Let it happen.mp3', title: 'Let It Happen', artist: 'Tame Impala', duration: '7:47' },
+            { file: 'DARE.mp3', title: 'Dare', artist: 'Sayfalse, TRXVELER & DJ ALIM', duration: '4:23' }
+        ];
+        
+        this.currentDiscordTrack = 0;
+        this.isPlaying = false;
+        
+        // Setup global controls
+        if (globalPlayBtn) {
+            globalPlayBtn.addEventListener('click', () => this.playCurrentDiscordTrack());
+        }
+        
+        if (globalPauseBtn) {
+            globalPauseBtn.addEventListener('click', () => this.pauseDiscordTrack());
+        }
+        
+        if (globalNextBtn) {
+            globalNextBtn.addEventListener('click', () => this.playNextDiscordTrack());
+        }
+        
+        // Setup audio events
+        audioPlayer.addEventListener('timeupdate', () => this.updateDiscordProgress());
+        audioPlayer.addEventListener('ended', () => this.playNextDiscordTrack());
+        audioPlayer.addEventListener('play', () => {
+            this.isPlaying = true;
+            if (visualizer) visualizer.classList.add('playing');
+        });
+        audioPlayer.addEventListener('pause', () => {
+            this.isPlaying = false;
+            if (visualizer) visualizer.classList.remove('playing');
+        });
+    }
+
+    playDiscordTrack(trackFile, buttonElement) {
+        const audioPlayer = document.getElementById('musicPlayer');
+        const trackIndex = this.discordTracks.findIndex(track => track.file === trackFile);
+        
+        if (trackIndex === -1) return;
+        
+        this.currentDiscordTrack = trackIndex;
+        const track = this.discordTracks[trackIndex];
+        
+        // Update UI
+        this.updateDiscordUI(track);
+        
+        // Update button states
+        this.updateDiscordButtons(buttonElement);
+        
+        // Load and play
+        audioPlayer.src = `src/music/${trackFile}`;
+        audioPlayer.play().catch(error => {
+            console.error('Error playing track:', error);
+            this.showDiscordError('No se pudo reproducir la canción');
+        });
+    }
+
+    playCurrentDiscordTrack() {
+        const audioPlayer = document.getElementById('musicPlayer');
+        if (audioPlayer.src) {
+            audioPlayer.play().catch(error => {
+                console.error('Error resuming track:', error);
+            });
+        } else {
+            // Play first track if none is loaded
+            const firstTrack = this.discordTracks[0];
+            this.playDiscordTrack(firstTrack.file);
+        }
+    }
+
+    pauseDiscordTrack() {
+        const audioPlayer = document.getElementById('musicPlayer');
+        audioPlayer.pause();
+    }
+
+    playNextDiscordTrack() {
+        this.currentDiscordTrack = (this.currentDiscordTrack + 1) % this.discordTracks.length;
+        const nextTrack = this.discordTracks[this.currentDiscordTrack];
+        this.playDiscordTrack(nextTrack.file);
+    }
+
+    updateDiscordUI(track) {
+        // Update current track info
+        const currentTrackName = document.getElementById('currentTrackName');
+        const currentArtistName = document.getElementById('currentArtistName');
+        
+        if (currentTrackName) currentTrackName.textContent = track.title;
+        if (currentArtistName) currentArtistName.textContent = track.artist;
+        
+        // Update playlist active state
+        const discordTracks = document.querySelectorAll('.discord-track');
+        discordTracks.forEach((trackElement, index) => {
+            const isActive = index === this.currentDiscordTrack;
+            trackElement.classList.toggle('active', isActive);
+            
+            // Update status
+            const statusElement = trackElement.querySelector('.discord-status');
+            if (statusElement) {
+                statusElement.textContent = isActive ? 'PLAYING' : 'READY';
+            }
+            
+            // Update avatar status
+            const avatarStatus = trackElement.querySelector('.avatar-status');
+            if (avatarStatus) {
+                avatarStatus.classList.toggle('playing', isActive);
+            }
+            
+            // Update play button
+            const playBtn = trackElement.querySelector('.discord-play-btn');
+            if (playBtn) {
+                playBtn.classList.toggle('active', isActive);
+            }
+        });
+    }
+
+    updateDiscordButtons(activeButton) {
+        // Reset all buttons
+        const allButtons = document.querySelectorAll('.discord-play-btn');
+        allButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Activate current button
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+    }
+
+    updateDiscordProgress() {
+        const audioPlayer = document.getElementById('musicPlayer');
+        const progressFill = document.getElementById('progressFill');
+        const timeDisplay = document.getElementById('timeDisplay');
+        
+        if (!audioPlayer.duration) return;
+        
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        if (progressFill) progressFill.style.width = `${progress}%`;
+        
+        if (timeDisplay) {
+            const current = this.formatTime(audioPlayer.currentTime);
+            const total = this.formatTime(audioPlayer.duration);
+            timeDisplay.textContent = `${current} / ${total}`;
+        }
+    }
+
+    formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    showDiscordError(message) {
+        // Simple error display - could be enhanced with a toast notification
+        console.error('Discord Music Player Error:', message);
+    }
+
+    // Mini-Game functionality
+    initMiniGame() {
+        this.gameState = {
+            isPlaying: false,
+            isPaused: false,
+            score: 0,
+            lives: 3,
+            playerY: 50,
+            obstacles: [],
+            gameSpeed: 2,
+            gameLoop: null,
+            autoPlay: true
+        };
+
+        // Setup game controls
+        this.setupGameControls();
+        
+        // Setup keyboard controls
+        this.setupKeyboardControls();
+        
+        // Start auto-play demo
+        setTimeout(() => this.startAutoPlay(), 1000);
+    }
+
+    setupGameControls() {
+        const playBtn = document.getElementById('gamePlayBtn');
+        const pauseBtn = document.getElementById('gamePauseBtn');
+        const resetBtn = document.getElementById('gameResetBtn');
+        const closeBtn = document.getElementById('gameCloseBtn');
+
+        if (playBtn) {
+            playBtn.addEventListener('click', () => this.startGame());
+        }
+        
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => this.pauseGame());
+        }
+        
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => this.resetGame());
+        }
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeGame());
+        }
+    }
+
+    setupKeyboardControls() {
+        document.addEventListener('keydown', (e) => {
+            if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+            
+            const player = document.getElementById('gamePlayer');
+            if (!player) return;
+
+            switch(e.key.toLowerCase()) {
+                case 'arrowup':
+                case 'w':
+                    e.preventDefault();
+                    this.jumpPlayer();
+                    break;
+                case 'arrowdown':
+                case 's':
+                    e.preventDefault();
+                    this.movePlayer('down');
+                    break;
+                case 'arrowleft':
+                case 'a':
+                    e.preventDefault();
+                    this.movePlayer('left');
+                    break;
+                case 'arrowright':
+                case 'd':
+                    e.preventDefault();
+                    this.movePlayer('right');
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    this.jumpPlayer();
+                    break;
+            }
+        });
+    }
+
+    openMiniGame() {
+        const panel = document.getElementById('miniGamePanel');
+        if (panel) {
+            panel.classList.add('active');
+            this.initMiniGame();
+        }
+    }
+
+    startAutoPlay() {
+        if (!this.gameState.autoPlay) return;
+        
+        // Auto-play demo - show game running automatically
+        this.startGame();
+        
+        // Simulate player movements
+        this.autoPlayInterval = setInterval(() => {
+            if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+            
+            // Random movements
+            const moves = ['jump', 'left', 'right'];
+            const randomMove = moves[Math.floor(Math.random() * moves.length)];
+            
+            switch(randomMove) {
+                case 'jump':
+                    this.jumpPlayer();
+                    break;
+                case 'left':
+                    this.movePlayer('left');
+                    break;
+                case 'right':
+                    this.movePlayer('right');
+                    break;
+            }
+        }, 2000);
+    }
+
+    startGame() {
+        if (this.gameState.isPlaying) return;
+        
+        this.gameState.isPlaying = true;
+        this.gameState.isPaused = false;
+        this.gameState.autoPlay = false;
+        
+        // Clear auto-play if running
+        if (this.autoPlayInterval) {
+            clearInterval(this.autoPlayInterval);
+            this.autoPlayInterval = null;
+        }
+        
+        const canvas = document.getElementById('gameCanvas');
+        if (canvas) {
+            canvas.classList.add('playing');
+            canvas.classList.remove('paused', 'game-over');
+        }
+        
+        this.gameLoop = setInterval(() => this.updateGame(), 1000 / 60);
+    }
+
+    pauseGame() {
+        this.gameState.isPaused = !this.gameState.isPaused;
+        
+        const canvas = document.getElementById('gameCanvas');
+        if (canvas) {
+            canvas.classList.toggle('paused', this.gameState.isPaused);
+        }
+    }
+
+    resetGame() {
+        // Clear game loop
+        if (this.gameLoop) {
+            clearInterval(this.gameLoop);
+            this.gameLoop = null;
+        }
+        
+        // Clear auto-play
+        if (this.autoPlayInterval) {
+            clearInterval(this.autoPlayInterval);
+            this.autoPlayInterval = null;
+        }
+        
+        // Reset state
+        this.gameState = {
+            isPlaying: false,
+            isPaused: false,
+            score: 0,
+            lives: 3,
+            playerY: 50,
+            obstacles: [],
+            gameSpeed: 2,
+            gameLoop: null,
+            autoPlay: true
+        };
+        
+        // Reset UI
+        this.updateGameUI();
+        
+        // Reset player position
+        const player = document.getElementById('gamePlayer');
+        if (player) {
+            player.style.left = '50px';
+            player.style.bottom = '50px';
+        }
+        
+        // Reset obstacles
+        const obstacles = document.querySelectorAll('.game-obstacle');
+        obstacles.forEach((obstacle, index) => {
+            obstacle.style.left = `${300 + (index * 200)}px`;
+            obstacle.classList.remove('hit');
+        });
+        
+        const canvas = document.getElementById('gameCanvas');
+        if (canvas) {
+            canvas.classList.remove('playing', 'paused', 'game-over');
+        }
+        
+        // Restart auto-play
+        setTimeout(() => this.startAutoPlay(), 1000);
+    }
+
+    closeGame() {
+        this.resetGame();
+        
+        const panel = document.getElementById('miniGamePanel');
+        if (panel) {
+            panel.classList.remove('active');
+        }
+    }
+
+    jumpPlayer() {
+        const player = document.getElementById('gamePlayer');
+        if (!player || player.classList.contains('jumping')) return;
+        
+        player.classList.add('jumping');
+        setTimeout(() => {
+            player.classList.remove('jumping');
+        }, 500);
+    }
+
+    movePlayer(direction) {
+        const player = document.getElementById('gamePlayer');
+        if (!player) return;
+        
+        const currentLeft = parseInt(player.style.left) || 50;
+        const canvas = document.getElementById('gameCanvas');
+        const canvasWidth = canvas ? canvas.offsetWidth : 800;
+        
+        let newLeft = currentLeft;
+        
+        switch(direction) {
+            case 'left':
+                newLeft = Math.max(20, currentLeft - 30);
+                break;
+            case 'right':
+                newLeft = Math.min(canvasWidth - 80, currentLeft + 30);
+                break;
+        }
+        
+        player.style.left = `${newLeft}px`;
+    }
+
+    updateGame() {
+        if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+        
+        // Update obstacles
+        const obstacles = document.querySelectorAll('.game-obstacle');
+        obstacles.forEach(obstacle => {
+            if (obstacle.classList.contains('hit')) return;
+            
+            let currentLeft = parseInt(obstacle.style.left) || 800;
+            currentLeft -= this.gameState.gameSpeed;
+            
+            // Reset obstacle when it goes off screen
+            if (currentLeft < -50) {
+                currentLeft = 800 + Math.random() * 200;
+                this.gameState.score += 10;
+            }
+            
+            obstacle.style.left = `${currentLeft}px`;
+            
+            // Check collision
+            this.checkCollision(obstacle);
+        });
+        
+        // Increase difficulty
+        if (this.gameState.score > 0 && this.gameState.score % 50 === 0) {
+            this.gameState.gameSpeed = Math.min(8, this.gameState.speed * 1.001);
+        }
+        
+        this.updateGameUI();
+    }
+
+    checkCollision(obstacle) {
+        const player = document.getElementById('gamePlayer');
+        if (!player || player.classList.contains('jumping')) return;
+        
+        const playerRect = player.getBoundingClientRect();
+        const obstacleRect = obstacle.getBoundingClientRect();
+        
+        if (playerRect.left < obstacleRect.right &&
+            playerRect.right > obstacleRect.left &&
+            playerRect.top < obstacleRect.bottom &&
+            playerRect.bottom > obstacleRect.top) {
+            
+            // Collision detected
+            obstacle.classList.add('hit');
+            this.gameState.lives--;
+            
+            setTimeout(() => {
+                obstacle.classList.remove('hit');
+                const newLeft = 800 + Math.random() * 200;
+                obstacle.style.left = `${newLeft}px`;
+            }, 300);
+            
+            if (this.gameState.lives <= 0) {
+                this.gameOver();
+            }
+        }
+    }
+
+    gameOver() {
+        this.gameState.isPlaying = false;
+        
+        if (this.gameLoop) {
+            clearInterval(this.gameLoop);
+            this.gameLoop = null;
+        }
+        
+        const canvas = document.getElementById('gameCanvas');
+        if (canvas) {
+            canvas.classList.add('game-over');
+            canvas.classList.remove('playing');
+        }
+        
+        // Show game over message
+        setTimeout(() => {
+            alert(`Game Over! Score: ${this.gameState.score}`);
+            this.resetGame();
+        }, 500);
+    }
+
+    updateGameUI() {
+        const scoreElement = document.getElementById('gameScore');
+        const livesElement = document.getElementById('gameLives');
+        
+        if (scoreElement) {
+            scoreElement.textContent = this.gameState.score;
+        }
+        
+        if (livesElement) {
+            const hearts = 'â¤ï¸'.repeat(Math.max(0, this.gameState.lives));
+            livesElement.textContent = hearts;
+        }
+    }
+
+    // Global function for music selection (needed for onclick handlers)
+    playDiscordTrack(trackFile, buttonElement) {
+        if (window.cyberpunkPortfolio) {
+            window.cyberpunkPortfolio.playDiscordTrack(trackFile, buttonElement);
+        }
+    }
+
+    // Global function for mini-game (needed for onclick handlers)
+    openMiniGame() {
+        if (window.cyberpunkPortfolio) {
+            window.cyberpunkPortfolio.openMiniGame();
+        }
     }
 
     getContentForSection(section) {
@@ -615,142 +1689,274 @@
             `,
 
             'forbidden-zone': `
-                <div class="card-grid">
-                    <article class="card card--hover card--rgb app-tile">
-                        <div class="card-top">
-                            <h3 class="card-title">Lonely Girl</h3>
-                            <span class="badge badge--pink">V 1.0</span>
-                        </div>
-                        <div class="h-game-image-placeholder">
-                            <img src="https://techylist.com/wp-content/uploads/2023/11/Lonely-Girl.jpeg" alt="Lonely Girl Thumbnail">
-                        </div>
-                        <p class="card-text">Una experiencia inmersiva de simulación de citas con múltiples finales.</p>
-                        <div class="tag-row">
-                            <span class="tag">H-Game</span>
-                            <span class="tag">NSFW</span>
-                            <span class="tag">Simulación</span>
-                        </div>
-                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Lonely Girl.apk" download>DESCARGAR</a>
-                    </article>
-
-                    <article class="card card--hover card--rgb app-tile">
-                        <div class="card-top">
-                            <h3 class="card-title">FHB</h3>
-                            <span class="badge badge--pink">V 1.0</span>
-                        </div>
-                        <div class="h-game-image-placeholder">
-                            <img src="https://files.catbox.moe/h3j5j2.png" alt="FHB Thumbnail">
-                        </div>
-                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
-                        <div class="tag-row">
-                            <span class="tag">H-Game</span>
-                            <span class="tag">NSFW</span>
-                            <span class="tag">Aventura</span>
-                        </div>
-                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/FHBQuickieHalloween Mavis.apk" download>DESCARGAR</a>
-                    </article>
+                <div class="forbidden-zone-grid">
+                    <div class="zone-header">
+                        <h2 class="zone-title">COLECCIÓN EXCLUSIVA</h2>
+                        <p class="zone-subtitle">Juegos premium para usuarios verificados</p>
+                    </div>
                     
-                    <article class="card card--hover card--rgb app-tile">
-                        <div class="card-top">
-                            <h3 class="card-title">Kaguya Player</h3>
-                            <span class="badge badge--pink">V 2.0</span>
-                        </div>
-                        <div class="h-game-image-placeholder">
-                            <img src="https://img.40407.com/upload/202411/18/18104137af89dQEw7eL6SgUwjvc.jpg" alt="Kaguya Player Thumbnail">
-                        </div>
-                        <p class="card-text">Un juego de estrategia con personajes encantadores.</p>
-                        <div class="tag-row">
-                            <span class="tag">H-Game</span>
-                            <span class="tag">NSFW</span>
-                            <span class="tag">Estrategia</span>
-                        </div>
-                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/KAGUYA_PLAYER.apk" download>DESCARGAR</a>
-                    </article>
-                    
-                    <article class="card card--hover card--rgb app-tile">
-                        <div class="card-top">
-                            <h3 class="card-title">Coco-nut Shake</h3>
-                            <span class="badge badge--pink">V 1.5</span>
-                        </div>
-                        <div class="h-game-image-placeholder">
-                            <img src="https://img.itch.zone/aW1nLzM3MjgzMzkucG5n/315x250%23c/NjGtao.png" alt="Coco-nut Shake Thumbnail">
-                        </div>
-                        <p class="card-text">Un juego de ritmo con personajes encantadores.</p>
-                        <div class="tag-row">
-                            <span class="tag">H-Game</span>
-                            <span class="tag">NSFW</span>
-                            <span class="tag">Ritmo</span>
-                        </div>
-                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Coco-nut_shake.apk" download>DESCARGAR</a>
-                    </article>
+                    <div class="h-games-container">
+                        <article class="h-game-card" data-game-id="lonely-girl">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://techylist.com/wp-content/uploads/2023/11/Lonely-Girl.jpeg" 
+                                         alt="Lonely Girl" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">SIMULACIÓN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Lonely Girl</h3>
+                                <p class="game-description">Experiencia inmersiva de simulación con múltiples finales y decisiones impactantes.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">125 MB</span>
+                                    <span class="game-rating-stars">4.8</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Lonely Girl.apk">
+                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
 
-                    <article class="card card--hover card--rgb app-tile">
-                        <div class="card-top">
-                            <h3 class="card-title">Tatsumaki-TH</h3>
-                            <span class="badge badge--pink">V 1.0</span>
-                        </div>
-                        <div class="h-game-image-placeholder">
-                            <img src="https://i.ytimg.com/vi/iyyotHXIkBs/maxresdefault.jpg" alt="Tatsumaki-TH Thumbnail">
-                        </div>
-                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
-                        <div class="tag-row">
-                            <span class="tag">H-Game</span>
-                            <span class="tag">NSFW</span>
-                            <span class="tag">Aventura</span>
-                        </div>
-                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Tatsumaki-TH.apk" download>DESCARGAR</a>
-                    </article>
+                        <article class="h-game-card" data-game-id="fhb">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://files.catbox.moe/h3j5j2.png" 
+                                         alt="FHB" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">AVENTURA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">HOT</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">FHB</h3>
+                                <p class="game-description">Aventura emocionante con gráficos impresionantes y gameplay innovador.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">98 MB</span>
+                                    <span class="game-rating-stars">4.6</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/FHBQuickieHalloween Mavis.apk">
+                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
 
-                    <article class="card card--hover card--rgb app-tile">
-                        <div class="card-top">
-                            <h3 class="card-title">Nicole v1</h3>
-                            <span class="badge badge--pink">V 1.17</span>
-                        </div>
-                        <div class="h-game-image-placeholder">
-                            <img src="https://files.catbox.moe/nxcu8y.jfif" alt="Nicole v1 Thumbnail">
-                        </div>
-                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
-                        <div class="tag-row">
-                            <span class="tag">H-Game</span>
-                            <span class="tag">NSFW</span>
-                            <span class="tag">Aventura</span>
-                        </div>
-                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Nicole v1.17.apk" download>DESCARGAR</a>
-                    </article>
+                        <article class="h-game-card" data-game-id="kaguya">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://img.40407.com/upload/202411/18/18104137af89dQEw7eL6SgUwjvc.jpg" 
+                                         alt="Kaguya Player" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">ESTRATEGIA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">UPDATE</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Kaguya Player</h3>
+                                <p class="game-description">Juego de estrategia profundo con personajes memorables y decisiones cruciales.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v2.0</span>
+                                    <span class="game-size">156 MB</span>
+                                    <span class="game-rating-stars">4.9</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/KAGUYA_PLAYER.apk">
+                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
 
-                    <article class="card card--hover card--rgb app-tile">
-                        <div class="card-top">
-                            <h3 class="card-title">Fapwall</h3>
-                            <span class="badge badge--pink">V 1.0</span>
-                        </div>
-                        <div class="h-game-image-placeholder">
-                            <img src="https://uploads.ungrounded.net/tmp/img/736000/iu_736248_3166037.webp" alt="Fapwall Thumbnail">
-                        </div>
-                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
-                        <div class="tag-row">
-                            <span class="tag">H-Game</span>
-                            <span class="tag">NSFW</span>
-                            <span class="tag">Aventura</span>
-                        </div>
-                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/Fapwall.apk" download>DESCARGAR</a>
-                    </article>
+                        <article class="h-game-card" data-game-id="coconut">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://img.itch.zone/aW1nLzM3MjgzMzkucG5n/315x250%23c/NjGtao.png" 
+                                         alt="Coco-nut Shake" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">RITMO</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Coco-nut Shake</h3>
+                                <p class="game-description">Juego de ritmo adictivo con banda sonora increíble y visuales vibrantes.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.5</span>
+                                    <span class="game-size">87 MB</span>
+                                    <span class="game-rating-stars">4.7</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Coco-nut_shake.apk">
+                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
 
-                    <article class="card card--hover card--rgb app-tile">
-                        <div class="card-top">
-                            <h3 class="card-title">Fuckerwatch</h3>
-                            <span class="badge badge--pink">V 1.0</span>
-                        </div>
-                        <div class="h-game-image-placeholder">
-                            <img src="https://www.yunnx.com/upload/20250417/9c4fc637906a66.png" alt="Fuckerwatch Thumbnail">
-                        </div>
-                        <p class="card-text">Un juego emocionante con una experiencia única.</p>
-                        <div class="tag-row">
-                            <span class="tag">H-Game</span>
-                            <span class="tag">NSFW</span>
-                            <span class="tag">Aventura</span>
-                        </div>
-                        <a class="app-download-btn app-download-btn--sm" href="src/apps/nsfw/FUCKERWATCH.apk" download>DESCARGAR</a>
-                    </article>
+                        <article class="h-game-card" data-game-id="tatsumaki">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://i.ytimg.com/vi/iyyotHXIkBs/maxresdefault.jpg" 
+                                         alt="Tatsumaki-TH" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">AVENTURA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Tatsumaki-TH</h3>
+                                <p class="game-description">Aventura épica con combate fluido y historia envolvente.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">134 MB</span>
+                                    <span class="game-rating-stars">4.5</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Tatsumaki-TH.apk">
+                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="nicole">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://files.catbox.moe/nxcu8y.jfif" 
+                                         alt="Nicole v1" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">SIMULACIÓN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">POPULAR</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Nicole v1</h3>
+                                <p class="game-description">Simulación realista con personajes complejos y decisiones morales.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.17</span>
+                                    <span class="game-size">112 MB</span>
+                                    <span class="game-rating-stars">4.8</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Nicole v1.17.apk">
+                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="fapwall">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://uploads.ungrounded.net/tmp/img/736000/iu_736248_3166037.webp" 
+                                         alt="Fapwall" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">PUZZLE</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Fapwall</h3>
+                                <p class="game-description">Puzzle único con mecánicas innovadoras y arte excepcional.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">76 MB</span>
+                                    <span class="game-rating-stars">4.4</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Fapwall.apk">
+                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="fuckerwatch">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://www.yunnx.com/upload/20250417/9c4fc637906a66.png" 
+                                         alt="Fuckerwatch" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">ACCIÓN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">EXCLUSIVE</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Fuckerwatch</h3>
+                                <p class="game-description">Acción intensa con gráficos next-gen y gameplay revolucionario.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">189 MB</span>
+                                    <span class="game-rating-stars">4.9</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/FUCKERWATCH.apk">
+                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
                 </div>
             `,
 
@@ -1002,9 +2208,9 @@
                                 <h3 class="section-title">MUSICA</h3>
                                 <div class="section-status">ACTIVE</div>
                                 <div class="section-controls">
-                                    <button class="control-btn play-btn">▶</button>
-                                    <button class="control-btn pause-btn">⏸</button>
-                                    <button class="control-btn next-btn">⏭</button>
+                                    <button class="control-btn play-btn" id="globalPlayBtn">▶</button>
+                                    <button class="control-btn pause-btn" id="globalPauseBtn">⏸</button>
+                                    <button class="control-btn next-btn" id="globalNextBtn">⏭</button>
                                 </div>
                             </div>
                             <div class="section-content">
@@ -1013,18 +2219,10 @@
                                     <div class="wave-bar"></div>
                                     <div class="wave-bar"></div>
                                     <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
                                 </div>
                                 <div class="track-info">
-                                    <p class="track-name">Cyberpunk: Edgerunners</p>
-                                    <p class="artist-name">This Fire by Franz Ferdinand</p>
+                                    <p class="track-name" id="currentTrackName">Cyberpunk: Edgerunners</p>
+                                    <p class="artist-name" id="currentArtistName">This Fire by Franz Ferdinand</p>
                                     <div class="track-progress">
                                         <div class="progress-bar">
                                             <div class="progress-fill" id="progressFill"></div>
@@ -1032,81 +2230,66 @@
                                         <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
                                     </div>
                                 </div>
-                                <div class="playlist" id="musicPlaylist">
-                                    <div class="playlist-item active" data-track="cyberpunk.mp3">
-                                        <div class="disc-card">
-                                            <div class="disc-container">
-                                                <div class="disc-cover">
-                                                    <div class="disc-artwork">
-                                                        <div class="disc-center"></div>
-                                                        <div class="disc-grooves"></div>
-                                                    </div>
-                                                    <div class="disc-overlay"></div>
-                                                </div>
-                                                <button class="disc-play-btn active" onclick="playTrack('cyberpunk.mp3', this)">
-                                                    <span class="play-icon">▶</span>
-                                                    <span class="pause-icon">⏸</span>
-                                                </button>
-                                            </div>
-                                            <div class="disc-info">
-                                                <div class="disc-title">Cyberpunk: Edgerunners</div>
-                                                <div class="disc-artist">This Fire by Franz Ferdinand</div>
-                                                <div class="disc-meta">
-                                                    <span class="disc-duration">3:45</span>
-                                                    <span class="disc-status">PLAYING</span>
-                                                </div>
+                                <div class="discord-playlist" id="musicPlaylist">
+                                    <div class="discord-track active" data-track="cyberpunk.mp3">
+                                        <div class="discord-avatar">
+                                            <div class="avatar-circle">
+                                                <div class="avatar-image" style="background: linear-gradient(135deg, #ff2bd6, #8b5cf6);"></div>
+                                                <div class="avatar-status playing"></div>
                                             </div>
                                         </div>
+                                        <div class="discord-info">
+                                            <div class="discord-title">Cyberpunk: Edgerunners</div>
+                                            <div class="discord-artist">This Fire by Franz Ferdinand</div>
+                                            <div class="discord-meta">
+                                                <span class="discord-duration">3:45</span>
+                                                <span class="discord-status">PLAYING</span>
+                                            </div>
+                                        </div>
+                                        <button class="discord-play-btn active" onclick="playDiscordTrack('cyberpunk.mp3', this)">
+                                            <span class="play-icon">▶</span>
+                                            <span class="pause-icon">⏸</span>
+                                        </button>
                                     </div>
-                                    <div class="playlist-item" data-track="Let it happen.mp3">
-                                        <div class="disc-card">
-                                            <div class="disc-container">
-                                                <div class="disc-cover">
-                                                    <div class="disc-artwork">
-                                                        <div class="disc-center"></div>
-                                                        <div class="disc-grooves"></div>
-                                                    </div>
-                                                    <div class="disc-overlay"></div>
-                                                </div>
-                                                <button class="disc-play-btn" onclick="playTrack('Let it happen.mp3', this)">
-                                                    <span class="play-icon">▶</span>
-                                                    <span class="pause-icon">⏸</span>
-                                                </button>
-                                            </div>
-                                            <div class="disc-info">
-                                                <div class="disc-title">Let It Happen</div>
-                                                <div class="disc-artist">Tame Impala</div>
-                                                <div class="disc-meta">
-                                                    <span class="disc-duration">7:47</span>
-                                                    <span class="disc-status">READY</span>
-                                                </div>
+                                    <div class="discord-track" data-track="Let it happen.mp3">
+                                        <div class="discord-avatar">
+                                            <div class="avatar-circle">
+                                                <div class="avatar-image" style="background: linear-gradient(135deg, #00e5ff, #00ff7a);"></div>
+                                                <div class="avatar-status"></div>
                                             </div>
                                         </div>
+                                        <div class="discord-info">
+                                            <div class="discord-title">Let It Happen</div>
+                                            <div class="discord-artist">Tame Impala</div>
+                                            <div class="discord-meta">
+                                                <span class="discord-duration">7:47</span>
+                                                <span class="discord-status">READY</span>
+                                            </div>
+                                        </div>
+                                        <button class="discord-play-btn" onclick="playDiscordTrack('Let it happen.mp3', this)">
+                                            <span class="play-icon">▶</span>
+                                            <span class="pause-icon">⏸</span>
+                                        </button>
                                     </div>
-                                    <div class="playlist-item" data-track="DARE.mp3">
-                                        <div class="disc-card">
-                                            <div class="disc-container">
-                                                <div class="disc-cover">
-                                                    <div class="disc-artwork">
-                                                        <div class="disc-center"></div>
-                                                        <div class="disc-grooves"></div>
-                                                    </div>
-                                                    <div class="disc-overlay"></div>
-                                                </div>
-                                                <button class="disc-play-btn" onclick="playTrack('DARE.mp3', this)">
-                                                    <span class="play-icon">▶</span>
-                                                    <span class="pause-icon">⏸</span>
-                                                </button>
-                                            </div>
-                                            <div class="disc-info">
-                                                <div class="disc-title">Dare</div>
-                                                <div class="disc-artist">Sayfalse, TRXVELER & DJ ALIM</div>
-                                                <div class="disc-meta">
-                                                    <span class="disc-duration">4:23</span>
-                                                    <span class="disc-status">READY</span>
-                                                </div>
+                                    <div class="discord-track" data-track="DARE.mp3">
+                                        <div class="discord-avatar">
+                                            <div class="avatar-circle">
+                                                <div class="avatar-image" style="background: linear-gradient(135deg, #ff6b6b, #ffd93d);"></div>
+                                                <div class="avatar-status"></div>
                                             </div>
                                         </div>
+                                        <div class="discord-info">
+                                            <div class="discord-title">Dare</div>
+                                            <div class="discord-artist">Sayfalse, TRXVELER & DJ ALIM</div>
+                                            <div class="discord-meta">
+                                                <span class="discord-duration">4:23</span>
+                                                <span class="discord-status">READY</span>
+                                            </div>
+                                        </div>
+                                        <button class="discord-play-btn" onclick="playDiscordTrack('DARE.mp3', this)">
+                                            <span class="play-icon">▶</span>
+                                            <span class="pause-icon">⏸</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -1130,7 +2313,7 @@
                                             <div class="game-overlay">
                                                 <div class="game-title-large">CYBER RUN</div>
                                                 <div class="game-description">Corre por la ciudad cyberpunk evitando drones de seguridad</div>
-                                                <button class="game-launch-btn">LAUNCH</button>
+                                                <button class="game-launch-btn" onclick="openMiniGame()">LAUNCH</button>
                                             </div>
                                         </div>
                                         <div class="game-stats">
@@ -1172,6 +2355,40 @@
                                             <div class="game-title">CYBER NINJA</div>
                                             <div class="game-genre">ACTION</div>
                                             <div class="game-rating">★★★★</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Mini-Game Panel -->
+                                <div class="mini-game-panel" id="miniGamePanel">
+                                    <div class="mini-game-header">
+                                        <h3 class="mini-game-title">CYBER RUN - DEMO</h3>
+                                        <div class="mini-game-controls">
+                                            <button class="mini-btn mini-btn--play" id="gamePlayBtn">PLAY</button>
+                                            <button class="mini-btn mini-btn--pause" id="gamePauseBtn">PAUSE</button>
+                                            <button class="mini-btn mini-btn--reset" id="gameResetBtn">RESET</button>
+                                            <button class="mini-btn mini-btn--close" id="gameCloseBtn">CLOSE</button>
+                                        </div>
+                                    </div>
+                                    <div class="mini-game-content">
+                                        <div class="game-canvas" id="gameCanvas">
+                                            <div class="game-player" id="gamePlayer">🏃‍♂️</div>
+                                            <div class="game-obstacle" style="left: 300px;">🚁</div>
+                                            <div class="game-obstacle" style="left: 500px;">🚁</div>
+                                            <div class="game-obstacle" style="left: 700px;">🚁</div>
+                                            <div class="game-score">
+                                                <span class="score-label">SCORE:</span>
+                                                <span class="score-value" id="gameScore">0</span>
+                                            </div>
+                                            <div class="game-lives">
+                                                <span class="lives-label">LIVES:</span>
+                                                <span class="lives-value" id="gameLives">❤️❤️❤️</span>
+                                            </div>
+                                        </div>
+                                        <div class="game-instructions">
+                                            <p>⌨️ Use Arrow Keys or WASD to move</p>
+                                            <p>🚫 Avoid the drones and survive as long as possible</p>
+                                            <p>⬆️ Press SPACE to jump over obstacles</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1531,7 +2748,7 @@ _Enviado desde el portafolio BVH3 Industries_
 
 // Initialize the portfolio when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new CyberpunkPortfolio();
+    window.cyberpunkPortfolio = new CyberpunkPortfolio();
 });
 
 // Add some global effects
@@ -1589,11 +2806,15 @@ class MusicPlayer {
         const checkInterval = setInterval(() => {
             if (document.getElementById('musicPlayer')) {
                 clearInterval(checkInterval);
-                this.setupPlayer();
-                this.setupEventListeners();
-                console.log('MusicPlayer initialized');
+                this.initMusicPlayer();
             }
         }, 100);
+    }
+
+    initMusicPlayer() {
+        this.setupPlayer();
+        this.setupEventListeners();
+        console.log('MusicPlayer initialized');
     }
 
     setupPlayer() {
