@@ -1085,7 +1085,10 @@
         const audioPlayer = document.getElementById('musicPlayer');
         const trackIndex = this.discordTracks.findIndex(track => track.file === trackFile);
         
-        if (trackIndex === -1) return;
+        if (trackIndex === -1) {
+            console.error('Track not found:', trackFile);
+            return;
+        }
         
         this.currentDiscordTrack = trackIndex;
         const track = this.discordTracks[trackIndex];
@@ -1096,12 +1099,51 @@
         // Update button states
         this.updateDiscordButtons(buttonElement);
         
-        // Load and play
-        audioPlayer.src = `src/music/${trackFile}`;
-        audioPlayer.play().catch(error => {
-            console.error('Error playing track:', error);
-            this.showDiscordError('No se pudo reproducir la canción');
-        });
+        // Try both possible paths
+        const possiblePaths = [
+            `src/music/${trackFile}`,
+            `src/musicas/${trackFile}`,
+            `music/${trackFile}`,
+            `musicas/${trackFile}`
+        ];
+        
+        // Load and play with path fallback
+        const tryPlay = (pathIndex = 0) => {
+            if (pathIndex >= possiblePaths.length) {
+                console.error('All paths failed for track:', trackFile);
+                this.showDiscordError('No se pudo cargar la canción');
+                return;
+            }
+            
+            const path = possiblePaths[pathIndex];
+            console.log('Trying to load audio from:', path);
+            
+            audioPlayer.src = path;
+            audioPlayer.load();
+            
+            const playWhenReady = () => {
+                audioPlayer.play().then(() => {
+                    console.log('Audio playing successfully from:', path);
+                    audioPlayer.removeEventListener('canplay', playWhenReady);
+                    audioPlayer.removeEventListener('error', onError);
+                }).catch(error => {
+                    console.error('Error playing track:', error);
+                    this.showDiscordError('No se pudo reproducir la canción');
+                });
+            };
+            
+            const onError = () => {
+                console.warn('Failed to load from:', path);
+                audioPlayer.removeEventListener('canplay', playWhenReady);
+                audioPlayer.removeEventListener('error', onError);
+                tryPlay(pathIndex + 1);
+            };
+            
+            audioPlayer.addEventListener('canplay', playWhenReady, { once: true });
+            audioPlayer.addEventListener('error', onError, { once: true });
+        };
+        
+        tryPlay();
     }
 
     playCurrentDiscordTrack() {
@@ -1201,25 +1243,60 @@
         console.error('Discord Music Player Error:', message);
     }
 
-    // Mini-Game functionality
+    // SKY DEFENDER - Airplane Shooting Game
     initMiniGame() {
         this.gameState = {
             isPlaying: false,
             isPaused: false,
             score: 0,
             lives: 3,
-            playerY: 50,
-            obstacles: [],
+            level: 1,
+            playerX: 30, // X position in pixels
+            playerY: 50, // Y position percentage
+            bullets: [],
+            monsters: [],
             gameSpeed: 2,
+            monsterSpawnRate: 2000,
             gameLoop: null,
-            autoPlay: true
+            monsterSpawner: null,
+            autoPlay: true,
+            canShoot: true,
+            canvasWidth: 0,
+            canvasHeight: 0
         };
+
+        // Get canvas dimensions
+        const canvas = document.getElementById('gameCanvas');
+        if (canvas) {
+            this.gameState.canvasWidth = canvas.offsetWidth;
+            this.gameState.canvasHeight = canvas.offsetHeight;
+        }
+
+        // Clear any existing monsters and bullets
+        const monstersContainer = document.getElementById('monstersContainer');
+        const bulletsContainer = document.getElementById('bulletsContainer');
+        if (monstersContainer) monstersContainer.innerHTML = '';
+        if (bulletsContainer) bulletsContainer.innerHTML = '';
 
         // Setup game controls
         this.setupGameControls();
         
-        // Setup keyboard controls
+        // Setup keyboard controls (PC)
         this.setupKeyboardControls();
+        
+        // Setup touch controls (Mobile)
+        this.setupTouchControls();
+        
+        // Reset player position
+        const player = document.getElementById('gamePlayer');
+        if (player) {
+            player.style.left = '30px';
+            player.style.bottom = '50%';
+            player.style.transform = 'translateY(50%) rotate(-5deg)';
+        }
+        
+        // Update UI
+        this.updateGameUI();
         
         // Start auto-play demo
         setTimeout(() => this.startAutoPlay(), 1000);
@@ -1249,38 +1326,144 @@
     }
 
     setupKeyboardControls() {
+        // Track pressed keys for smooth movement
+        this.keysPressed = {};
+        
         document.addEventListener('keydown', (e) => {
             if (!this.gameState.isPlaying || this.gameState.isPaused) return;
             
-            const player = document.getElementById('gamePlayer');
-            if (!player) return;
-
-            switch(e.key.toLowerCase()) {
-                case 'arrowup':
-                case 'w':
-                    e.preventDefault();
-                    this.jumpPlayer();
-                    break;
-                case 'arrowdown':
-                case 's':
-                    e.preventDefault();
-                    this.movePlayer('down');
-                    break;
-                case 'arrowleft':
-                case 'a':
-                    e.preventDefault();
-                    this.movePlayer('left');
-                    break;
-                case 'arrowright':
-                case 'd':
-                    e.preventDefault();
-                    this.movePlayer('right');
-                    break;
-                case ' ':
-                    e.preventDefault();
-                    this.jumpPlayer();
-                    break;
+            this.keysPressed[e.key.toLowerCase()] = true;
+            
+            if (e.key === ' ') {
+                e.preventDefault();
+                this.shootBullet();
             }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            this.keysPressed[e.key.toLowerCase()] = false;
+        });
+        
+        // Continuous movement loop for keyboard
+        this.keyboardMoveLoop = setInterval(() => {
+            if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+            this.handleKeyboardMovement();
+        }, 1000 / 60);
+    }
+
+    handleKeyboardMovement() {
+        const player = document.getElementById('gamePlayer');
+        const canvas = document.getElementById('gameCanvas');
+        if (!player || !canvas) return;
+        
+        let moveX = 0;
+        let moveY = 0;
+        const speed = 5; // Pixels per frame
+        
+        // Check all directional keys
+        if (this.keysPressed['arrowup'] || this.keysPressed['w']) moveY -= speed;
+        if (this.keysPressed['arrowdown'] || this.keysPressed['s']) moveY += speed;
+        if (this.keysPressed['arrowleft'] || this.keysPressed['a']) moveX -= speed;
+        if (this.keysPressed['arrowright'] || this.keysPressed['d']) moveX += speed;
+        
+        // Apply movement if any key is pressed
+        if (moveX !== 0 || moveY !== 0) {
+            this.movePlaneFree(moveX, moveY);
+        }
+    }
+
+    setupTouchControls() {
+        const canvas = document.getElementById('gameCanvas');
+        if (!canvas) return;
+        
+        let isDragging = false;
+        let startX, startY;
+        let playerStartX, playerStartY;
+        
+        // Touch start - begin dragging
+        canvas.addEventListener('touchstart', (e) => {
+            if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+            e.preventDefault();
+            
+            isDragging = true;
+            const touch = e.touches[0];
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            startX = touch.clientX - canvasRect.left;
+            startY = touch.clientY - canvasRect.top;
+            
+            const player = document.getElementById('gamePlayer');
+            if (player) {
+                playerStartX = parseInt(player.style.left) || 30;
+                playerStartY = parseInt(player.style.bottom) || (canvas.offsetHeight / 2);
+            }
+        }, { passive: false });
+        
+        // Touch move - drag plane
+        canvas.addEventListener('touchmove', (e) => {
+            if (!isDragging || !this.gameState.isPlaying || this.gameState.isPaused) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            const currentX = touch.clientX - canvasRect.left;
+            const currentY = touch.clientY - canvasRect.top;
+            
+            const deltaX = currentX - startX;
+            const deltaY = startY - currentY; // Inverted Y for bottom positioning
+            
+            this.movePlaneTo(playerStartX + deltaX, playerStartY + deltaY);
+        }, { passive: false });
+        
+        // Touch end - stop dragging
+        canvas.addEventListener('touchend', (e) => {
+            isDragging = false;
+        }, { passive: false });
+        
+        // Tap to shoot
+        canvas.addEventListener('click', (e) => {
+            if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+            this.shootBullet();
+        });
+        
+        // Also support mouse drag on PC
+        let isMouseDragging = false;
+        
+        canvas.addEventListener('mousedown', (e) => {
+            if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+            isMouseDragging = true;
+            
+            const canvasRect = canvas.getBoundingClientRect();
+            startX = e.clientX - canvasRect.left;
+            startY = e.clientY - canvasRect.top;
+            
+            const player = document.getElementById('gamePlayer');
+            if (player) {
+                playerStartX = parseInt(player.style.left) || 30;
+                playerStartY = parseInt(player.style.bottom) || (canvas.offsetHeight / 2);
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isMouseDragging || !this.gameState.isPlaying || this.gameState.isPaused) return;
+            
+            const canvasRect = canvas.getBoundingClientRect();
+            const currentX = e.clientX - canvasRect.left;
+            const currentY = e.clientY - canvasRect.top;
+            
+            const deltaX = currentX - startX;
+            const deltaY = startY - currentY;
+            
+            this.movePlaneTo(playerStartX + deltaX, playerStartY + deltaY);
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            isMouseDragging = false;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            isMouseDragging = false;
         });
     }
 
@@ -1292,32 +1475,156 @@
         }
     }
 
+    movePlaneFree(deltaX, deltaY) {
+        // Free 360° movement for keyboard controls
+        const player = document.getElementById('gamePlayer');
+        const canvas = document.getElementById('gameCanvas');
+        if (!player || !canvas) return;
+        
+        const canvasWidth = canvas.offsetWidth;
+        const canvasHeight = canvas.offsetHeight;
+        const playerWidth = player.offsetWidth;
+        const playerHeight = player.offsetHeight;
+        
+        // Get current position
+        let currentLeft = parseInt(player.style.left) || 30;
+        let currentBottom = parseInt(player.style.bottom) || (canvasHeight / 2);
+        
+        // Calculate new position
+        let newLeft = currentLeft + deltaX;
+        let newBottom = currentBottom + deltaY;
+        
+        // Apply boundaries with padding
+        const padding = 10;
+        newLeft = Math.max(padding, Math.min(canvasWidth - playerWidth - padding, newLeft));
+        newBottom = Math.max(padding, Math.min(canvasHeight - playerHeight - padding, newBottom));
+        
+        // Apply rotation based on movement direction
+        let rotation = -5; // Default slight tilt
+        if (deltaY > 0) rotation = 10; // Moving down
+        else if (deltaY < 0) rotation = -15; // Moving up
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            rotation = deltaX > 0 ? 0 : -10; // Moving right/left
+        }
+        
+        // Apply position
+        player.style.left = `${newLeft}px`;
+        player.style.bottom = `${newBottom}px`;
+        player.style.transform = `translateY(50%) rotate(${rotation}deg)`;
+        
+        // Update state
+        this.gameState.playerX = newLeft;
+        this.gameState.playerY = (newBottom / canvasHeight) * 100;
+    }
+
+    movePlaneTo(x, y) {
+        // Direct positioning for touch/mouse drag
+        const player = document.getElementById('gamePlayer');
+        const canvas = document.getElementById('gameCanvas');
+        if (!player || !canvas) return;
+        
+        const canvasWidth = canvas.offsetWidth;
+        const canvasHeight = canvas.offsetHeight;
+        const playerWidth = player.offsetWidth;
+        const playerHeight = player.offsetHeight;
+        
+        // Apply boundaries
+        const padding = 10;
+        const newLeft = Math.max(padding, Math.min(canvasWidth - playerWidth - padding, x));
+        const newBottom = Math.max(padding, Math.min(canvasHeight - playerHeight - padding, y));
+        
+        // Apply position with default rotation
+        player.style.left = `${newLeft}px`;
+        player.style.bottom = `${newBottom}px`;
+        player.style.transform = `translateY(50%) rotate(-5deg)`;
+        
+        // Update state
+        this.gameState.playerX = newLeft;
+        this.gameState.playerY = (newBottom / canvasHeight) * 100;
+    }
+
+    shootBullet() {
+        if (!this.gameState.canShoot || !this.gameState.isPlaying) return;
+        
+        const player = document.getElementById('gamePlayer');
+        const bulletsContainer = document.getElementById('bulletsContainer');
+        if (!player || !bulletsContainer) return;
+        
+        const playerRect = player.getBoundingClientRect();
+        const canvasRect = document.getElementById('gameCanvas').getBoundingClientRect();
+        
+        const bullet = document.createElement('div');
+        bullet.className = 'bullet';
+        bullet.style.left = `${playerRect.right - canvasRect.left}px`;
+        bullet.style.top = `${playerRect.top + playerRect.height/2 - canvasRect.top - 2}px`;
+        bulletsContainer.appendChild(bullet);
+        
+        // Add to bullets array
+        this.gameState.bullets.push({
+            element: bullet,
+            x: playerRect.right - canvasRect.left,
+            y: playerRect.top + playerRect.height/2 - canvasRect.top
+        });
+        
+        // Shooting cooldown
+        this.gameState.canShoot = false;
+        setTimeout(() => {
+            this.gameState.canShoot = true;
+        }, 250);
+    }
+
+    spawnMonster() {
+        if (!this.gameState.isPlaying || this.gameState.isPaused) return;
+        
+        const monstersContainer = document.getElementById('monstersContainer');
+        const canvas = document.getElementById('gameCanvas');
+        if (!monstersContainer || !canvas) return;
+        
+        const canvasHeight = canvas.offsetHeight;
+        const monsters = ['👾', '👹', '🤖', '👽', '🐉', '🦇', '🐙', '🦂'];
+        const monsterType = monsters[Math.floor(Math.random() * monsters.length)];
+        
+        const monster = document.createElement('div');
+        monster.className = 'monster';
+        monster.textContent = monsterType;
+        
+        // Random Y position (10% to 90% of canvas height)
+        const randomY = 10 + Math.random() * 80;
+        monster.style.right = '-50px';
+        monster.style.top = `${randomY}%`;
+        monster.style.transform = 'translateY(-50%)';
+        
+        monstersContainer.appendChild(monster);
+        
+        this.gameState.monsters.push({
+            element: monster,
+            x: canvas.offsetWidth + 50,
+            y: (randomY / 100) * canvasHeight,
+            speed: this.gameState.gameSpeed + Math.random() * 2,
+            type: monsterType
+        });
+    }
+
     startAutoPlay() {
         if (!this.gameState.autoPlay) return;
-        
-        // Auto-play demo - show game running automatically
         this.startGame();
         
-        // Simulate player movements
+        // Auto-play: randomly move in any direction and shoot
         this.autoPlayInterval = setInterval(() => {
             if (!this.gameState.isPlaying || this.gameState.isPaused) return;
             
-            // Random movements
-            const moves = ['jump', 'left', 'right'];
-            const randomMove = moves[Math.floor(Math.random() * moves.length)];
+            const actions = ['move', 'shoot'];
+            const randomAction = actions[Math.floor(Math.random() * actions.length)];
             
-            switch(randomMove) {
-                case 'jump':
-                    this.jumpPlayer();
-                    break;
-                case 'left':
-                    this.movePlayer('left');
-                    break;
-                case 'right':
-                    this.movePlayer('right');
-                    break;
+            if (randomAction === 'shoot') {
+                this.shootBullet();
+            } else {
+                // Random movement in 360°
+                const moveX = (Math.random() - 0.5) * 80; // -40 to +40
+                const moveY = (Math.random() - 0.5) * 60; // -30 to +30
+                this.movePlaneFree(moveX, moveY);
             }
-        }, 2000);
+        }, 600);
     }
 
     startGame() {
@@ -1327,7 +1634,6 @@
         this.gameState.isPaused = false;
         this.gameState.autoPlay = false;
         
-        // Clear auto-play if running
         if (this.autoPlayInterval) {
             clearInterval(this.autoPlayInterval);
             this.autoPlayInterval = null;
@@ -1339,6 +1645,10 @@
             canvas.classList.remove('paused', 'game-over');
         }
         
+        // Start monster spawner
+        this.monsterSpawner = setInterval(() => this.spawnMonster(), this.gameState.monsterSpawnRate);
+        
+        // Start game loop
         this.gameLoop = setInterval(() => this.updateGame(), 1000 / 60);
     }
 
@@ -1352,155 +1662,159 @@
     }
 
     resetGame() {
-        // Clear game loop
         if (this.gameLoop) {
             clearInterval(this.gameLoop);
             this.gameLoop = null;
         }
         
-        // Clear auto-play
+        if (this.monsterSpawner) {
+            clearInterval(this.monsterSpawner);
+            this.monsterSpawner = null;
+        }
+        
         if (this.autoPlayInterval) {
             clearInterval(this.autoPlayInterval);
             this.autoPlayInterval = null;
         }
         
-        // Reset state
+        if (this.keyboardMoveLoop) {
+            clearInterval(this.keyboardMoveLoop);
+            this.keyboardMoveLoop = null;
+        }
+        
+        // Clear monsters and bullets
+        const monstersContainer = document.getElementById('monstersContainer');
+        const bulletsContainer = document.getElementById('bulletsContainer');
+        if (monstersContainer) monstersContainer.innerHTML = '';
+        if (bulletsContainer) bulletsContainer.innerHTML = '';
+        
         this.gameState = {
             isPlaying: false,
             isPaused: false,
             score: 0,
             lives: 3,
+            level: 1,
+            playerX: 30,
             playerY: 50,
-            obstacles: [],
+            bullets: [],
+            monsters: [],
             gameSpeed: 2,
+            monsterSpawnRate: 2000,
             gameLoop: null,
-            autoPlay: true
+            monsterSpawner: null,
+            autoPlay: true,
+            canShoot: true,
+            canvasWidth: this.gameState.canvasWidth,
+            canvasHeight: this.gameState.canvasHeight
         };
         
-        // Reset UI
         this.updateGameUI();
         
-        // Reset player position
         const player = document.getElementById('gamePlayer');
         if (player) {
-            player.style.left = '50px';
-            player.style.bottom = '50px';
+            player.style.left = '30px';
+            player.style.bottom = '50%';
+            player.style.transform = 'translateY(50%) rotate(-5deg)';
         }
-        
-        // Reset obstacles
-        const obstacles = document.querySelectorAll('.game-obstacle');
-        obstacles.forEach((obstacle, index) => {
-            obstacle.style.left = `${300 + (index * 200)}px`;
-            obstacle.classList.remove('hit');
-        });
         
         const canvas = document.getElementById('gameCanvas');
         if (canvas) {
             canvas.classList.remove('playing', 'paused', 'game-over');
         }
         
-        // Restart auto-play
         setTimeout(() => this.startAutoPlay(), 1000);
     }
 
     closeGame() {
         this.resetGame();
-        
         const panel = document.getElementById('miniGamePanel');
         if (panel) {
             panel.classList.remove('active');
         }
     }
 
-    jumpPlayer() {
-        const player = document.getElementById('gamePlayer');
-        if (!player || player.classList.contains('jumping')) return;
-        
-        player.classList.add('jumping');
-        setTimeout(() => {
-            player.classList.remove('jumping');
-        }, 500);
-    }
-
-    movePlayer(direction) {
-        const player = document.getElementById('gamePlayer');
-        if (!player) return;
-        
-        const currentLeft = parseInt(player.style.left) || 50;
-        const canvas = document.getElementById('gameCanvas');
-        const canvasWidth = canvas ? canvas.offsetWidth : 800;
-        
-        let newLeft = currentLeft;
-        
-        switch(direction) {
-            case 'left':
-                newLeft = Math.max(20, currentLeft - 30);
-                break;
-            case 'right':
-                newLeft = Math.min(canvasWidth - 80, currentLeft + 30);
-                break;
-        }
-        
-        player.style.left = `${newLeft}px`;
-    }
-
     updateGame() {
         if (!this.gameState.isPlaying || this.gameState.isPaused) return;
         
-        // Update obstacles
-        const obstacles = document.querySelectorAll('.game-obstacle');
-        obstacles.forEach(obstacle => {
-            if (obstacle.classList.contains('hit')) return;
+        const canvas = document.getElementById('gameCanvas');
+        if (!canvas) return;
+        
+        const canvasWidth = canvas.offsetWidth;
+        const canvasHeight = canvas.offsetHeight;
+        
+        // Update bullets
+        this.gameState.bullets = this.gameState.bullets.filter(bullet => {
+            bullet.x += 8; // Bullet speed
+            bullet.element.style.left = `${bullet.x}px`;
             
-            let currentLeft = parseInt(obstacle.style.left) || 800;
-            currentLeft -= this.gameState.gameSpeed;
-            
-            // Reset obstacle when it goes off screen
-            if (currentLeft < -50) {
-                currentLeft = 800 + Math.random() * 200;
-                this.gameState.score += 10;
+            // Remove if off screen
+            if (bullet.x > canvasWidth + 20) {
+                bullet.element.remove();
+                return false;
             }
-            
-            obstacle.style.left = `${currentLeft}px`;
-            
-            // Check collision
-            this.checkCollision(obstacle);
+            return true;
         });
         
-        // Increase difficulty
-        if (this.gameState.score > 0 && this.gameState.score % 50 === 0) {
-            this.gameState.gameSpeed = Math.min(8, this.gameState.speed * 1.001);
-        }
+        // Update monsters
+        this.gameState.monsters = this.gameState.monsters.filter(monster => {
+            monster.x -= monster.speed;
+            monster.element.style.right = `${canvasWidth - monster.x}px`;
+            
+            // Check if monster passed the player
+            if (monster.x < -50) {
+                monster.element.remove();
+                this.gameState.lives--;
+                if (this.gameState.lives <= 0) {
+                    this.gameOver();
+                }
+                return false;
+            }
+            
+            // Check collision with bullets
+            let hit = false;
+            this.gameState.bullets = this.gameState.bullets.filter(bullet => {
+                if (hit) return true;
+                
+                const bulletRect = bullet.element.getBoundingClientRect();
+                const monsterRect = monster.element.getBoundingClientRect();
+                
+                if (bulletRect.left < monsterRect.right &&
+                    bulletRect.right > monsterRect.left &&
+                    bulletRect.top < monsterRect.bottom &&
+                    bulletRect.bottom > monsterRect.top) {
+                    
+                    hit = true;
+                    bullet.element.remove();
+                    return false;
+                }
+                return true;
+            });
+            
+            if (hit) {
+                monster.element.classList.add('exploding');
+                setTimeout(() => monster.element.remove(), 400);
+                this.gameState.score += 10;
+                
+                // Level up every 100 points
+                if (this.gameState.score % 100 === 0) {
+                    this.gameState.level++;
+                    this.gameState.gameSpeed += 0.5;
+                    this.gameState.monsterSpawnRate = Math.max(800, this.gameState.monsterSpawnRate - 200);
+                    
+                    // Update spawner interval
+                    if (this.monsterSpawner) {
+                        clearInterval(this.monsterSpawner);
+                        this.monsterSpawner = setInterval(() => this.spawnMonster(), this.gameState.monsterSpawnRate);
+                    }
+                }
+                
+                return false;
+            }
+            
+            return true;
+        });
         
         this.updateGameUI();
-    }
-
-    checkCollision(obstacle) {
-        const player = document.getElementById('gamePlayer');
-        if (!player || player.classList.contains('jumping')) return;
-        
-        const playerRect = player.getBoundingClientRect();
-        const obstacleRect = obstacle.getBoundingClientRect();
-        
-        if (playerRect.left < obstacleRect.right &&
-            playerRect.right > obstacleRect.left &&
-            playerRect.top < obstacleRect.bottom &&
-            playerRect.bottom > obstacleRect.top) {
-            
-            // Collision detected
-            obstacle.classList.add('hit');
-            this.gameState.lives--;
-            
-            setTimeout(() => {
-                obstacle.classList.remove('hit');
-                const newLeft = 800 + Math.random() * 200;
-                obstacle.style.left = `${newLeft}px`;
-            }, 300);
-            
-            if (this.gameState.lives <= 0) {
-                this.gameOver();
-            }
-        }
     }
 
     gameOver() {
@@ -1511,15 +1825,19 @@
             this.gameLoop = null;
         }
         
+        if (this.monsterSpawner) {
+            clearInterval(this.monsterSpawner);
+            this.monsterSpawner = null;
+        }
+        
         const canvas = document.getElementById('gameCanvas');
         if (canvas) {
             canvas.classList.add('game-over');
             canvas.classList.remove('playing');
         }
         
-        // Show game over message
         setTimeout(() => {
-            alert(`Game Over! Score: ${this.gameState.score}`);
+            alert(`🎮 GAME OVER! 🎮\n\nScore: ${this.gameState.score}\nWave: ${this.gameState.level}\n\n¡Bien jugado!`);
             this.resetGame();
         }, 500);
     }
@@ -1527,28 +1845,19 @@
     updateGameUI() {
         const scoreElement = document.getElementById('gameScore');
         const livesElement = document.getElementById('gameLives');
+        const levelElement = document.getElementById('gameLevel');
         
         if (scoreElement) {
             scoreElement.textContent = this.gameState.score;
         }
         
         if (livesElement) {
-            const hearts = 'â¤ï¸'.repeat(Math.max(0, this.gameState.lives));
+            const hearts = '❤️'.repeat(Math.max(0, this.gameState.lives));
             livesElement.textContent = hearts;
         }
-    }
-
-    // Global function for music selection (needed for onclick handlers)
-    playDiscordTrack(trackFile, buttonElement) {
-        if (window.cyberpunkPortfolio) {
-            window.cyberpunkPortfolio.playDiscordTrack(trackFile, buttonElement);
-        }
-    }
-
-    // Global function for mini-game (needed for onclick handlers)
-    openMiniGame() {
-        if (window.cyberpunkPortfolio) {
-            window.cyberpunkPortfolio.openMiniGame();
+        
+        if (levelElement) {
+            levelElement.textContent = this.gameState.level;
         }
     }
 
@@ -2231,7 +2540,7 @@
                                     </div>
                                 </div>
                                 <div class="discord-playlist" id="musicPlaylist">
-                                    <div class="discord-track active" data-track="cyberpunk.mp3">
+                                    <div class="discord-track active" data-track="cyberpunk.mp3" onclick="playDiscordTrack('cyberpunk.mp3', this.querySelector('.discord-play-btn'))">
                                         <div class="discord-avatar">
                                             <div class="avatar-circle">
                                                 <div class="avatar-image" style="background: linear-gradient(135deg, #ff2bd6, #8b5cf6);"></div>
@@ -2246,12 +2555,12 @@
                                                 <span class="discord-status">PLAYING</span>
                                             </div>
                                         </div>
-                                        <button class="discord-play-btn active" onclick="playDiscordTrack('cyberpunk.mp3', this)">
+                                        <button class="discord-play-btn active" onclick="event.stopPropagation(); playDiscordTrack('cyberpunk.mp3', this)">
                                             <span class="play-icon">▶</span>
                                             <span class="pause-icon">⏸</span>
                                         </button>
                                     </div>
-                                    <div class="discord-track" data-track="Let it happen.mp3">
+                                    <div class="discord-track" data-track="Let it happen.mp3" onclick="playDiscordTrack('Let it happen.mp3', this.querySelector('.discord-play-btn'))">
                                         <div class="discord-avatar">
                                             <div class="avatar-circle">
                                                 <div class="avatar-image" style="background: linear-gradient(135deg, #00e5ff, #00ff7a);"></div>
@@ -2266,12 +2575,12 @@
                                                 <span class="discord-status">READY</span>
                                             </div>
                                         </div>
-                                        <button class="discord-play-btn" onclick="playDiscordTrack('Let it happen.mp3', this)">
+                                        <button class="discord-play-btn" onclick="event.stopPropagation(); playDiscordTrack('Let it happen.mp3', this)">
                                             <span class="play-icon">▶</span>
                                             <span class="pause-icon">⏸</span>
                                         </button>
                                     </div>
-                                    <div class="discord-track" data-track="DARE.mp3">
+                                    <div class="discord-track" data-track="DARE.mp3" onclick="playDiscordTrack('DARE.mp3', this.querySelector('.discord-play-btn'))">
                                         <div class="discord-avatar">
                                             <div class="avatar-circle">
                                                 <div class="avatar-image" style="background: linear-gradient(135deg, #ff6b6b, #ffd93d);"></div>
@@ -2286,7 +2595,7 @@
                                                 <span class="discord-status">READY</span>
                                             </div>
                                         </div>
-                                        <button class="discord-play-btn" onclick="playDiscordTrack('DARE.mp3', this)">
+                                        <button class="discord-play-btn" onclick="event.stopPropagation(); playDiscordTrack('DARE.mp3', this)">
                                             <span class="play-icon">▶</span>
                                             <span class="pause-icon">⏸</span>
                                         </button>
@@ -2307,13 +2616,52 @@
                             </div>
                             <div class="section-content">
                                 <div class="games-showcase">
-                                    <div class="featured-game">
+                                    <div class="featured-game" id="featuredGame">
                                         <div class="game-preview">
                                             <div class="game-thumbnail">🎮</div>
-                                            <div class="game-overlay">
+                                            <div class="game-overlay" id="gameOverlay">
                                                 <div class="game-title-large">CYBER RUN</div>
                                                 <div class="game-description">Corre por la ciudad cyberpunk evitando drones de seguridad</div>
                                                 <button class="game-launch-btn" onclick="openMiniGame()">LAUNCH</button>
+                                            </div>
+                                            
+                                            <!-- Mini-Game Panel (Inside the game card) -->
+                                            <div class="mini-game-panel" id="miniGamePanel">
+                                                <div class="mini-game-header">
+                                                    <h3 class="mini-game-title">SKY DEFENDER ✈️</h3>
+                                                    <div class="mini-game-controls">
+                                                        <button class="mini-btn mini-btn--play" id="gamePlayBtn">PLAY</button>
+                                                        <button class="mini-btn mini-btn--pause" id="gamePauseBtn">PAUSE</button>
+                                                        <button class="mini-btn mini-btn--reset" id="gameResetBtn">RESET</button>
+                                                        <button class="mini-btn mini-btn--close" id="gameCloseBtn">CLOSE</button>
+                                                    </div>
+                                                </div>
+                                                <div class="mini-game-content">
+                                                    <div class="game-canvas sky-canvas" id="gameCanvas">
+                                                        <div class="sky-background"></div>
+                                                        <div class="clouds"></div>
+                                                        <div class="game-plane" id="gamePlayer">✈️</div>
+                                                        <div class="monsters-container" id="monstersContainer"></div>
+                                                        <div class="bullets-container" id="bulletsContainer"></div>
+                                                        <div class="game-score">
+                                                            <span class="score-label">SCORE:</span>
+                                                            <span class="score-value" id="gameScore">0</span>
+                                                        </div>
+                                                        <div class="game-lives">
+                                                            <span class="lives-label">LIVES:</span>
+                                                            <span class="lives-value" id="gameLives">❤️❤️❤️</span>
+                                                        </div>
+                                                        <div class="game-level">
+                                                            <span class="level-label">WAVE:</span>
+                                                            <span class="level-value" id="gameLevel">1</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="game-instructions">
+                                                        <p>🎮 WASD / Arrows = Free 360° movement</p>
+                                                        <p>👆 Touch & Drag = Move with finger</p>
+                                                        <p>🔥 SPACE or TAP = Shoot lasers</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="game-stats">
@@ -2359,39 +2707,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Mini-Game Panel -->
-                                <div class="mini-game-panel" id="miniGamePanel">
-                                    <div class="mini-game-header">
-                                        <h3 class="mini-game-title">CYBER RUN - DEMO</h3>
-                                        <div class="mini-game-controls">
-                                            <button class="mini-btn mini-btn--play" id="gamePlayBtn">PLAY</button>
-                                            <button class="mini-btn mini-btn--pause" id="gamePauseBtn">PAUSE</button>
-                                            <button class="mini-btn mini-btn--reset" id="gameResetBtn">RESET</button>
-                                            <button class="mini-btn mini-btn--close" id="gameCloseBtn">CLOSE</button>
-                                        </div>
-                                    </div>
-                                    <div class="mini-game-content">
-                                        <div class="game-canvas" id="gameCanvas">
-                                            <div class="game-player" id="gamePlayer">🏃‍♂️</div>
-                                            <div class="game-obstacle" style="left: 300px;">🚁</div>
-                                            <div class="game-obstacle" style="left: 500px;">🚁</div>
-                                            <div class="game-obstacle" style="left: 700px;">🚁</div>
-                                            <div class="game-score">
-                                                <span class="score-label">SCORE:</span>
-                                                <span class="score-value" id="gameScore">0</span>
-                                            </div>
-                                            <div class="game-lives">
-                                                <span class="lives-label">LIVES:</span>
-                                                <span class="lives-value" id="gameLives">❤️❤️❤️</span>
-                                            </div>
-                                        </div>
-                                        <div class="game-instructions">
-                                            <p>⌨️ Use Arrow Keys or WASD to move</p>
-                                            <p>🚫 Avoid the drones and survive as long as possible</p>
-                                            <p>⬆️ Press SPACE to jump over obstacles</p>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         
@@ -2751,6 +3066,19 @@ document.addEventListener('DOMContentLoaded', () => {
     window.cyberpunkPortfolio = new CyberpunkPortfolio();
 });
 
+// Global functions for onclick handlers (must be accessible from HTML)
+function playDiscordTrack(trackFile, buttonElement) {
+    if (window.cyberpunkPortfolio) {
+        window.cyberpunkPortfolio.playDiscordTrack(trackFile, buttonElement);
+    }
+}
+
+function openMiniGame() {
+    if (window.cyberpunkPortfolio) {
+        window.cyberpunkPortfolio.openMiniGame();
+    }
+}
+
 // Add some global effects
 const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
 const hasFinePointer = window.matchMedia?.('(pointer: fine)')?.matches ?? true;
@@ -2784,440 +3112,7 @@ if (!prefersReducedMotion) {
     }, 15000);
 }
 
-// Music Player Functionality
-class MusicPlayer {
-    constructor() {
-        this.player = null;
-        this.isPlaying = false;
-        this.currentTrack = 0;
-        this.tracks = [
-            {
-                file: 'cyberpunk.mp3',
-                title: 'Cyberpunk: Edgerunners',
-                artist: 'This Fire by Franz Ferdinand',
-                duration: '3:45'
-            }
-        ];
-        this.init();
-    }
-
-    init() {
-        // Initialize when DEPOOL section is loaded
-        const checkInterval = setInterval(() => {
-            if (document.getElementById('musicPlayer')) {
-                clearInterval(checkInterval);
-                this.initMusicPlayer();
-            }
-        }, 100);
-    }
-
-    initMusicPlayer() {
-        this.setupPlayer();
-        this.setupEventListeners();
-        console.log('MusicPlayer initialized');
-    }
-
-    setupPlayer() {
-        this.player = document.getElementById('musicPlayer');
-        if (!this.player) {
-            console.error('Music player element not found');
-            return;
-        }
-
-        // Set initial volume
-        this.player.volume = 0.7;
-
-        // Add event listeners
-        this.player.addEventListener('loadedmetadata', () => {
-            console.log('Audio metadata loaded');
-            this.updateTimeDisplay();
-            // Auto play when loaded
-            setTimeout(() => this.play(), 500);
-        });
-
-        this.player.addEventListener('timeupdate', () => {
-            this.updateProgress();
-        });
-
-        this.player.addEventListener('ended', () => {
-            console.log('Audio ended');
-            this.nextTrack();
-        });
-
-        this.player.addEventListener('error', (e) => {
-            console.error('Audio error:', e);
-            console.error('Audio src:', this.player.src);
-        });
-
-        this.player.addEventListener('canplay', () => {
-            console.log('Audio can play');
-        });
-
-        // Load first track
-        this.loadTrack();
-    }
-
-    setupEventListeners() {
-        const playBtn = document.querySelector('.play-btn');
-        const pauseBtn = document.querySelector('.pause-btn');
-        const nextBtn = document.querySelector('.next-btn');
-
-        if (playBtn) {
-            playBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                console.log('Play button clicked');
-                this.play();
-            });
-        }
-
-        if (pauseBtn) {
-            pauseBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                console.log('Pause button clicked');
-                this.pause();
-            });
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                console.log('Next button clicked');
-                this.nextTrack();
-            });
-        }
-
-        // Playlist items
-        const playlistItems = document.querySelectorAll('.playlist-item');
-        playlistItems.forEach((item, index) => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                console.log('Playlist item clicked:', index);
-                this.selectTrack(index);
-            });
-        });
-    }
-
-    play() {
-        if (!this.player) {
-            console.error('Player not available');
-            return;
-        }
-        
-        console.log('Attempting to play audio...');
-        console.log('Current src:', this.player.src);
-        
-        // Try to load and play
-        const playPromise = this.player.play();
-        
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                console.log('Audio playing successfully');
-                this.isPlaying = true;
-                this.updatePlayPauseButtons();
-                this.startVisualizer();
-            }).catch(error => {
-                console.error('Error playing audio:', error);
-                console.log('Trying to reload audio...');
-                // Try reloading
-                this.player.load();
-                setTimeout(() => {
-                    this.player.play().then(() => {
-                        this.isPlaying = true;
-                        this.updatePlayPauseButtons();
-                        this.startVisualizer();
-                    }).catch(e => console.error('Still failed:', e));
-                }, 500);
-            });
-        } else {
-            this.isPlaying = true;
-            this.updatePlayPauseButtons();
-            this.startVisualizer();
-        }
-    }
-
-    pause() {
-        if (!this.player) return;
-        
-        console.log('Pausing audio');
-        this.player.pause();
-        this.isPlaying = false;
-        this.updatePlayPauseButtons();
-        this.stopVisualizer();
-    }
-
-    nextTrack() {
-        this.currentTrack = (this.currentTrack + 1) % this.tracks.length;
-        this.loadTrack();
-    }
-
-    selectTrack(index) {
-        this.currentTrack = index;
-        this.loadTrack();
-    }
-
-    loadTrack() {
-        if (!this.player) return;
-
-        const track = this.tracks[this.currentTrack];
-        const audioPath = `src/musicas/${track.file}`;
-        
-        console.log('Loading track:', audioPath);
-        
-        this.player.src = audioPath;
-        this.player.load(); // Force reload
-        
-        // Update UI
-        const trackNameEl = document.querySelector('.track-name');
-        const artistNameEl = document.querySelector('.artist-name');
-        
-        if (trackNameEl) trackNameEl.textContent = track.title;
-        if (artistNameEl) artistNameEl.textContent = track.artist;
-        
-        // Update playlist active state
-        const playlistItems = document.querySelectorAll('.playlist-item');
-        playlistItems.forEach((item, index) => {
-            item.classList.toggle('active', index === this.currentTrack);
-        });
-
-        // Auto play if was playing
-        if (this.isPlaying) {
-            setTimeout(() => this.play(), 500);
-        }
-    }
-
-    updatePlayPauseButtons() {
-        const playBtn = document.querySelector('.play-btn');
-        const pauseBtn = document.querySelector('.pause-btn');
-        
-        if (this.isPlaying) {
-            playBtn?.classList.add('hidden');
-            pauseBtn?.classList.remove('hidden');
-        } else {
-            playBtn?.classList.remove('hidden');
-            pauseBtn?.classList.add('hidden');
-        }
-    }
-
-    updateProgress() {
-        if (!this.player) return;
-
-        const progress = (this.player.currentTime / this.player.duration) * 100;
-        const progressFill = document.getElementById('progressFill');
-        if (progressFill) {
-            progressFill.style.width = `${progress}%`;
-        }
-
-        this.updateTimeDisplay();
-    }
-
-    updateTimeDisplay() {
-        if (!this.player) return;
-
-        const current = this.formatTime(this.player.currentTime);
-        const duration = this.formatTime(this.player.duration);
-        const timeDisplay = document.getElementById('timeDisplay');
-        if (timeDisplay) {
-            timeDisplay.textContent = `${current} / ${duration}`;
-        }
-    }
-
-    formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    startVisualizer() {
-        const bars = document.querySelectorAll('.wave-bar');
-        bars.forEach(bar => {
-            bar.style.animationPlayState = 'running';
-        });
-        
-        // Create audio context for real visualization
-        if (!this.audioContext && this.player) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            this.analyser = this.audioContext.createAnalyser();
-            this.source = this.audioContext.createMediaElementSource(this.player);
-            this.source.connect(this.analyser);
-            this.analyser.connect(this.audioContext.destination);
-            this.analyser.fftSize = 256;
-            
-            this.visualize();
-        }
-    }
-
-    stopVisualizer() {
-        const bars = document.querySelectorAll('.wave-bar');
-        bars.forEach(bar => {
-            bar.style.animationPlayState = 'paused';
-        });
-    }
-
-    visualize() {
-        if (!this.analyser) return;
-        
-        const bufferLength = this.analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        const bars = document.querySelectorAll('.wave-bar');
-        
-        const draw = () => {
-            if (!this.isPlaying) return;
-            
-            requestAnimationFrame(draw);
-            this.analyser.getByteFrequencyData(dataArray);
-            
-            bars.forEach((bar, index) => {
-                const value = dataArray[index * 2] || 0;
-                const height = Math.max(20, (value / 255) * 100);
-                bar.style.height = `${height}%`;
-            });
-        };
-        
-        draw();
-    }
-}
-
-// Available tracks for preloading
-const musicTracks = [
-    'cyberpunk.mp3',
-    'Let it happen.mp3',
-    'DARE.mp3'
-];
-
-// Preload all tracks
-const preloadedAudio = {};
-
-// Initialize music player when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing audio...');
-    
-    // Preload all tracks for instant playback
-    musicTracks.forEach(track => {
-        const audio = new Audio();
-        audio.src = `src/musicas/${track}`;
-        audio.preload = 'auto';
-        preloadedAudio[track] = audio;
-    });
-    console.log('Preloaded tracks:', Object.keys(preloadedAudio));
-    
-    // Ultra-simple audio initialization
-    const initAudio = () => {
-        const audioPlayer = document.getElementById('musicPlayer');
-        const playBtn = document.querySelector('.play-btn');
-        const pauseBtn = document.querySelector('.pause-btn');
-        
-        console.log('Elements found:', {
-            audioPlayer: !!audioPlayer,
-            playBtn: !!playBtn,
-            pauseBtn: !!pauseBtn
-        });
-        
-        if (audioPlayer && playBtn && pauseBtn) {
-            // Set volume
-            audioPlayer.volume = 0.7;
-            
-            // Set initial track
-            audioPlayer.src = 'src/musicas/cyberpunk.mp3';
-            
-            // Simple play function
-            window.playAudio = () => {
-                console.log('Playing audio...');
-                audioPlayer.play().then(() => {
-                    console.log('Audio playing successfully');
-                    playBtn.style.display = 'none';
-                    pauseBtn.style.display = 'flex';
-                }).catch(error => {
-                    console.error('Error playing audio:', error);
-                });
-            };
-            
-            // Simple pause function
-            window.pauseAudio = () => {
-                console.log('Pausing audio...');
-                audioPlayer.pause();
-                playBtn.style.display = 'flex';
-                pauseBtn.style.display = 'none';
-            };
-            
-            // Event listeners
-            playBtn.addEventListener('click', window.playAudio);
-            pauseBtn.addEventListener('click', window.pauseAudio);
-            
-            console.log('Audio player initialized successfully');
-        } else {
-            console.error('Missing elements for audio player');
-        }
-    };
-    
-    // Try initialization repeatedly until DEPOOL section is loaded
-    const checkInterval = setInterval(() => {
-        const audioPlayer = document.getElementById('musicPlayer');
-        const playBtn = document.querySelector('.play-btn');
-        const pauseBtn = document.querySelector('.pause-btn');
-        
-        if (audioPlayer && playBtn && pauseBtn) {
-            clearInterval(checkInterval);
-            initAudio();
-        }
-    }, 500);
-});
-
-// Global function to play individual tracks
-window.playTrack = function(trackFile, buttonElement) {
-    const audioPlayer = document.getElementById('musicPlayer');
-    const allButtons = document.querySelectorAll('.disc-play-btn');
-    const allItems = document.querySelectorAll('.playlist-item');
-    const allStatuses = document.querySelectorAll('.disc-status');
-    
-    // Reset all buttons and items
-    allButtons.forEach(btn => btn.classList.remove('active'));
-    allItems.forEach(item => item.classList.remove('active'));
-    allStatuses.forEach(status => {
-        status.textContent = 'READY';
-        status.style.color = 'var(--secondary-green)';
-    });
-    
-    // Set current track as active
-    buttonElement.classList.add('active');
-    const currentItem = buttonElement.closest('.playlist-item');
-    currentItem.classList.add('active');
-    
-    const currentStatus = currentItem.querySelector('.disc-status');
-    currentStatus.textContent = 'PLAYING';
-    currentStatus.style.color = 'var(--primary-cyan)';
-    
-    // Update audio source
-    const trackPath = `src/musicas/${trackFile}`;
-    
-    // Pause current audio
-    audioPlayer.pause();
-    
-    // Load new track with minimal delay
-    audioPlayer.src = trackPath;
-    audioPlayer.load();
-    
-    // Play immediately when ready
-    const playWhenReady = () => {
-        audioPlayer.play().then(() => {
-            console.log(`Playing track: ${trackFile}`);
-        }).catch(error => {
-            console.error('Error playing track:', error);
-        });
-        audioPlayer.removeEventListener('canplay', playWhenReady);
-    };
-    
-    audioPlayer.addEventListener('canplay', playWhenReady);
-    
-    // Update main track info
-    const trackTitle = currentItem.querySelector('.disc-title').textContent;
-    const trackArtist = currentItem.querySelector('.disc-artist').textContent;
-    document.querySelector('.track-name').textContent = trackTitle;
-    document.querySelector('.artist-name').textContent = trackArtist;
-};
-
-// Horizontal scroll with mouse wheel
+// Horizontal scroll with mouse wheel for playlist
 document.addEventListener('DOMContentLoaded', () => {
     const playlist = document.getElementById('musicPlaylist');
     if (playlist) {
