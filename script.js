@@ -343,6 +343,10 @@
             });
         }
 
+        if (section === 'depool') {
+            this.initDepoolAndroid(contentElement);
+        }
+
         const anchors = contentElement.querySelectorAll('a[href^="#"]');
         anchors.forEach(anchor => {
             anchor.addEventListener('click', (e) => {
@@ -354,6 +358,60 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
+    }
+
+    initDepoolAndroid(contentElement) {
+        const stage = contentElement.querySelector('#androidStage');
+        const shell = contentElement.querySelector('#androidShell');
+        const title = contentElement.querySelector('#androidReadoutTitle');
+        const copy = contentElement.querySelector('#androidReadoutCopy');
+        const status = contentElement.querySelector('#androidReadoutStatus');
+        const hotspots = contentElement.querySelectorAll('.android-hotspot');
+
+        if (!stage || !shell || !title || !copy || !status || !hotspots.length) return;
+
+        const activateHotspot = (hotspot) => {
+            hotspots.forEach((item) => item.classList.toggle('is-active', item === hotspot));
+            title.textContent = hotspot.dataset.title || 'DEPOOL';
+            copy.textContent = hotspot.dataset.detail || '';
+            status.textContent = hotspot.dataset.status || 'SYNC ONLINE';
+        };
+
+        hotspots.forEach((hotspot) => {
+            hotspot.addEventListener('mouseenter', () => activateHotspot(hotspot));
+            hotspot.addEventListener('focus', () => activateHotspot(hotspot));
+            hotspot.addEventListener('click', () => activateHotspot(hotspot));
+        });
+
+        const updateTilt = (clientX, clientY) => {
+            const rect = stage.getBoundingClientRect();
+            const offsetX = ((clientX - rect.left) / rect.width - 0.5) * 2;
+            const offsetY = ((clientY - rect.top) / rect.height - 0.5) * 2;
+            shell.style.setProperty('--android-rotate-x', `${(-offsetY * 7).toFixed(2)}deg`);
+            shell.style.setProperty('--android-rotate-y', `${(offsetX * 9).toFixed(2)}deg`);
+            shell.style.setProperty('--android-shift-x', `${(offsetX * 10).toFixed(1)}px`);
+            shell.style.setProperty('--android-shift-y', `${(offsetY * 8).toFixed(1)}px`);
+        };
+
+        const resetTilt = () => {
+            shell.style.setProperty('--android-rotate-x', '0deg');
+            shell.style.setProperty('--android-rotate-y', '0deg');
+            shell.style.setProperty('--android-shift-x', '0px');
+            shell.style.setProperty('--android-shift-y', '0px');
+        };
+
+        if (window.matchMedia?.('(hover: hover)')?.matches) {
+            stage.addEventListener('mousemove', (event) => updateTilt(event.clientX, event.clientY));
+            stage.addEventListener('mouseleave', resetTilt);
+        }
+
+        stage.addEventListener('touchmove', (event) => {
+            const touch = event.touches[0];
+            if (!touch) return;
+            updateTilt(touch.clientX, touch.clientY);
+        }, { passive: true });
+
+        stage.addEventListener('touchend', resetTilt, { passive: true });
     }
 
     openProjectView(project) {
@@ -835,66 +893,103 @@
             `,
 
             depool: `
-                <div class="brain-interface">
-                    <!-- Brain Container -->
-                    <div class="brain-container">
-                        <!-- Central Brain -->
-                        <div class="central-brain">
-                            <div class="brain-hemisphere left-hemisphere"></div>
-                            <div class="brain-hemisphere right-hemisphere"></div>
-                            <div class="brain-stem"></div>
-                            <div class="cerebellum"></div>
-                            
-                            <!-- Brain Core -->
-                            <div class="brain-core">
-                                <div class="brain-label">DEPOOL</div>
-                                <div class="brain-subtitle">SISTEMA CEREBRAL</div>
+                <div class="depool-interface">
+                    <div class="android-bay">
+                        <div class="android-stage" id="androidStage">
+                            <div class="android-status-strip" aria-label="Estado del androide">
+                                <span class="android-state-chip android-state-chip--live">SYNC ONLINE</span>
+                                <span class="android-state-chip">FRAME v3.7</span>
+                                <span class="android-state-chip">TACTICAL BODY</span>
                             </div>
-                        </div>
-                        
-                        <!-- Neural Network -->
-                        <div class="neural-network">
-                            <!-- Music Neural Path -->
-                            <div class="neural-connection music-connection">
-                                <div class="neural-path music-path"></div>
-                                <div class="neural-node music-node">
-                                    <div class="node-icon">♪</div>
-                                    <div class="node-label">MUSICA</div>
+
+                            <div class="android-shell" id="androidShell">
+                                <div class="android-glow android-glow--cyan"></div>
+                                <div class="android-glow android-glow--pink"></div>
+                                <div class="android-shadow"></div>
+                                <div class="android-backpack"></div>
+                                <div class="android-antenna android-antenna--left"></div>
+                                <div class="android-antenna android-antenna--right"></div>
+
+                                <div class="android-head">
+                                    <div class="android-face-plate"></div>
+                                    <div class="android-brow android-brow--left"></div>
+                                    <div class="android-brow android-brow--right"></div>
+                                    <div class="android-visor"></div>
+                                    <div class="android-ear android-ear--left"></div>
+                                    <div class="android-ear android-ear--right"></div>
+                                    <div class="android-mouth"></div>
                                 </div>
-                            </div>
-                            
-                            <!-- Games Neural Path -->
-                            <div class="neural-connection games-connection">
-                                <div class="neural-path games-path"></div>
-                                <div class="neural-node games-node">
-                                    <div class="node-icon">🎮</div>
-                                    <div class="node-label">JUEGOS</div>
+
+                                <div class="android-neck"></div>
+
+                                <div class="android-shoulder android-shoulder--left"></div>
+                                <div class="android-shoulder android-shoulder--right"></div>
+                                <div class="android-arm android-arm--left"></div>
+                                <div class="android-arm android-arm--right"></div>
+
+                                <div class="android-torso">
+                                    <div class="android-collar"></div>
+                                    <div class="android-chest-plate">
+                                        <div class="android-chest-line"></div>
+                                        <div class="android-chest-line"></div>
+                                        <div class="android-chest-line"></div>
+                                    </div>
+                                    <div class="android-reactor">
+                                        <div class="android-reactor-ring"></div>
+                                        <div class="android-reactor-core"></div>
+                                    </div>
+                                    <div class="android-ab-panel">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
                                 </div>
+
+                                <div class="android-cable android-cable--left"></div>
+                                <div class="android-cable android-cable--right"></div>
+                                <div class="android-hip"></div>
+                                <div class="android-leg android-leg--left"></div>
+                                <div class="android-leg android-leg--right"></div>
+                                <div class="android-shin android-shin--left"></div>
+                                <div class="android-shin android-shin--right"></div>
+                                <div class="android-foot android-foot--left"></div>
+                                <div class="android-foot android-foot--right"></div>
+
+                                <button type="button" class="android-hotspot is-active" data-title="REACTOR CENTRAL" data-detail="Núcleo energético estabilizado. Regula potencia, movilidad y pulsos visuales del chasis DEPOOL." data-status="ENERGIA 98%" style="--x: 50%; --y: 58%;">
+                                    <span></span>
+                                </button>
+                                <button type="button" class="android-hotspot" data-title="VISOR TÁCTICO" data-detail="Óptica frontal con barrido de amenazas y lectura del entorno. Sigue movimiento y refuerza la presencia del avatar." data-status="TRACKING ON" style="--x: 50%; --y: 17%;">
+                                    <span></span>
+                                </button>
+                                <button type="button" class="android-hotspot" data-title="SERVOS DE HOMBRO" data-detail="Módulos laterales para estabilidad de brazos y microajustes. Añaden volumen mecánico y sensación de potencia." data-status="SERVO READY" style="--x: 21%; --y: 42%;">
+                                    <span></span>
+                                </button>
+                                <button type="button" class="android-hotspot" data-title="BLINDAJE TORÁCICO" data-detail="Placas frontales con capas compuestas y líneas lumínicas activas para un look más premium y agresivo." data-status="ARMOR LOCK" style="--x: 79%; --y: 42%;">
+                                    <span></span>
+                                </button>
                             </div>
-                            
-                            <!-- Tastes Neural Path -->
-                            <div class="neural-connection tastes-connection">
-                                <div class="neural-path tastes-path"></div>
-                                <div class="neural-node tastes-node">
-                                    <div class="node-icon">♥</div>
-                                    <div class="node-label">GUSTOS</div>
+
+                            <div class="android-readout panel panel--glass">
+                                <div class="android-readout-top">
+                                    <span class="android-readout-kicker">CHASSIS ANALYSIS</span>
+                                    <span class="android-readout-status" id="androidReadoutStatus">ENERGIA 98%</span>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Brain Activity Indicators -->
-                        <div class="brain-activity">
-                            <div class="activity-indicator music-activity">
-                                <div class="indicator-dot"></div>
-                                <span class="indicator-label">AUDIO</span>
-                            </div>
-                            <div class="activity-indicator games-activity">
-                                <div class="indicator-dot"></div>
-                                <span class="indicator-label">GAMING</span>
-                            </div>
-                            <div class="activity-indicator tastes-activity">
-                                <div class="indicator-dot"></div>
-                                <span class="indicator-label">CREATIVE</span>
+                                <h3 class="android-readout-title" id="androidReadoutTitle">REACTOR CENTRAL</h3>
+                                <p class="android-readout-copy" id="androidReadoutCopy">Núcleo energético estabilizado. Regula potencia, movilidad y pulsos visuales del chasis DEPOOL.</p>
+                                <div class="android-readout-metrics">
+                                    <div class="android-metric">
+                                        <span class="android-metric-label">ESTADO</span>
+                                        <strong>OPERATIVO</strong>
+                                    </div>
+                                    <div class="android-metric">
+                                        <span class="android-metric-label">RESPUESTA</span>
+                                        <strong>6 MS</strong>
+                                    </div>
+                                    <div class="android-metric">
+                                        <span class="android-metric-label">MODO</span>
+                                        <strong>INTERACTIVO</strong>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
