@@ -5446,21 +5446,37 @@ body {
     50% { height: 100%; }
 }
 
-/* Mini-Game Panel Styles */
+/* Mini-Game Panel Styles - EXPANDED */
 .mini-game-panel {
     display: none;
-    position: relative;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(5, 6, 17, 0.9));
-    border: 2px solid var(--primary-cyan);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(5, 6, 17, 0.98));
+    border: 3px solid var(--primary-cyan);
     border-radius: 16px;
-    margin-top: 2rem;
     overflow: hidden;
-    box-shadow: 0 0 30px rgba(0, 229, 255, 0.3);
+    box-shadow: 0 0 40px rgba(0, 229, 255, 0.4);
     animation: slideInUp 0.5s ease-out;
+    z-index: 100;
 }
 
 .mini-game-panel.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hide game overlay when mini-game is active */
+.game-preview:has(.mini-game-panel.active) .game-overlay {
+    display: none;
+}
+
+/* Game preview positioning for mini-game */
+.game-preview {
+    position: relative;
+    min-height: 400px;
 }
 
 @keyframes slideInUp {
@@ -5478,23 +5494,18 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
-    background: rgba(0, 229, 255, 0.1);
-    border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+    padding: 0.8rem 1.2rem;
+    background: rgba(0, 229, 255, 0.15);
+    border-bottom: 2px solid rgba(0, 229, 255, 0.3);
 }
 
 .mini-game-title {
     font-family: var(--font-primary);
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--primary-cyan);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-}
-
-.mini-game-controls {
-    display: flex;
-    gap: 0.5rem;
 }
 
 .mini-btn {
@@ -5564,104 +5575,278 @@ body {
     color: white;
 }
 
-.mini-game-content {
-    padding: 1.5rem;
+.mini-game-controls {
+    display: flex;
+    gap: 0.4rem;
 }
 
+.mini-game-content {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Sky Canvas - EXPANDED */
 .game-canvas {
     position: relative;
     width: 100%;
-    height: 300px;
+    height: 280px;
     background: linear-gradient(to bottom, #0a0a0a, #1a1a2a);
-    border: 1px solid rgba(0, 229, 255, 0.2);
-    border-radius: 8px;
+    border: 2px solid rgba(0, 229, 255, 0.3);
+    border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
 }
 
-.game-player {
+/* Sky Defender - Sky Canvas Styles */
+.sky-canvas {
+    background: linear-gradient(to bottom, 
+        #0d1b2a 0%, 
+        #1b3a5f 30%, 
+        #2d5a87 60%, 
+        #4a7c9b 100%);
+}
+
+.sky-background {
     position: absolute;
-    left: 50px;
-    bottom: 50px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+        radial-gradient(2px 2px at 40px 70px, #fff, transparent),
+        radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+        radial-gradient(2px 2px at 160px 120px, #fff, transparent);
+    background-size: 200px 150px;
+    animation: twinkle 3s ease-in-out infinite;
+    opacity: 0.6;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+}
+
+.clouds {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: 
+        radial-gradient(ellipse 100px 50px at 10% 20%, rgba(255,255,255,0.1), transparent),
+        radial-gradient(ellipse 80px 40px at 30% 60%, rgba(255,255,255,0.08), transparent),
+        radial-gradient(ellipse 120px 60px at 70% 30%, rgba(255,255,255,0.12), transparent),
+        radial-gradient(ellipse 90px 45px at 90% 70%, rgba(255,255,255,0.1), transparent);
+    animation: cloudsMove 20s linear infinite;
+}
+
+@keyframes cloudsMove {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Game Plane */
+.game-plane {
+    position: absolute;
+    left: 30px;
+    bottom: 20px;
+    font-size: 2.5rem;
+    transition: all 0.15s ease-out;
+    z-index: 20;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    transform: rotate(-5deg);
+}
+
+.game-plane.moving-up {
+    transform: rotate(-15deg);
+}
+
+.game-plane.moving-down {
+    transform: rotate(10deg);
+}
+
+/* Monsters */
+.monsters-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 15;
+}
+
+.monster {
+    position: absolute;
     font-size: 2rem;
-    transition: all 0.2s ease;
-    z-index: 10;
+    transition: transform 0.1s linear;
+    z-index: 15;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
 }
 
-.game-player.jumping {
-    animation: jump 0.5s ease-out;
+.monster.exploding {
+    animation: monsterExplode 0.4s ease-out forwards;
 }
 
-@keyframes jump {
-    0%, 100% { bottom: 50px; }
-    50% { bottom: 150px; }
+@keyframes monsterExplode {
+    0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+    50% { transform: scale(1.5); opacity: 0.8; filter: brightness(2) saturate(2); }
+    100% { transform: scale(0); opacity: 0; }
 }
 
-.game-obstacle {
+/* Bullets */
+.bullets-container {
     position: absolute;
-    font-size: 1.5rem;
-    transition: all 0.1s linear;
-    bottom: 50px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 18;
+    pointer-events: none;
 }
 
-.game-obstacle.hit {
-    animation: explode 0.3s ease-out;
+.bullet {
+    position: absolute;
+    width: 12px;
+    height: 4px;
+    background: linear-gradient(to right, #ff0, #f00, #ff0);
+    border-radius: 2px;
+    box-shadow: 0 0 10px #ff0, 0 0 20px #f00;
+    z-index: 18;
 }
 
-@keyframes explode {
-    0% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(2); opacity: 0; }
+.bullet.super {
+    width: 20px;
+    height: 6px;
+    background: linear-gradient(to right, #0ff, #00f, #0ff);
+    box-shadow: 0 0 15px #0ff, 0 0 30px #00f;
+}
+
+/* Game Score, Lives, Level */
+.game-score, .game-lives, .game-level {
+    position: absolute;
+    font-family: var(--font-primary);
+    font-size: 0.85rem;
+    font-weight: 700;
+    z-index: 25;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    padding: 0.3rem 0.6rem;
+    background: rgba(0,0,0,0.4);
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
 .game-score {
-    position: absolute;
     top: 10px;
     left: 10px;
-    font-family: var(--font-primary);
-    font-size: 0.9rem;
     color: var(--primary-cyan);
-    font-weight: 600;
+    border-color: var(--primary-cyan);
 }
 
 .game-lives {
-    position: absolute;
     top: 10px;
     right: 10px;
-    font-family: var(--font-primary);
-    font-size: 0.9rem;
     color: var(--primary-pink);
-    font-weight: 600;
+    border-color: var(--primary-pink);
+}
+
+.game-level {
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--secondary-green);
+    border-color: var(--secondary-green);
 }
 
 .game-instructions {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 229, 255, 0.3);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+    text-align: center;
 }
 
 .game-instructions p {
     font-family: var(--font-secondary);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
-    margin: 0.3rem 0;
+    margin: 0.2rem 0;
     line-height: 1.4;
 }
 
 /* Game States */
 .game-canvas.playing {
     border-color: var(--secondary-green);
-    box-shadow: 0 0 20px rgba(0, 255, 122, 0.3);
+    box-shadow: 0 0 25px rgba(0, 255, 122, 0.4), inset 0 0 30px rgba(0,255,122,0.1);
 }
 
 .game-canvas.paused {
     border-color: var(--primary-pink);
-    box-shadow: 0 0 20px rgba(255, 43, 214, 0.3);
+    box-shadow: 0 0 25px rgba(255, 43, 214, 0.4);
 }
 
 .game-canvas.game-over {
     border-color: rgba(255, 67, 67, 0.8);
-    box-shadow: 0 0 20px rgba(255, 67, 67, 0.5);
+    box-shadow: 0 0 30px rgba(255, 67, 67, 0.6);
+}
+
+/* Responsive Game Styles */
+@media (max-width: 768px) {
+    .game-preview {
+        min-height: 350px;
+    }
+    
+    .game-canvas {
+        height: 220px;
+    }
+    
+    .game-plane {
+        font-size: 2rem;
+    }
+    
+    .monster {
+        font-size: 1.6rem;
+    }
+    
+    .mini-game-title {
+        font-size: 0.9rem;
+    }
+    
+    .mini-btn {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.6rem;
+    }
+    
+    .game-instructions {
+        font-size: 0.65rem;
+    }
+    
+    .game-instructions p {
+        font-size: 0.65rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .game-preview {
+        min-height: 450px;
+    }
+    
+    .game-canvas {
+        height: 320px;
+    }
+    
+    .game-plane {
+        font-size: 3rem;
+    }
+    
+    .monster {
+        font-size: 2.5rem;
+    }
 }
 
 /* Mobile Responsive - Maintain original size for PC, different for mobile */
