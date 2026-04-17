@@ -381,14 +381,28 @@
         <!-- NSFW Password Modal -->
         <div id="nsfw-modal" class="nsfw-modal">
             <div class="nsfw-modal-content">
-                <span class="nsfw-close-btn">&times;</span>
+                <span class="nsfw-close-btn" aria-label="Cerrar">&times;</span>
+                <div class="nsfw-scanline" aria-hidden="true"></div>
+                <div class="nsfw-badge-row" aria-label="Estado de seguridad">
+                    <span class="nsfw-badge nsfw-badge--alert">18+</span>
+                    <span class="nsfw-badge nsfw-badge--ghost">ÁREA CIFRADA</span>
+                </div>
                 <h2 class="nsfw-title">Acceso Restringido</h2>
-                <p class="nsfw-subtitle">Esta zona contiene material no apto para menores de 18 años.</p>
-                <p>Introduce el código para continuar:</p>
-                <div class="nsfw-input-container">
-                    <input type="password" id="nsfw-password" class="nsfw-password-input" placeholder="CÓDIGO DE ACCESO">
-                    <button id="nsfw-toggle-password" class="nsfw-toggle-password-btn">👁</button>
-                    <button id="nsfw-submit-btn" class.bind="nsfw-submit-btn">ENTRAR</button>
+                <p class="nsfw-subtitle">Esta zona contiene material sensible y solo está disponible para usuarios autorizados.</p>
+                <div class="nsfw-warning-panel">
+                    <div class="nsfw-warning-icon" aria-hidden="true">!</div>
+                    <div class="nsfw-warning-copy">
+                        <strong>Verificación requerida</strong>
+                        <p>Introduce el código de acceso para desbloquear la Zona Prohibida.</p>
+                    </div>
+                </div>
+                <div class="nsfw-input-shell">
+                    <label for="nsfw-password" class="nsfw-input-label">Código de acceso</label>
+                    <div class="nsfw-input-container">
+                        <input type="password" id="nsfw-password" class="nsfw-password-input" placeholder="INGRESA EL CÓDIGO">
+                        <button id="nsfw-toggle-password" type="button" class="nsfw-toggle-password-btn" aria-label="Mostrar u ocultar contraseña">👁</button>
+                    </div>
+                    <button id="nsfw-submit-btn" type="button" class="nsfw-submit-btn">ENTRAR</button>
                 </div>
                 <p id="nsfw-error-message" class="nsfw-error-message"></p>
             </div>

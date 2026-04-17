@@ -121,6 +121,12 @@
             if (e.key === 'Escape' && navMenu.classList.contains('active')) {
                 this.closeMobileMenu(navMenu, navToggle);
             }
+            if (e.key === 'Escape' && this.nsfwModal?.style.display === 'flex') {
+                this.hideNsfwModal();
+            }
+            if (e.key === 'Escape' && this.forbiddenContentModal?.style.display === 'flex') {
+                this.hideForbiddenContentModal();
+            }
         });
 
         // Handle window resize
@@ -184,14 +190,20 @@
     showNsfwModal() {
         if (!this.nsfwModal) return;
         this.nsfwModal.style.display = 'flex';
-        this.nsfwPasswordInput.focus();
+        document.body.style.overflow = 'hidden';
+        this.nsfwPasswordInput?.focus();
     }
 
     hideNsfwModal() {
         if (!this.nsfwModal) return;
         this.nsfwModal.style.display = 'none';
-        this.nsfwPasswordInput.value = '';
-        this.nsfwErrorMessage.textContent = '';
+        document.body.style.overflow = '';
+        if (this.nsfwPasswordInput) {
+            this.nsfwPasswordInput.value = '';
+        }
+        if (this.nsfwErrorMessage) {
+            this.nsfwErrorMessage.textContent = '';
+        }
     }
 
     checkNsfwPassword() {
@@ -228,11 +240,13 @@
     showForbiddenContentModal() {
         if (!this.forbiddenContentModal) return;
         this.forbiddenContentModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     }
 
     hideForbiddenContentModal() {
         if (!this.forbiddenContentModal) return;
         this.forbiddenContentModal.style.display = 'none';
+        document.body.style.overflow = '';
         this.forbiddenContentBody.innerHTML = ''; // Clear content on close
     }
 
