@@ -2595,6 +2595,72 @@
                                 </div>
                             </div>
                         </article>
+
+                        <article class="h-game-card" data-game-id="pocket-sweeties-2">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://apktodo.io/uploads/2025/11/pocket-sweeties-icon.jpg" 
+                                         alt="Pocket Sweeties 2" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">SIMULACIÓN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Pocket Sweeties 2</h3>
+                                <p class="game-description">Secuela del simulador de interacción táctil +18. Más personajes, escenarios y física mejorada para una experiencia más inmersiva.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v2.0</span>
+                                    <span class="game-size">195 MB</span>
+                                    <span class="game-rating-stars">4.8</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/PocketSweeties2.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="horny-union">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://adultgameson.com/wp-content/uploads/2025/07/Horny-Union.jpg" 
+                                         alt="Horny Union" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">AVENTURA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Horny Union</h3>
+                                <p class="game-description">Aventura +18 en un mundo de fantasía. Explora, recluta aliadas y disfruta de escenas exclusivas con cada personaje único.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">178 MB</span>
+                                    <span class="game-rating-stars">4.7</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Horny.Union.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 </div>
             `,
