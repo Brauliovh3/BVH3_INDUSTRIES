@@ -2331,6 +2331,39 @@
                                 </div>
                             </div>
                         </article>
+
+                        <article class="h-game-card" data-game-id="together-again">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://imag.malavida.com/mvimgbig/download-fs/together-again-35080-8.jpg" 
+                                         alt="Together Again" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">VISUAL NOVEL</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Together Again</h3>
+                                <p class="game-description">Visual novel +18 donde reconectas con tu amiga de la infancia. Escenas románticas que evolucionan según tus elecciones.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">245 MB</span>
+                                    <span class="game-rating-stars">4.6</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Together_Again.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 </div>
             `,
