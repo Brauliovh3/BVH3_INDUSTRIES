@@ -2562,6 +2562,39 @@
                                 </div>
                             </div>
                         </article>
+
+                        <article class="h-game-card" data-game-id="sister-fight">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://www.latestmodapks.com/wp-content/uploads/2023/12/Sister-Fight-logo.jpeg" 
+                                         alt="Sister Fight" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">LUCHA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Sister Fight</h3>
+                                <p class="game-description">Juego de lucha +18 con combates intensos entre hermanas. Sistema de combate único con escenas de victoria exclusivas.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">165 MB</span>
+                                    <span class="game-rating-stars">4.5</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Sister_Fight.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 </div>
             `,
