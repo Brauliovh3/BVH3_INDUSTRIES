@@ -2030,7 +2030,7 @@
                                     <span class="game-rating-stars">4.8</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Lonely Girl.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Lonely.Girl.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
@@ -2063,7 +2063,7 @@
                                     <span class="game-rating-stars">4.6</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/FHBQuickieHalloween Mavis.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/FHBQuickieHalloween.Mavis.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
@@ -2096,7 +2096,7 @@
                                     <span class="game-rating-stars">4.9</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/KAGUYA_PLAYER.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/KAGUYA_PLAYER.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
@@ -2128,7 +2128,7 @@
                                     <span class="game-rating-stars">4.7</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Coco-nut_shake.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Coco-nut_shake.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
@@ -2160,7 +2160,7 @@
                                     <span class="game-rating-stars">4.5</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Tatsumaki-TH.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Tatsumaki-TH.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
@@ -2193,7 +2193,7 @@
                                     <span class="game-rating-stars">4.8</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Nicole v1.17.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Nicole.v1.17.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
@@ -2225,7 +2225,7 @@
                                     <span class="game-rating-stars">4.4</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Fapwall.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Fapwall.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
@@ -2258,7 +2258,7 @@
                                     <span class="game-rating-stars">4.9</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/FUCKERWATCH.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/FUCKERWATCH.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
@@ -2291,7 +2291,7 @@
                                     <span class="game-rating-stars">4.7</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Survive.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/survive.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
@@ -2324,7 +2324,7 @@
                                     <span class="game-rating-stars">4.9</span>
                                 </div>
                                 <div class="game-actions">
-                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/TeachingFeeling.apk">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Teaching-Feeling.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
