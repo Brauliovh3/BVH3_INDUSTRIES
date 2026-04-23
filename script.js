@@ -2139,7 +2139,7 @@
                         <article class="h-game-card" data-game-id="tatsumaki">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
-                                    <img src="https://i.ytimg.com/vi/iyyotHXIkBs/maxresdefault.jpg" 
+                                    <img src="https://img.itch.zone/aW1nLzkxNDcyNjEucG5n/original/wBmGEW.png" 
                                          alt="Tatsumaki-TH" 
                                          class="game-image" 
                                          loading="lazy">
@@ -2424,6 +2424,39 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/LovelyCraftPistonTrap.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="intimate-brothel">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://img.itch.zone/aW1nLzE2Mzk0MDgucG5n/original/J1Kntt.png" 
+                                         alt="Intimate brothel" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">SIMULACIÓN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Intimate brothel</h3>
+                                <p class="game-description">Simulador de gestión +18. Administra tu propio burdel, contrata chicas y atiende clientes en escenas interactivas detalladas.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">151 MB</span>
+                                    <span class="game-rating-stars">4.8</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Intimate-Brothel.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
