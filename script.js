@@ -2023,7 +2023,7 @@
                             </div>
                             <div class="game-content">
                                 <h3 class="game-title">Lonely Girl</h3>
-                                <p class="game-description">Experiencia inmersiva de simulación con múltiples finales y decisiones impactantes.</p>
+                                <p class="game-description">Simulador de vida donde cuidas a una chica en tu casa. Interacción íntima, múltiples escenas y finales según tus decisiones.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
                                     <span class="game-size">125 MB</span>
@@ -2031,7 +2031,7 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Lonely Girl.apk">
-                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
                                 </div>
@@ -2056,7 +2056,7 @@
                             </div>
                             <div class="game-content">
                                 <h3 class="game-title">FHB</h3>
-                                <p class="game-description">Aventura emocionante con gráficos impresionantes y gameplay innovador.</p>
+                                <p class="game-description">Aventura corta con temática de Halloween. Encuentros íntimos con personajes animados y escenas interactivas.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
                                     <span class="game-size">98 MB</span>
@@ -2064,7 +2064,7 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/FHBQuickieHalloween Mavis.apk">
-                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
                                 </div>
@@ -2089,7 +2089,7 @@
                             </div>
                             <div class="game-content">
                                 <h3 class="game-title">Kaguya Player</h3>
-                                <p class="game-description">Juego de estrategia profundo con personajes memorables y decisiones cruciales.</p>
+                                <p class="game-description">Visual novel japonesa con mecánicas de estrategia. Historia adulta con decisiones que desbloquean escenas exclusivas.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v2.0</span>
                                     <span class="game-size">156 MB</span>
@@ -2097,7 +2097,7 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/KAGUYA_PLAYER.apk">
-                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
                                 </div>
@@ -2121,7 +2121,7 @@
                             </div>
                             <div class="game-content">
                                 <h3 class="game-title">Coco-nut Shake</h3>
-                                <p class="game-description">Juego de ritmo adictivo con banda sonora increíble y visuales vibrantes.</p>
+                                <p class="game-description">Juego de ritmo +18 donde interactúas con personajes mientras sigues el compás. Escenas desbloqueables según tu precisión.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.5</span>
                                     <span class="game-size">87 MB</span>
@@ -2129,7 +2129,7 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Coco-nut_shake.apk">
-                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
                                 </div>
@@ -2153,7 +2153,7 @@
                             </div>
                             <div class="game-content">
                                 <h3 class="game-title">Tatsumaki-TH</h3>
-                                <p class="game-description">Aventura épica con combate fluido y historia envolvente.</p>
+                                <p class="game-description">Basado en One Punch Man. Aventura con Tatsumaki incluyendo escenas íntimas y diálogos para adultos.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
                                     <span class="game-size">134 MB</span>
@@ -2161,7 +2161,7 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Tatsumaki-TH.apk">
-                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
                                 </div>
@@ -2186,7 +2186,7 @@
                             </div>
                             <div class="game-content">
                                 <h3 class="game-title">Nicole v1</h3>
-                                <p class="game-description">Simulación realista con personajes complejos y decisiones morales.</p>
+                                <p class="game-description">Simulador de citas con Nicole. Relación progresiva que evoluciona hacia escenas íntimas según tu afecto.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.17</span>
                                     <span class="game-size">112 MB</span>
@@ -2194,7 +2194,7 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Nicole v1.17.apk">
-                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
                                 </div>
@@ -2218,7 +2218,7 @@
                             </div>
                             <div class="game-content">
                                 <h3 class="game-title">Fapwall</h3>
-                                <p class="game-description">Puzzle único con mecánicas innovadoras y arte excepcional.</p>
+                                <p class="game-description">Juego de rompecabezas +18. Cada nivel completado desbloquea ilustraciones animadas de alta calidad.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
                                     <span class="game-size">76 MB</span>
@@ -2226,7 +2226,7 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Fapwall.apk">
-                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
                                 </div>
@@ -2251,7 +2251,7 @@
                             </div>
                             <div class="game-content">
                                 <h3 class="game-title">Fuckerwatch</h3>
-                                <p class="game-description">Acción intensa con gráficos next-gen y gameplay revolucionario.</p>
+                                <p class="game-description">Parodia adulta de Overwatch. Personajes familiarizados en situaciones íntimas con gameplay de acción.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
                                     <span class="game-size">189 MB</span>
@@ -2259,7 +2259,7 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/FUCKERWATCH.apk">
-                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
                                 </div>
@@ -2284,7 +2284,7 @@
                             </div>
                             <div class="game-content">
                                 <h3 class="game-title">Survive</h3>
-                                <p class="game-description">Juego de supervivencia intensa donde cada decisión cuenta. Ambientes post-apocalípticos con narrativa madura.</p>
+                                <p class="game-description">Survival horror +18. Sobrevive mientras interactúas con supervivientes en escenas para adultos en mundo apocalíptico.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
                                     <span class="game-size">145 MB</span>
@@ -2292,7 +2292,40 @@
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Survive.apk">
-                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="teaching-feeling">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://duracionde.com/storage/images/62a4906d17204.jpg" 
+                                         alt="Teaching Feeling" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">SIMULACIÓN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Teaching Feeling</h3>
+                                <p class="game-description">Cuida a Sylvie, una esclava traumatizada. Trata con amor o crueldad. El juego +18 más famoso del género de cuidado.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v3.0</span>
+                                    <span class="game-size">531 MB</span>
+                                    <span class="game-rating-stars">4.9</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/TeachingFeeling.apk">
+                                        <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
                                 </div>
