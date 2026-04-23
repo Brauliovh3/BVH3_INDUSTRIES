@@ -2026,7 +2026,7 @@
                                 <p class="game-description">Simulador de vida donde cuidas a una chica en tu casa. Interacción íntima, múltiples escenas y finales según tus decisiones.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">125 MB</span>
+                                    <span class="game-size">39 MB</span>
                                     <span class="game-rating-stars">4.8</span>
                                 </div>
                                 <div class="game-actions">
@@ -2059,7 +2059,7 @@
                                 <p class="game-description">Aventura corta con temática de Halloween. Encuentros íntimos con personajes animados y escenas interactivas.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">98 MB</span>
+                                    <span class="game-size">40 MB</span>
                                     <span class="game-rating-stars">4.6</span>
                                 </div>
                                 <div class="game-actions">
@@ -2092,7 +2092,7 @@
                                 <p class="game-description">Visual novel japonesa con mecánicas de estrategia. Historia adulta con decisiones que desbloquean escenas exclusivas.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v2.0</span>
-                                    <span class="game-size">156 MB</span>
+                                    <span class="game-size">49 MB</span>
                                     <span class="game-rating-stars">4.9</span>
                                 </div>
                                 <div class="game-actions">
@@ -2124,7 +2124,7 @@
                                 <p class="game-description">Juego de ritmo +18 donde interactúas con personajes mientras sigues el compás. Escenas desbloqueables según tu precisión.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.5</span>
-                                    <span class="game-size">87 MB</span>
+                                    <span class="game-size">42 MB</span>
                                     <span class="game-rating-stars">4.7</span>
                                 </div>
                                 <div class="game-actions">
@@ -2156,7 +2156,7 @@
                                 <p class="game-description">Basado en One Punch Man. Aventura con Tatsumaki incluyendo escenas íntimas y diálogos para adultos.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">134 MB</span>
+                                    <span class="game-size">30 MB</span>
                                     <span class="game-rating-stars">4.5</span>
                                 </div>
                                 <div class="game-actions">
@@ -2189,7 +2189,7 @@
                                 <p class="game-description">Simulador de citas con Nicole. Relación progresiva que evoluciona hacia escenas íntimas según tu afecto.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.17</span>
-                                    <span class="game-size">112 MB</span>
+                                    <span class="game-size">48 MB</span>
                                     <span class="game-rating-stars">4.8</span>
                                 </div>
                                 <div class="game-actions">
@@ -2221,7 +2221,7 @@
                                 <p class="game-description">Juego de rompecabezas +18. Cada nivel completado desbloquea ilustraciones animadas de alta calidad.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">76 MB</span>
+                                    <span class="game-size">13 MB</span>
                                     <span class="game-rating-stars">4.4</span>
                                 </div>
                                 <div class="game-actions">
@@ -2254,7 +2254,7 @@
                                 <p class="game-description">Parodia adulta de Overwatch. Personajes familiarizados en situaciones íntimas con gameplay de acción.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">189 MB</span>
+                                    <span class="game-size">63 MB</span>
                                     <span class="game-rating-stars">4.9</span>
                                 </div>
                                 <div class="game-actions">
@@ -2287,7 +2287,7 @@
                                 <p class="game-description">Survival horror +18. Sobrevive mientras interactúas con supervivientes en escenas para adultos en mundo apocalíptico.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">145 MB</span>
+                                    <span class="game-size">46 MB</span>
                                     <span class="game-rating-stars">4.7</span>
                                 </div>
                                 <div class="game-actions">
@@ -2353,7 +2353,7 @@
                                 <p class="game-description">Visual novel +18 donde reconectas con tu amiga de la infancia. Escenas románticas que evolucionan según tus elecciones.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">245 MB</span>
+                                    <span class="game-size">298 MB</span>
                                     <span class="game-rating-stars">4.6</span>
                                 </div>
                                 <div class="game-actions">
@@ -2485,7 +2485,7 @@
                                 <p class="game-description">Simulador de vida universitaria +18. Vive el campus, haz amigos, romance y escenas adultas en esta aventura visual interactiva.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">210 MB</span>
+                                    <span class="game-size">180 MB</span>
                                     <span class="game-rating-stars">4.6</span>
                                 </div>
                                 <div class="game-actions">
@@ -2518,7 +2518,7 @@
                                 <p class="game-description">Simulador de interacción táctil +18. Juego de simulación íntima con física realista y múltiples escenarios interactivos.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">180 MB</span>
+                                    <span class="game-size">395 MB</span>
                                     <span class="game-rating-stars">4.7</span>
                                 </div>
                                 <div class="game-actions">
@@ -2584,7 +2584,7 @@
                                 <p class="game-description">Juego de lucha +18 con combates intensos entre hermanas. Sistema de combate único con escenas de victoria exclusivas.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">165 MB</span>
+                                    <span class="game-size">56 MB</span>
                                     <span class="game-rating-stars">4.5</span>
                                 </div>
                                 <div class="game-actions">
@@ -2617,7 +2617,7 @@
                                 <p class="game-description">Secuela del simulador de interacción táctil +18. Más personajes, escenarios y física mejorada para una experiencia más inmersiva.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v2.0</span>
-                                    <span class="game-size">195 MB</span>
+                                    <span class="game-size">340 MB</span>
                                     <span class="game-rating-stars">4.8</span>
                                 </div>
                                 <div class="game-actions">
@@ -2650,11 +2650,143 @@
                                 <p class="game-description">Aventura +18 en un mundo de fantasía. Explora, recluta aliadas y disfruta de escenas exclusivas con cada personaje único.</p>
                                 <div class="game-meta">
                                     <span class="game-version">v1.0</span>
-                                    <span class="game-size">178 MB</span>
+                                    <span class="game-size">249 MB</span>
                                     <span class="game-rating-stars">4.7</span>
                                 </div>
                                 <div class="game-actions">
                                     <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/Horny.Union.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="my-best-deal">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://cf.geekdo-images.com/stAts3Z0JaoF-wjmohVhCQ__opengraph/img/01IDhtGGx1PiDRCHXZE3LjQwrBQ=/0x0:1920x1008/fit-in/1200x630/filters:strip_icc()/pic8791791.png" 
+                                         alt="My Best Deal" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">VISUAL NOVEL</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">My Best Deal</h3>
+                                <p class="game-description">Visual novel +18 donde negocias tratos tentadores. Decisiones que afectan el destino de personajes en situaciones comprometedoras.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">519 MB</span>
+                                    <span class="game-rating-stars">4.7</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/MY.BEST.DEAL.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="my-daughter-forever">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://static.wixstatic.com/media/54bba9_5e4f55779a09472695f50c7d27cadeea~mv2.jpg/v1/fill/w_350,h_201,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/54bba9_5e4f55779a09472695f50c7d27cadeea~mv2.jpg" 
+                                         alt="My Daughter Forever" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">SIMULACIÓN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">My Daughter Forever</h3>
+                                <p class="game-description">Simulador de crianza +18 con giros oscuros. Cuida y protege mientras la historia toma rumbos inesperados y provocativos.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">404 MB</span>
+                                    <span class="game-rating-stars">4.5</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/MyDaughterForever.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="happy-summer">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://imag.malavida.com/mvimgbig/download-fs/happy-summer-34877-0.jpg" 
+                                         alt="Happy Summer" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">AVENTURA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Happy Summer</h3>
+                                <p class="game-description">Aventura de verano +18 en la playa. Vacaciones tropicales llenas de romance, diversión y escenas calientes bajo el sol.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">407 MB</span>
+                                    <span class="game-rating-stars">4.6</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/HS.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="h-game-card" data-game-id="sweet-deviance">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://img.itch.zone/aW1nLzI1NzczNDk2LnBuZw==/original/BRz2bO.png" 
+                                         alt="Sweet Deviance" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">VISUAL NOVEL</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Sweet Deviance</h3>
+                                <p class="game-description">Visual novel +18 con temas de desviación dulce. Explora límites en una historia de romance poco convencional y seductor.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">393 MB</span>
+                                    <span class="game-rating-stars">4.8</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/SweetDeviance.apk">
                                         <span class="btn-icon">▼</span>
                                         <span class="btn-text">DESCARGAR</span>
                                     </button>
