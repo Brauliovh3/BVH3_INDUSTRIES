@@ -2463,6 +2463,39 @@
                                 </div>
                             </div>
                         </article>
+
+                        <article class="h-game-card" data-game-id="my-college">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://img.itch.zone/aW1nLzExMDQwNjUxLnBuZw==/original/8YmP3n.png" 
+                                         alt="My college" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">SIMULACIÓN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">My college</h3>
+                                <p class="game-description">Simulador de vida universitaria +18. Vive el campus, haz amigos, romance y escenas adultas en esta aventura visual interactiva.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">210 MB</span>
+                                    <span class="game-rating-stars">4.6</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/My_College.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 </div>
             `,
