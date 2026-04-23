@@ -2265,6 +2265,39 @@
                                 </div>
                             </div>
                         </article>
+
+                        <article class="h-game-card" data-game-id="survive">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://techloky.com/public/uploads/images/Survive-2.jpg" 
+                                         alt="Survive" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">SUPERVIVENCIA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Survive</h3>
+                                <p class="game-description">Juego de supervivencia intensa donde cada decisión cuenta. Ambientes post-apocalípticos con narrativa madura.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">145 MB</span>
+                                    <span class="game-rating-stars">4.7</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="src/apps/nsfw/Survive.apk">
+                                        <span class="btn-icon">DOWNLOAD</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 </div>
             `,
@@ -2604,182 +2637,6 @@
                             </div>
                         </div>
                         
-                        <!-- Games Section -->
-                        <div class="section-display games-display">
-                            <div class="section-header">
-                                <h3 class="section-title">JUEGOS</h3>
-                                <div class="section-status">ACTIVE</div>
-                                <div class="section-stats">
-                                    <span class="stat-item">12 GAMES</span>
-                                    <span class="stat-item">85% COMPLETE</span>
-                                </div>
-                            </div>
-                            <div class="section-content">
-                                <div class="games-showcase">
-                                    <div class="featured-game" id="featuredGame">
-                                        <div class="game-preview">
-                                            <div class="game-thumbnail">🎮</div>
-                                            <div class="game-overlay" id="gameOverlay">
-                                                <div class="game-title-large">CYBER RUN</div>
-                                                <div class="game-description">Corre por la ciudad cyberpunk evitando drones de seguridad</div>
-                                                <button class="game-launch-btn" onclick="openMiniGame()">LAUNCH</button>
-                                            </div>
-                                            
-                                            <!-- Mini-Game Panel (Inside the game card) -->
-                                            <div class="mini-game-panel" id="miniGamePanel">
-                                                <div class="mini-game-header">
-                                                    <h3 class="mini-game-title">SKY DEFENDER ✈️</h3>
-                                                    <div class="mini-game-controls">
-                                                        <button class="mini-btn mini-btn--play" id="gamePlayBtn">PLAY</button>
-                                                        <button class="mini-btn mini-btn--pause" id="gamePauseBtn">PAUSE</button>
-                                                        <button class="mini-btn mini-btn--reset" id="gameResetBtn">RESET</button>
-                                                        <button class="mini-btn mini-btn--close" id="gameCloseBtn">CLOSE</button>
-                                                    </div>
-                                                </div>
-                                                <div class="mini-game-content">
-                                                    <div class="game-canvas sky-canvas" id="gameCanvas">
-                                                        <div class="sky-background"></div>
-                                                        <div class="clouds"></div>
-                                                        <div class="game-plane" id="gamePlayer">✈️</div>
-                                                        <div class="monsters-container" id="monstersContainer"></div>
-                                                        <div class="bullets-container" id="bulletsContainer"></div>
-                                                        <div class="game-score">
-                                                            <span class="score-label">SCORE:</span>
-                                                            <span class="score-value" id="gameScore">0</span>
-                                                        </div>
-                                                        <div class="game-lives">
-                                                            <span class="lives-label">LIVES:</span>
-                                                            <span class="lives-value" id="gameLives">❤️❤️❤️</span>
-                                                        </div>
-                                                        <div class="game-level">
-                                                            <span class="level-label">WAVE:</span>
-                                                            <span class="level-value" id="gameLevel">1</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="game-instructions">
-                                                        <p>🎮 WASD / Arrows = Free 360° movement</p>
-                                                        <p>👆 Touch & Drag = Move with finger</p>
-                                                        <p>🔥 SPACE or TAP = Shoot lasers</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="game-stats">
-                                            <div class="game-stat">
-                                                <span class="stat-label">LEVEL</span>
-                                                <span class="stat-value">12</span>
-                                            </div>
-                                            <div class="game-stat">
-                                                <span class="stat-label">SCORE</span>
-                                                <span class="stat-value">8,450</span>
-                                            </div>
-                                            <div class="game-stat">
-                                                <span class="stat-label">TIME</span>
-                                                <span class="stat-value">2:34</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="games-grid">
-                                        <div class="game-item">
-                                            <div class="game-icon">🎯</div>
-                                            <div class="game-title">NEURAL ARENA</div>
-                                            <div class="game-genre">FPS</div>
-                                            <div class="game-rating">★★★★★</div>
-                                        </div>
-                                        <div class="game-item">
-                                            <div class="game-icon">⚔</div>
-                                            <div class="game-title">MATRIX QUEST</div>
-                                            <div class="game-genre">RPG</div>
-                                            <div class="game-rating">★★★★</div>
-                                        </div>
-                                        <div class="game-item">
-                                            <div class="game-icon">🏎</div>
-                                            <div class="game-title">QUANTUM RUSH</div>
-                                            <div class="game-genre">RACING</div>
-                                            <div class="game-rating">★★★★★</div>
-                                        </div>
-                                        <div class="game-item">
-                                            <div class="game-icon">⚡</div>
-                                            <div class="game-title">CYBER NINJA</div>
-                                            <div class="game-genre">ACTION</div>
-                                            <div class="game-rating">★★★★</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                            </div>
-                        </div>
-                        
-                        <!-- Tastes Section -->
-                        <div class="section-display tastes-display">
-                            <div class="section-header">
-                                <h3 class="section-title">GUSTOS</h3>
-                                <div class="section-status">ACTIVE</div>
-                                <div class="section-filter">
-                                    <button class="filter-btn active">ALL</button>
-                                    <button class="filter-btn">TECH</button>
-                                    <button class="filter-btn">ART</button>
-                                </div>
-                            </div>
-                            <div class="section-content">
-                                <div class="tastes-showcase">
-                                    <div class="taste-category">
-                                        <h4 class="category-title">TECNOLOGÍA</h4>
-                                        <div class="taste-items">
-                                            <div class="taste-item featured">
-                                                <div class="taste-icon">🎨</div>
-                                                <div class="taste-info">
-                                                    <div class="taste-name">DISEÑO CYBERPUNK</div>
-                                                    <div class="taste-description">Estética futurista con neón y tecnología avanzada</div>
-                                                    <div class="taste-tags">
-                                                        <span class="tag">UI/UX</span>
-                                                        <span class="tag">FUTURISTA</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="taste-item">
-                                                <div class="taste-icon">⚛</div>
-                                                <div class="taste-info">
-                                                    <div class="taste-name">TECNOLOGIA CUANTICA</div>
-                                                    <div class="taste-description">Computación cuántica y procesamiento paralelo</div>
-                                                    <div class="taste-tags">
-                                                        <span class="tag">QUANTUM</span>
-                                                        <span class="tag">INNOVACION</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="taste-category">
-                                        <h4 class="category-title">CREATIVIDAD</h4>
-                                        <div class="taste-items">
-                                            <div class="taste-item featured">
-                                                <div class="taste-icon">🥽</div>
-                                                <div class="taste-info">
-                                                    <div class="taste-name">REALIDAD VIRTUAL</div>
-                                                    <div class="taste-description">Inmersión total en mundos digitales</div>
-                                                    <div class="taste-tags">
-                                                        <span class="tag">VR</span>
-                                                        <span class="tag">IMMERSIVE</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="taste-item">
-                                                <div class="taste-icon">✎</div>
-                                                <div class="taste-info">
-                                                    <div class="taste-name">ARTE DIGITAL</div>
-                                                    <div class="taste-description">Creación de arte con herramientas digitales</div>
-                                                    <div class="taste-tags">
-                                                        <span class="tag">DIGITAL</span>
-                                                        <span class="tag">CREATIVE</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     
                     <!-- Neural Activity -->
