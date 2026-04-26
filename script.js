@@ -2793,6 +2793,39 @@
                                 </div>
                             </div>
                         </article>
+
+                        <article class="h-game-card" data-game-id="nemurimouto">
+                            <div class="game-thumbnail">
+                                <div class="game-image-wrapper">
+                                    <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2438520/capsule_616x353.jpg" 
+                                         alt="Nemurimouto" 
+                                         class="game-image" 
+                                         loading="lazy">
+                                    <div class="game-overlay">
+                                        <div class="game-info">
+                                            <span class="game-rating">18+</span>
+                                            <span class="game-type">SIMULACIÓN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="game-badge">NEW</div>
+                            </div>
+                            <div class="game-content">
+                                <h3 class="game-title">Nemurimouto</h3>
+                                <p class="game-description">Simulador de interacción +18 donde cuidas a tu hermana durmiente. Escenas íntimas con física realista y múltiples interacciones.</p>
+                                <div class="game-meta">
+                                    <span class="game-version">v1.0</span>
+                                    <span class="game-size">240 MB</span>
+                                    <span class="game-rating-stars">4.7</span>
+                                </div>
+                                <div class="game-actions">
+                                    <button class="game-btn game-btn--primary" data-download="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/NEMURIMOUTO.apk">
+                                        <span class="btn-icon">▼</span>
+                                        <span class="btn-text">DESCARGAR</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 </div>
             `,
