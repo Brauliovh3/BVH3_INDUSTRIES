@@ -892,7 +892,67 @@
     setupForbiddenZoneInteractions() {
         const gameCards = document.querySelectorAll('.h-game-card');
         const downloadButtons = document.querySelectorAll('.game-btn--primary');
-        
+        const searchInput = document.getElementById('games-search-input');
+        const searchStats = document.getElementById('search-stats');
+        const gamesContainer = document.getElementById('games-container');
+
+        // Setup search functionality
+        if (searchInput && gamesContainer) {
+            const totalGames = gameCards.length;
+            if (searchStats) {
+                searchStats.textContent = `${totalGames} juegos`;
+            }
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                gameCards.forEach(card => {
+                    const title = card.getAttribute('data-title')?.toLowerCase() || '';
+                    const type = card.getAttribute('data-type')?.toLowerCase() || '';
+                    const description = card.getAttribute('data-description')?.toLowerCase() || '';
+                    const gameId = card.getAttribute('data-game-id')?.toLowerCase() || '';
+
+                    const matches = title.includes(searchTerm) ||
+                                   type.includes(searchTerm) ||
+                                   description.includes(searchTerm) ||
+                                   gameId.includes(searchTerm);
+
+                    if (matches || searchTerm === '') {
+                        card.style.display = '';
+                        card.classList.remove('game-hidden');
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                        card.classList.add('game-hidden');
+                    }
+                });
+
+                // Update stats
+                if (searchStats) {
+                    if (searchTerm === '') {
+                        searchStats.textContent = `${totalGames} juegos`;
+                    } else {
+                        searchStats.textContent = `${visibleCount} de ${totalGames}`;
+                    }
+                }
+
+                // Show "no results" message if needed
+                this.updateNoResultsMessage(gamesContainer, visibleCount, searchTerm);
+            });
+
+            // Add clear button functionality (optional - clicking the icon clears search)
+            const searchIcon = searchInput.parentElement?.querySelector('.search-icon');
+            if (searchIcon) {
+                searchIcon.style.cursor = 'pointer';
+                searchIcon.addEventListener('click', () => {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                    searchInput.focus();
+                });
+            }
+        }
+
         // Setup card hover effects with performance optimization
         gameCards.forEach(card => {
             if (!this.isLowEndDevice) {
@@ -1033,6 +1093,28 @@
         }
         
         localStorage.setItem('gameDownloads', JSON.stringify(downloadHistory));
+    }
+
+    updateNoResultsMessage(container, visibleCount, searchTerm) {
+        // Remove existing no-results message
+        const existingMessage = container.querySelector('.no-results-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+
+        // Add no-results message if no games match
+        if (visibleCount === 0 && searchTerm !== '') {
+            const noResults = document.createElement('div');
+            noResults.className = 'no-results-message';
+            noResults.innerHTML = `
+                <div class="no-results-content">
+                    <span class="no-results-icon">🔍</span>
+                    <p class="no-results-text">No se encontraron juegos para "<strong>${searchTerm}</strong>"</p>
+                    <p class="no-results-hint">Intenta con otro término de búsqueda</p>
+                </div>
+            `;
+            container.appendChild(noResults);
+        }
     }
 
     // Discord-style music player functions
@@ -2003,9 +2085,17 @@
                         <h2 class="zone-title">COLECCIÓN EXCLUSIVA</h2>
                         <p class="zone-subtitle">Juegos premium para usuarios verificados</p>
                     </div>
-                    
-                    <div class="h-games-container">
-                        <article class="h-game-card" data-game-id="lonely-girl">
+
+                    <div class="games-search-container">
+                        <div class="games-search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="games-search-input" class="games-search-input" placeholder="Buscar juegos por nombre, tipo o descripción...">
+                            <span class="search-stats" id="search-stats"></span>
+                        </div>
+                    </div>
+
+                    <div class="h-games-container" id="games-container">
+                        <article class="h-game-card" data-game-id="lonely-girl" data-title="Lonely Girl" data-type="SIMULACIÓN" data-description="Simulador de vida donde cuidas a una chica en tu casa. Interacción íntima, múltiples escenas y finales según tus decisiones.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://techylist.com/wp-content/uploads/2023/11/Lonely-Girl.jpeg" 
@@ -2038,7 +2128,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="fhb">
+                        <article class="h-game-card" data-game-id="fhb" data-title="FHB" data-type="AVENTURA" data-description="Aventura corta con temática de Halloween. Encuentros íntimos con personajes animados y escenas interactivas.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://files.catbox.moe/h3j5j2.png" 
@@ -2071,7 +2161,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="kaguya">
+                        <article class="h-game-card" data-game-id="kaguya" data-title="Kaguya Player" data-type="ESTRATEGIA" data-description="Visual novel japonesa con mecánicas de estrategia. Historia adulta con decisiones que desbloquean escenas exclusivas.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://img.40407.com/upload/202411/18/18104137af89dQEw7eL6SgUwjvc.jpg" 
@@ -2104,7 +2194,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="coconut">
+                        <article class="h-game-card" data-game-id="coconut" data-title="Coco-nut Shake" data-type="RITMO" data-description="Juego de ritmo +18 donde interactúas con personajes mientras sigues el compás. Escenas desbloqueables según tu precisión.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://img.itch.zone/aW1nLzM3MjgzMzkucG5n/315x250%23c/NjGtao.png" 
@@ -2136,7 +2226,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="tatsumaki">
+                        <article class="h-game-card" data-game-id="tatsumaki" data-title="Tatsumaki-TH" data-type="AVENTURA" data-description="Basado en One Punch Man. Aventura con Tatsumaki incluyendo escenas íntimas y diálogos para adultos.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://img.itch.zone/aW1nLzkxNDcyNjEucG5n/original/wBmGEW.png" 
@@ -2168,7 +2258,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="nicole">
+                        <article class="h-game-card" data-game-id="nicole" data-title="Nicole v1" data-type="SIMULACIÓN" data-description="Simulador de citas con Nicole. Relación progresiva que evoluciona hacia escenas íntimas según tu afecto.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://files.catbox.moe/nxcu8y.jfif" 
@@ -2201,7 +2291,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="fapwall">
+                        <article class="h-game-card" data-game-id="fapwall" data-title="Fapwall" data-type="PUZZLE" data-description="Juego de rompecabezas +18. Cada nivel completado desbloquea ilustraciones animadas de alta calidad.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://uploads.ungrounded.net/tmp/img/736000/iu_736248_3166037.webp" 
@@ -2233,7 +2323,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="fuckerwatch">
+                        <article class="h-game-card" data-game-id="fuckerwatch" data-title="Fuckerwatch" data-type="ACCIÓN" data-description="Parodia adulta de Overwatch. Personajes familiarizados en situaciones íntimas con gameplay de acción.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://www.yunnx.com/upload/20250417/9c4fc637906a66.png" 
@@ -2266,7 +2356,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="survive">
+                        <article class="h-game-card" data-game-id="survive" data-title="Survive" data-type="SUPERVIVENCIA" data-description="Survival horror +18. Sobrevive mientras interactúas con supervivientes en escenas para adultos en mundo apocalíptico.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://techloky.com/public/uploads/images/Survive-2.jpg" 
@@ -2299,7 +2389,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="teaching-feeling">
+                        <article class="h-game-card" data-game-id="teaching-feeling" data-title="Teaching Feeling" data-type="SIMULACIÓN" data-description="Cuida a Sylvie, una esclava traumatizada. Trata con amor o crueldad. El juego +18 más famoso del género de cuidado.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://duracionde.com/storage/images/62a4906d17204.jpg" 
@@ -2332,7 +2422,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="together-again">
+                        <article class="h-game-card" data-game-id="together-again" data-title="Together Again" data-type="VISUAL NOVEL" data-description="Visual novel +18 donde reconectas con tu amiga de la infancia. Escenas románticas que evolucionan según tus elecciones.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://imag.malavida.com/mvimgbig/download-fs/together-again-35080-8.jpg" 
@@ -2365,7 +2455,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="queen-of-martials">
+                        <article class="h-game-card" data-game-id="queen-of-martials" data-title="The Queen of martials" data-type="ACCIÓN" data-description="Juego de acción +18 con combates de artes marciales. Domina técnicas de lucha mientras desarrollas relaciones íntimas con tus rivales.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://cdn2.steamgriddb.com/hero_thumb/2e14706ed91a79e3ad3ef65bca63c72b.jpg" 
@@ -2398,7 +2488,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="lovely-piston-trap">
+                        <article class="h-game-card" data-game-id="lovely-piston-trap" data-title="Lovely craft piston trap" data-type="CRAFT" data-description="Juego de crafteo estilo Minecraft +18. Construye trampas y estructuras mientras interactúas con personajes en escenas exclusivas.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://apktodo.io/uploads/2025/3/lovely-craft-piston-trap-free.jpg" 
@@ -2431,7 +2521,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="intimate-brothel">
+                        <article class="h-game-card" data-game-id="intimate-brothel" data-title="Intimate brothel" data-type="SIMULACIÓN" data-description="Simulador de gestión +18. Administra tu propio burdel, contrata chicas y atiende clientes en escenas interactivas detalladas.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://img.itch.zone/aW1nLzE2Mzk0MDgucG5n/original/J1Kntt.png" 
@@ -2464,7 +2554,7 @@
                             </div>
                         </article>
 
-                        <article class="h-game-card" data-game-id="my-college">
+                        <article class="h-game-card" data-game-id="my-college" data-title="My college" data-type="SIMULACIÓN" data-description="Simulador de vida universitaria +18. Vive el campus, haz amigos, romance y escenas adultas en esta aventura visual interactiva.">
                             <div class="game-thumbnail">
                                 <div class="game-image-wrapper">
                                     <img src="https://img.itch.zone/aW1nLzExMDQwNjUxLnBuZw==/original/8YmP3n.png" 
