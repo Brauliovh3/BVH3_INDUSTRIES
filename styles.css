@@ -1387,283 +1387,590 @@ body {
     50% { transform: translate(-0.04em, -0.03em); }
 }
 
-/* NSFW Modal */
+/* NSFW Modal - Sistema de Seguridad Mejorado */
 .nsfw-modal {
     position: fixed;
     z-index: 2000;
     inset: 0;
-    display: none; /* Hidden by default */
+    display: none;
     justify-content: center;
     align-items: center;
     padding: clamp(1rem, 3vw, 2rem);
     background:
-        radial-gradient(circle at top, rgba(255, 43, 214, 0.22), transparent 35%),
-        radial-gradient(circle at bottom, rgba(0, 229, 255, 0.2), transparent 40%),
-        rgba(3, 6, 12, 0.84);
-    backdrop-filter: blur(12px);
+        radial-gradient(circle at 20% 20%, rgba(255, 43, 214, 0.25), transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(0, 229, 255, 0.2), transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1), transparent 50%),
+        linear-gradient(180deg, rgba(2, 4, 12, 0.95), rgba(5, 8, 18, 0.98));
+    backdrop-filter: blur(20px);
+    animation: nsfwModalBgIn 0.6s ease-out;
+}
+
+@keyframes nsfwModalBgIn {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to { opacity: 1; backdrop-filter: blur(20px); }
 }
 
 .nsfw-modal-content {
     background:
-        radial-gradient(circle at top right, rgba(255, 43, 214, 0.14), transparent 28%),
-        radial-gradient(circle at left bottom, rgba(0, 229, 255, 0.12), transparent 30%),
-        linear-gradient(145deg, rgba(10, 16, 28, 0.98) 0%, rgba(2, 6, 14, 0.98) 100%);
-    border: 1px solid rgba(255, 43, 214, 0.5);
+        linear-gradient(135deg, rgba(20, 24, 40, 0.98) 0%, rgba(8, 12, 24, 0.99) 50%, rgba(12, 16, 32, 0.98) 100%);
+    border: 2px solid transparent;
+    border-image: linear-gradient(135deg, rgba(255, 43, 214, 0.6), rgba(0, 229, 255, 0.4), rgba(255, 43, 214, 0.6)) 1;
     box-shadow:
-        0 0 0 1px rgba(0, 229, 255, 0.16) inset,
-        0 0 42px rgba(255, 43, 214, 0.22),
-        0 24px 70px rgba(0, 0, 0, 0.45);
-    padding: clamp(1.5rem, 3vw, 2.2rem);
-    max-width: 560px;
-    width: min(560px, 100%);
+        0 0 0 1px rgba(0, 229, 255, 0.2) inset,
+        0 0 60px rgba(255, 43, 214, 0.3),
+        0 30px 80px rgba(0, 0, 0, 0.6),
+        inset 0 0 100px rgba(0, 229, 255, 0.05);
+    padding: clamp(1.8rem, 4vw, 2.5rem);
+    max-width: 520px;
+    width: min(520px, 92%);
     position: relative;
     overflow: hidden;
-    animation: nsfwModalIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-    clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+    animation: nsfwModalIn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    clip-path: polygon(
+        0 20px, 20px 0,
+        calc(100% - 20px) 0, 100% 20px,
+        100% calc(100% - 20px), calc(100% - 20px) 100%,
+        20px 100%, 0 calc(100% - 20px)
+    );
 }
 
-.nsfw-modal-content::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.08) 48%, transparent 56%);
-    transform: translateX(-120%);
-    animation: nsfwSweep 5.5s linear infinite;
-    pointer-events: none;
+/* Estados del modal */
+.nsfw-modal-content.nsfw-state--denied {
+    border-image: linear-gradient(135deg, #ff0040, #ff4080, #ff0040) 1;
+    box-shadow:
+        0 0 0 1px rgba(255, 0, 64, 0.3) inset,
+        0 0 60px rgba(255, 0, 64, 0.4),
+        0 30px 80px rgba(0, 0, 0, 0.6);
+    animation: nsfwShake 0.5s ease-in-out;
 }
 
+.nsfw-modal-content.nsfw-state--granted {
+    border-image: linear-gradient(135deg, #00ff7a, #00e5ff, #00ff7a) 1;
+    box-shadow:
+        0 0 0 1px rgba(0, 255, 122, 0.3) inset,
+        0 0 80px rgba(0, 255, 122, 0.4),
+        0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes nsfwShake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+    20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+@keyframes nsfwModalIn {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Efectos de sistema */
 .nsfw-scanline {
     position: absolute;
     inset: 0;
     background: repeating-linear-gradient(
         to bottom,
-        rgba(255, 255, 255, 0.02) 0,
-        rgba(255, 255, 255, 0.02) 1px,
+        rgba(0, 229, 255, 0.03) 0,
+        rgba(0, 229, 255, 0.03) 1px,
         transparent 1px,
-        transparent 5px
+        transparent 3px
     );
-    opacity: 0.3;
+    animation: nsfwScanlineMove 8s linear infinite;
     pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes nsfwScanlineMove {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+}
+
+.nsfw-grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Esquinas decorativas */
+.nsfw-corner-decor {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 2px solid rgba(255, 43, 214, 0.6);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.nsfw-corner-tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+.nsfw-corner-tr { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+.nsfw-corner-bl { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+.nsfw-corner-br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+
+/* Barra de sistema */
+.nsfw-system-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 28px;
+    background: linear-gradient(90deg, rgba(0, 229, 255, 0.1), rgba(255, 43, 214, 0.1));
+    border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    font-family: var(--font-secondary);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    z-index: 3;
+}
+
+.nsfw-system-dot {
+    width: 8px;
+    height: 8px;
+    background: #00ff7a;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00ff7a;
+    animation: nsfwSystemPulse 2s ease-in-out infinite;
+}
+
+@keyframes nsfwSystemPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 10px #00ff7a; }
+    50% { opacity: 0.5; box-shadow: 0 0 5px #00ff7a; }
+}
+
+.nsfw-system-text {
+    color: rgba(0, 229, 255, 0.8);
+}
+
+.nsfw-system-id {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.nsfw-system-id span {
+    color: var(--primary-cyan);
+    font-family: monospace;
 }
 
 .nsfw-close-btn {
     position: absolute;
-    top: 1rem;
+    top: 35px;
     right: 1rem;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     display: grid;
     place-items: center;
-    border: 1px solid rgba(255, 43, 214, 0.45);
-    background: rgba(9, 14, 24, 0.88);
+    border: 1px solid rgba(255, 43, 214, 0.5);
+    background: rgba(9, 14, 24, 0.9);
     color: var(--text-light);
-    font-size: 1.45rem;
+    font-size: 1.5rem;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    z-index: 2;
+    transition: all 0.3s ease;
+    z-index: 10;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
 }
 
 .nsfw-close-btn:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 43, 214, 0.16);
-    box-shadow: 0 0 20px rgba(255, 43, 214, 0.22);
+    transform: translateY(-2px) rotate(90deg);
+    background: rgba(255, 43, 214, 0.2);
+    box-shadow: 0 0 25px rgba(255, 43, 214, 0.4);
+    border-color: var(--primary-pink);
 }
 
 .nsfw-badge-row {
     position: relative;
-    z-index: 1;
+    z-index: 5;
     display: flex;
-    gap: 0.75rem;
+    gap: 0.6rem;
     flex-wrap: wrap;
-    margin-bottom: 1rem;
+    margin: 1.5rem 0 1rem;
 }
 
 .nsfw-badge {
     display: inline-flex;
     align-items: center;
-    min-height: 34px;
-    padding: 0.35rem 0.85rem;
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    min-height: 32px;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid;
     font-family: var(--font-secondary);
-    font-size: 0.78rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
 
 .nsfw-badge--alert {
     color: var(--dark-bg);
-    background: linear-gradient(90deg, var(--primary-pink), #ff8cda);
-    box-shadow: 0 0 18px rgba(255, 43, 214, 0.3);
+    background: linear-gradient(90deg, var(--primary-pink), #ff5eb8);
+    border-color: var(--primary-pink);
+    box-shadow: 0 0 20px rgba(255, 43, 214, 0.4);
+    animation: nsfwBadgePulse 2s ease-in-out infinite;
 }
 
 .nsfw-badge--ghost {
     color: var(--primary-cyan);
-    background: rgba(0, 229, 255, 0.08);
+    background: rgba(0, 229, 255, 0.12);
+    border-color: rgba(0, 229, 255, 0.3);
+}
+
+.nsfw-badge--secure {
+    color: #00ff7a;
+    background: rgba(0, 255, 122, 0.1);
+    border-color: rgba(0, 255, 122, 0.3);
+}
+
+@keyframes nsfwBadgePulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 43, 214, 0.4); }
+    50% { box-shadow: 0 0 30px rgba(255, 43, 214, 0.6); }
 }
 
 .nsfw-title {
     position: relative;
-    z-index: 1;
-    margin: 0 0 0.6rem;
+    z-index: 5;
+    margin: 1rem 0 0.5rem;
     padding-right: 3rem;
     font-family: var(--font-primary);
-    font-size: clamp(1.7rem, 4vw, 2.5rem);
-    letter-spacing: 0.12em;
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-light);
-    text-shadow: 0 0 30px rgba(255, 43, 214, 0.24);
+    text-shadow: 0 0 40px rgba(255, 43, 214, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nsfw-title-lock {
+    font-size: 0.8em;
+    filter: drop-shadow(0 0 10px rgba(255, 43, 214, 0.6));
+    animation: nsfwLockPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes nsfwLockPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 .nsfw-subtitle {
     position: relative;
-    z-index: 1;
-    margin: 0 0 1.3rem;
+    z-index: 5;
+    margin: 0 0 1.5rem;
     max-width: 44ch;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.7);
     line-height: 1.7;
+    font-size: 0.95rem;
 }
 
 .nsfw-warning-panel {
     position: relative;
-    z-index: 1;
+    z-index: 5;
     display: grid;
-    grid-template-columns: 52px 1fr;
+    grid-template-columns: 56px 1fr;
     gap: 1rem;
-    align-items: start;
-    margin-bottom: 1.35rem;
-    padding: 1rem;
-    border: 1px solid rgba(255, 43, 214, 0.22);
-    background: linear-gradient(135deg, rgba(255, 43, 214, 0.08), rgba(0, 229, 255, 0.04));
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1.2rem;
+    border: 1px solid rgba(255, 43, 214, 0.3);
+    background: linear-gradient(135deg, rgba(255, 43, 214, 0.1), rgba(0, 229, 255, 0.05));
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
 }
 
 .nsfw-warning-icon {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
     display: grid;
     place-items: center;
-    border: 1px solid rgba(255, 43, 214, 0.4);
+    border: 2px solid rgba(255, 43, 214, 0.5);
+    background: rgba(255, 43, 214, 0.1);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.nsfw-icon-inner {
     color: var(--primary-pink);
     font-family: var(--font-primary);
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 900;
-    box-shadow: 0 0 20px rgba(255, 43, 214, 0.16);
-    animation: nsfwPulse 1.9s ease-in-out infinite;
+    animation: nsfwPulse 1.5s ease-in-out infinite;
 }
 
 .nsfw-warning-copy strong {
     display: block;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.4rem;
     color: var(--text-light);
     font-family: var(--font-primary);
+    font-size: 0.9rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .nsfw-warning-copy p {
     margin: 0;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.6);
     line-height: 1.6;
+    font-size: 0.9rem;
 }
 
 .nsfw-input-shell {
     position: relative;
-    z-index: 1;
+    z-index: 5;
 }
 
 .nsfw-input-label {
-    display: inline-block;
-    margin-bottom: 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
     color: var(--primary-cyan);
     font-family: var(--font-secondary);
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+}
+
+.nsfw-label-icon {
+    font-size: 0.9rem;
 }
 
 .nsfw-input-container {
     display: grid;
-    grid-template-columns: 1fr 56px;
-    gap: 0.65rem;
-    margin-bottom: 0.9rem;
+    grid-template-columns: 1fr 52px;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .nsfw-password-input {
-    min-height: 56px;
-    padding: 0 1rem;
-    border: 1px solid rgba(0, 229, 255, 0.28);
-    background: rgba(4, 10, 20, 0.88);
+    min-height: 52px;
+    padding: 0 1.2rem;
+    border: 2px solid rgba(0, 229, 255, 0.2);
+    background: rgba(4, 10, 25, 0.9);
     color: var(--text-light);
     font-family: var(--font-primary);
-    font-size: 0.95rem;
-    letter-spacing: 0.12em;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: all 0.3s ease;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
 
 .nsfw-password-input::placeholder {
-    color: rgba(214, 222, 235, 0.44);
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.1em;
 }
 
 .nsfw-password-input:focus {
     border-color: var(--primary-cyan);
-    box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.22), 0 0 20px rgba(0, 229, 255, 0.12);
-    transform: translateY(-1px);
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.2), inset 0 0 20px rgba(0, 229, 255, 0.05);
 }
 
-.nsfw-toggle-password-btn,
-.nsfw-submit-btn {
-    min-height: 56px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    cursor: pointer;
-    font-family: var(--font-primary);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+.nsfw-password-input.nsfw-input--error {
+    border-color: #ff0040;
+    box-shadow: 0 0 25px rgba(255, 0, 64, 0.3);
+    animation: nsfwInputShake 0.4s ease-in-out;
+}
+
+.nsfw-password-input.nsfw-input--success {
+    border-color: #00ff7a;
+    box-shadow: 0 0 25px rgba(0, 255, 122, 0.3);
+}
+
+@keyframes nsfwInputShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
 .nsfw-toggle-password-btn {
-    background: rgba(255, 255, 255, 0.05);
+    min-height: 52px;
+    border: 2px solid rgba(0, 229, 255, 0.2);
+    background: rgba(4, 10, 25, 0.9);
     color: var(--text-light);
-    font-size: 1.15rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: grid;
+    place-items: center;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
 
 .nsfw-toggle-password-btn:hover {
-    transform: translateY(-1px);
-    border-color: rgba(0, 229, 255, 0.45);
-    box-shadow: 0 0 16px rgba(0, 229, 255, 0.12);
+    border-color: var(--primary-cyan);
+    background: rgba(0, 229, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
 }
 
 .nsfw-submit-btn {
     width: 100%;
-    background: linear-gradient(90deg, var(--primary-pink), #ff6fd8);
-    color: var(--dark-bg);
-    font-size: 0.95rem;
-    font-weight: 900;
-    letter-spacing: 0.18em;
+    min-height: 56px;
+    border: 2px solid rgba(255, 43, 214, 0.3);
+    background: linear-gradient(135deg, rgba(255, 43, 214, 0.2), rgba(255, 43, 214, 0.1));
+    color: var(--text-light);
+    font-family: var(--font-primary);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    box-shadow: 0 10px 24px rgba(255, 43, 214, 0.24);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
 
 .nsfw-submit-btn:hover {
+    background: linear-gradient(135deg, rgba(255, 43, 214, 0.3), rgba(255, 43, 214, 0.2));
+    border-color: var(--primary-pink);
+    box-shadow: 0 0 30px rgba(255, 43, 214, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 14px 30px rgba(255, 43, 214, 0.28);
 }
 
-.nsfw-submit-btn:active,
-.nsfw-toggle-password-btn:active {
-    transform: translateY(0);
+.nsfw-submit-btn:active {
+    transform: translateY(1px);
+}
+
+.nsfw-btn-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.nsfw-submit-btn:hover .nsfw-btn-icon {
+    transform: translateX(5px);
+}
+
+/* Indicador de estado */
+.nsfw-status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-family: var(--font-secondary);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    transition: all 0.3s ease;
+}
+
+.nsfw-status--waiting {
+    background: rgba(0, 229, 255, 0.1);
+    color: rgba(0, 229, 255, 0.8);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.nsfw-status--checking {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.nsfw-status--error {
+    background: rgba(255, 0, 64, 0.1);
+    color: #ff4080;
+    border: 1px solid rgba(255, 0, 64, 0.3);
+}
+
+.nsfw-status--granted {
+    background: rgba(0, 255, 122, 0.1);
+    color: #00ff7a;
+    border: 1px solid rgba(0, 255, 122, 0.3);
+}
+
+.nsfw-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: nsfwStatusPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes nsfwStatusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
 }
 
 .nsfw-error-message {
     position: relative;
-    z-index: 1;
+    z-index: 5;
     min-height: 1.5rem;
-    margin: 0.85rem 0 0;
-    color: #ff8fb9;
+    margin: 0.75rem 0 0;
+    color: #ff4080;
     font-family: var(--font-secondary);
     font-size: 0.85rem;
+    font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255, 0, 64, 0.5);
+}
+
+/* Overlay de éxito */
+.nsfw-success-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.nsfw-success-overlay.nsfw-success--visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.nsfw-success-content {
+    text-align: center;
+    animation: nsfwSuccessIn 0.5s ease-out;
+}
+
+@keyframes nsfwSuccessIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.nsfw-success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #00ff7a, #00e5ff);
+    color: var(--dark-bg);
+    font-size: 2.5rem;
+    font-weight: 900;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    animation: nsfwSuccessIcon 0.5s ease-out;
+}
+
+@keyframes nsfwSuccessIcon {
+    0% { transform: scale(0) rotate(-180deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+.nsfw-success-text {
+    font-family: var(--font-primary);
+    font-size: 1.5rem;
+    color: #00ff7a;
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 20px rgba(0, 255, 122, 0.5);
+}
+
+.nsfw-success-sub {
+    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
 }
 
 .forbidden-content-modal {
@@ -4393,6 +4700,53 @@ body {
         margin-top: 0.7rem;
         font-size: 0.74rem;
         line-height: 1.4;
+    }
+
+    /* Android Optimizations */
+    .nsfw-system-bar {
+        height: 26px;
+        font-size: 0.6rem;
+    }
+
+    .nsfw-system-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    .nsfw-close-btn {
+        top: 32px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .nsfw-corner-decor {
+        width: 20px;
+        height: 20px;
+        border-width: 1.5px;
+    }
+
+    .nsfw-title-lock {
+        font-size: 0.75em;
+    }
+
+    .nsfw-status-indicator {
+        margin-top: 0.75rem;
+        padding: 0.6rem;
+        font-size: 0.7rem;
+    }
+
+    .nsfw-btn-icon {
+        display: none;
+    }
+
+    .nsfw-success-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.8rem;
+    }
+
+    .nsfw-success-text {
+        font-size: 1.1rem;
     }
 }
 

@@ -22,6 +22,19 @@
         this.isLowEndDevice = this.detectLowEndDevice();
         this.performanceMode = this.getPerformanceMode();
         this.setupPerformanceOptimizations();
+
+        
+        window.scrapeHGames = () => {
+            const cards = document.querySelectorAll('.h-game-card');
+            return Array.from(cards).map(card => ({
+                id: card.dataset.gameId,
+                title: card.dataset.title,
+                type: card.dataset.type,
+                description: card.dataset.description,
+                image: card.querySelector('.game-image')?.src,
+                downloadUrl: card.querySelector('[data-download]')?.dataset.download
+            }));
+        };
     }
 
     init() {
@@ -194,6 +207,39 @@
 
     showNsfwModal() {
         if (!this.nsfwModal) return;
+
+        // Generar ID de sesión aleatorio
+        const sessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const sessionIdElement = document.getElementById('nsfw-session-id');
+        if (sessionIdElement) {
+            sessionIdElement.textContent = sessionId;
+        }
+
+        // Resetear estado del modal
+        const modalContent = this.nsfwModal.querySelector('.nsfw-modal-content');
+        if (modalContent) {
+            modalContent.classList.remove('nsfw-state--denied', 'nsfw-state--granted');
+        }
+        if (this.nsfwPasswordInput) {
+            this.nsfwPasswordInput.classList.remove('nsfw-input--error', 'nsfw-input--success');
+            this.nsfwPasswordInput.value = '';
+        }
+
+        // Resetear indicador de estado
+        const statusIndicator = document.getElementById('nsfw-status-indicator');
+        if (statusIndicator) {
+            statusIndicator.className = 'nsfw-status-indicator nsfw-status--waiting';
+            statusIndicator.innerHTML = `
+                <span class="nsfw-status-dot"></span>
+                <span class="nsfw-status-text">Esperando credenciales...</span>
+            `;
+        }
+
+        // Limpiar mensaje de error
+        if (this.nsfwErrorMessage) {
+            this.nsfwErrorMessage.textContent = '';
+        }
+
         this.nsfwModal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
         this.nsfwPasswordInput?.focus();
@@ -214,24 +260,86 @@
     checkNsfwPassword() {
         const enteredPassword = this.nsfwPasswordInput.value.trim().toLowerCase().replace('-', '');
         const expectedPassword = 'bvh32006';
+        const modalContent = this.nsfwModal.querySelector('.nsfw-modal-content');
+        const statusIndicator = document.getElementById('nsfw-status-indicator');
+        const successOverlay = document.getElementById('nsfw-success-overlay');
+
+        // Reset states
+        modalContent.classList.remove('nsfw-state--denied', 'nsfw-state--granted');
+        this.nsfwPasswordInput.classList.remove('nsfw-input--error', 'nsfw-input--success');
 
         if (enteredPassword === expectedPassword) {
-            this.hideNsfwModal();
-            this.loadAndShowForbiddenContent();
+            // ACCESO CONCEDIDO - Efectos visuales
+            this.nsfwPasswordInput.classList.add('nsfw-input--success');
+            modalContent.classList.add('nsfw-state--granted');
+
+            // Actualizar indicador de estado
+            if (statusIndicator) {
+                statusIndicator.className = 'nsfw-status-indicator';
+                statusIndicator.classList.add('nsfw-status--granted');
+                statusIndicator.innerHTML = `
+                    <span class="nsfw-status-dot" style="background: #00ff7a;"></span>
+                    <span class="nsfw-status-text" style="color: #00ff7a;">ACCESO CONCEDIDO</span>
+                `;
+            }
+
+            // Mostrar overlay de éxito
+            if (successOverlay) {
+                successOverlay.classList.add('nsfw-success--visible');
+            }
+
+            // Delay para mostrar el efecto antes de continuar
+            setTimeout(() => {
+                this.hideNsfwModal();
+                this.loadAndShowForbiddenContent();
+                // Reset estados
+                modalContent.classList.remove('nsfw-state--granted');
+                this.nsfwPasswordInput.classList.remove('nsfw-input--success');
+                if (successOverlay) successOverlay.classList.remove('nsfw-success--visible');
+            }, 1500);
+
         } else {
+            // ACCESO DENEGADO - Efectos visuales
+            this.nsfwPasswordInput.classList.add('nsfw-input--error');
+            modalContent.classList.add('nsfw-state--denied');
+
+            // Actualizar indicador de estado
+            if (statusIndicator) {
+                statusIndicator.className = 'nsfw-status-indicator';
+                statusIndicator.classList.add('nsfw-status--error');
+                statusIndicator.innerHTML = `
+                    <span class="nsfw-status-dot" style="background: #ff0040;"></span>
+                    <span class="nsfw-status-text" style="color: #ff4080;">ACCESO DENEGADO</span>
+                `;
+            }
+
             this.nsfwErrorMessage.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
             this.nsfwPasswordInput.value = '';
-            // Añadir un efecto de "sacudida" para feedback visual
-            this.nsfwModal.querySelector('.nsfw-modal-content').animate([
+
+            // Efecto de sacudida mejorado
+            modalContent.animate([
                 { transform: 'translateX(0)' },
                 { transform: 'translateX(-10px)' },
                 { transform: 'translateX(10px)' },
                 { transform: 'translateX(-10px)' },
                 { transform: 'translateX(0)' }
             ], {
-                duration: 300,
+                duration: 400,
                 easing: 'ease-in-out'
             });
+
+            // Reset después de la animación
+            setTimeout(() => {
+                modalContent.classList.remove('nsfw-state--denied');
+                this.nsfwPasswordInput.classList.remove('nsfw-input--error');
+                if (statusIndicator) {
+                    statusIndicator.className = 'nsfw-status-indicator nsfw-status--waiting';
+                    statusIndicator.innerHTML = `
+                        <span class="nsfw-status-dot"></span>
+                        <span class="nsfw-status-text">Esperando credenciales...</span>
+                    `;
+                }
+            }, 2000);
         }
     }
 

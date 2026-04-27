@@ -327,31 +327,78 @@
         </section>
         <!-- NSFW Password Modal -->
         <div id="nsfw-modal" class="nsfw-modal">
-            <div class="nsfw-modal-content">
+            <div class="nsfw-modal-content" id="nsfw-modal-content">
                 <span class="nsfw-close-btn" aria-label="Cerrar">&times;</span>
+
+                <!-- Efectos de sistema -->
                 <div class="nsfw-scanline" aria-hidden="true"></div>
+                <div class="nsfw-grid-overlay" aria-hidden="true"></div>
+                <div class="nsfw-corner-decor nsfw-corner-tl" aria-hidden="true"></div>
+                <div class="nsfw-corner-decor nsfw-corner-tr" aria-hidden="true"></div>
+                <div class="nsfw-corner-decor nsfw-corner-bl" aria-hidden="true"></div>
+                <div class="nsfw-corner-decor nsfw-corner-br" aria-hidden="true"></div>
+
+                <!-- Barra de estado del sistema -->
+                <div class="nsfw-system-bar">
+                    <span class="nsfw-system-dot"></span>
+                    <span class="nsfw-system-text">SISTEMA DE SEGURIDAD ACTIVO</span>
+                    <span class="nsfw-system-id">ID: <span id="nsfw-session-id">---</span></span>
+                </div>
+
                 <div class="nsfw-badge-row" aria-label="Estado de seguridad">
                     <span class="nsfw-badge nsfw-badge--alert">18+</span>
                     <span class="nsfw-badge nsfw-badge--ghost">ÁREA CIFRADA</span>
+                    <span class="nsfw-badge nsfw-badge--secure">SSL-256</span>
                 </div>
-                <h2 class="nsfw-title">Acceso Restringido</h2>
+
+                <h2 class="nsfw-title">
+                    <span class="nsfw-title-lock">🔒</span>
+                    Acceso Restringido
+                </h2>
                 <p class="nsfw-subtitle">Esta zona contiene material sensible y solo está disponible para usuarios autorizados.</p>
+
                 <div class="nsfw-warning-panel">
-                    <div class="nsfw-warning-icon" aria-hidden="true">!</div>
+                    <div class="nsfw-warning-icon" aria-hidden="true">
+                        <span class="nsfw-icon-inner">!</span>
+                    </div>
                     <div class="nsfw-warning-copy">
                         <strong>Verificación requerida</strong>
                         <p>Introduce el código de acceso para desbloquear la Zona Prohibida.</p>
                     </div>
                 </div>
+
                 <div class="nsfw-input-shell">
-                    <label for="nsfw-password" class="nsfw-input-label">Código de acceso</label>
+                    <label for="nsfw-password" class="nsfw-input-label">
+                        <span class="nsfw-label-icon">🔐</span>
+                        Código de acceso
+                    </label>
                     <div class="nsfw-input-container">
-                        <input type="password" id="nsfw-password" class="nsfw-password-input" placeholder="INGRESA EL CÓDIGO">
-                        <button id="nsfw-toggle-password" type="button" class="nsfw-toggle-password-btn" aria-label="Mostrar u ocultar contraseña">👁</button>
+                        <input type="password" id="nsfw-password" class="nsfw-password-input" placeholder="INGRESA EL CÓDIGO" autocomplete="off">
+                        <button id="nsfw-toggle-password" type="button" class="nsfw-toggle-password-btn" aria-label="Mostrar u ocultar contraseña">
+                            <span class="nsfw-eye-icon">👁</span>
+                        </button>
                     </div>
-                    <button id="nsfw-submit-btn" type="button" class="nsfw-submit-btn">ENTRAR</button>
+                    <button id="nsfw-submit-btn" type="button" class="nsfw-submit-btn">
+                        <span class="nsfw-btn-text">ENTRAR</span>
+                        <span class="nsfw-btn-icon">→</span>
+                    </button>
                 </div>
+
+                <div id="nsfw-status-indicator" class="nsfw-status-indicator nsfw-status--waiting">
+                    <span class="nsfw-status-dot"></span>
+                    <span class="nsfw-status-text">Esperando credenciales...</span>
+                </div>
+
                 <p id="nsfw-error-message" class="nsfw-error-message"></p>
+
+                <!-- Efecto de acceso concedido -->
+                <div id="nsfw-success-overlay" class="nsfw-success-overlay">
+                    <div class="nsfw-success-content">
+                        <div class="nsfw-success-icon">✓</div>
+                        <div class="nsfw-success-text">ACCESO CONCEDIDO</div>
+                        <div class="nsfw-success-sub">Cargando contenido...</div>
+                    </div>
+                </div>
             </div>
         </div>
 
