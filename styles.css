@@ -6635,3 +6635,120 @@ body {
         height: 320px;
     }
 }
+
+/* =============================================
+   HATSUNE MIKU HOLOGRAM STYLES
+   ============================================= */
+
+/* Override android-shell for Miku */
+.miku-shell {
+    background: transparent !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: visible !important;
+}
+
+.miku-bay {
+    background: radial-gradient(ellipse at center bottom, rgba(0, 229, 255, 0.08) 0%, transparent 70%) !important;
+}
+
+/* Main SVG hologram */
+.miku-svg {
+    width: 100%;
+    height: 100%;
+    max-height: 480px;
+    filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.7)) drop-shadow(0 0 25px rgba(57, 197, 187, 0.4));
+    animation: mikuFloat 4s ease-in-out infinite, mikuHoloFlicker 8s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+}
+
+/* Hologram float animation */
+@keyframes mikuFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Subtle hologram flicker */
+@keyframes mikuHoloFlicker {
+    0%, 96%, 100% { opacity: 1; filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.7)) drop-shadow(0 0 25px rgba(57, 197, 187, 0.4)); }
+    97% { opacity: 0.85; filter: drop-shadow(0 0 20px rgba(0, 229, 255, 1)) drop-shadow(0 0 40px rgba(57, 197, 187, 0.7)); }
+    98% { opacity: 0.95; filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.5)); }
+    99% { opacity: 1; filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.9)) drop-shadow(0 0 35px rgba(255, 79, 195, 0.5)); }
+}
+
+/* Twin tail sway animations */
+.miku-twintail-l {
+    transform-origin: 70px 120px;
+    animation: tailSwayL 3.5s ease-in-out infinite;
+}
+.miku-twintail-r {
+    transform-origin: 150px 120px;
+    animation: tailSwayR 3.5s ease-in-out infinite;
+}
+
+@keyframes tailSwayL {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(3deg); }
+    75% { transform: rotate(-2deg); }
+}
+@keyframes tailSwayR {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-3deg); }
+    75% { transform: rotate(2deg); }
+}
+
+/* Base glow pulse */
+.miku-base-glow {
+    animation: baseGlowPulse 2s ease-in-out infinite;
+}
+.miku-base-ring {
+    animation: baseGlowPulse 2s ease-in-out infinite reverse;
+}
+@keyframes baseGlowPulse {
+    0%, 100% { opacity: 0.15; rx: 70px; }
+    50% { opacity: 0.35; rx: 75px; }
+}
+
+/* Floating data particles */
+.miku-particle-a { animation: particleOrbit 5s linear infinite; }
+.miku-particle-b { animation: particleOrbit 7s linear infinite reverse; }
+.miku-particle-c { animation: particleDrift 6s ease-in-out infinite; }
+.miku-particle-d { animation: particleDrift 4s ease-in-out infinite reverse; }
+.miku-particle-e { animation: particleOrbit 9s linear infinite; }
+.miku-particle-f { animation: particleDrift 8s ease-in-out infinite; }
+
+@keyframes particleOrbit {
+    0%, 100% { opacity: 0.3; transform: translate(0, 0); }
+    25% { opacity: 0.8; transform: translate(5px, -8px); }
+    50% { opacity: 0.4; transform: translate(10px, 0); }
+    75% { opacity: 0.9; transform: translate(5px, 8px); }
+}
+@keyframes particleDrift {
+    0%, 100% { opacity: 0.2; transform: translateY(0); }
+    50% { opacity: 0.7; transform: translateY(-15px); }
+}
+
+/* Moving scanline effect */
+.miku-scan-1 {
+    animation: scanMove 3s linear infinite;
+}
+.miku-scan-2 {
+    animation: scanMove 3s linear infinite 1.5s;
+}
+@keyframes scanMove {
+    0% { transform: translateY(-400px); opacity: 0; }
+    10% { opacity: 0.25; }
+    90% { opacity: 0.25; }
+    100% { transform: translateY(440px); opacity: 0; }
+}
+
+/* Status chip for holo - reuse existing android chip but with miku colors */
+.miku-bay .android-state-chip--live {
+    background: rgba(57, 197, 187, 0.2);
+    border-color: #39c5bb;
+    color: #39c5bb;
+}

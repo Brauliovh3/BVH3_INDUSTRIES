@@ -3168,100 +3168,325 @@
 
             depool: `
                 <div class="depool-interface">
-                    <div class="android-bay">
+                    <div class="android-bay miku-bay">
                         <div class="android-stage" id="androidStage">
-                            <div class="android-status-strip" aria-label="Estado del androide">
-                                <span class="android-state-chip android-state-chip--live">SYNC ONLINE</span>
-                                <span class="android-state-chip">FRAME v3.7</span>
-                                <span class="android-state-chip">TACTICAL BODY</span>
+                            <div class="android-status-strip" aria-label="Estado del holograma">
+                                <span class="android-state-chip android-state-chip--live">HOLO ONLINE</span>
+                                <span class="android-state-chip">VOCALOID v3.9</span>
+                                <span class="android-state-chip">HATSUNE MIKU</span>
                             </div>
 
-                            <div class="android-shell" id="androidShell">
+                            <div class="android-shell miku-shell" id="androidShell">
                                 <div class="android-glow android-glow--cyan"></div>
                                 <div class="android-glow android-glow--pink"></div>
                                 <div class="android-shadow"></div>
-                                <div class="android-backpack"></div>
-                                <div class="android-antenna android-antenna--left"></div>
-                                <div class="android-antenna android-antenna--right"></div>
 
-                                <div class="android-head">
-                                    <div class="android-face-plate"></div>
-                                    <div class="android-brow android-brow--left"></div>
-                                    <div class="android-brow android-brow--right"></div>
-                                    <div class="android-visor"></div>
-                                    <div class="android-ear android-ear--left"></div>
-                                    <div class="android-ear android-ear--right"></div>
-                                    <div class="android-mouth"></div>
-                                </div>
+                                <!-- Hatsune Miku SVG Hologram -->
+                                <svg class="miku-svg" viewBox="0 0 220 480" xmlns="http://www.w3.org/2000/svg" aria-label="Hatsune Miku Hologram">
+                                    <defs>
+                                        <filter id="holoGlow">
+                                            <feGaussianBlur stdDeviation="3" result="blur"/>
+                                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                        </filter>
+                                        <filter id="scanlines">
+                                            <feTurbulence type="fractalNoise" baseFrequency="0 0.15" numOctaves="1" result="noise"/>
+                                            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1" xChannelSelector="R" yChannelSelector="G"/>
+                                        </filter>
+                                        <linearGradient id="mikuGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#39c5bb;stop-opacity:0.9"/>
+                                            <stop offset="50%" style="stop-color:#00e5ff;stop-opacity:1"/>
+                                            <stop offset="100%" style="stop-color:#b388ff;stop-opacity:0.85"/>
+                                        </linearGradient>
+                                        <linearGradient id="hairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#00e5ff;stop-opacity:1"/>
+                                            <stop offset="100%" style="stop-color:#39c5bb;stop-opacity:0.7"/>
+                                        </linearGradient>
+                                        <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#b2f0ff;stop-opacity:0.85"/>
+                                            <stop offset="100%" style="stop-color:#80deea;stop-opacity:0.75"/>
+                                        </linearGradient>
+                                        <linearGradient id="tieGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#ff4fc3;stop-opacity:1"/>
+                                            <stop offset="100%" style="stop-color:#b388ff;stop-opacity:0.8"/>
+                                        </linearGradient>
+                                        <linearGradient id="baseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#00e5ff;stop-opacity:0.3"/>
+                                            <stop offset="100%" style="stop-color:#00e5ff;stop-opacity:0"/>
+                                        </linearGradient>
+                                        <radialGradient id="holoBase" cx="50%" cy="100%" r="50%">
+                                            <stop offset="0%" style="stop-color:#00e5ff;stop-opacity:0.4"/>
+                                            <stop offset="100%" style="stop-color:#00e5ff;stop-opacity:0"/>
+                                        </radialGradient>
+                                    </defs>
 
-                                <div class="android-neck"></div>
+                                    <!-- Hologram base platform glow -->
+                                    <ellipse cx="110" cy="465" rx="70" ry="12" fill="url(#holoBase)" class="miku-base-glow"/>
+                                    <ellipse cx="110" cy="465" rx="50" ry="8" fill="#00e5ff" opacity="0.15" class="miku-base-ring"/>
 
-                                <div class="android-shoulder android-shoulder--left"></div>
-                                <div class="android-shoulder android-shoulder--right"></div>
-                                <div class="android-arm android-arm--left"></div>
-                                <div class="android-arm android-arm--right"></div>
+                                    <!-- Hologram scanline effect overlay -->
+                                    <rect x="30" y="40" width="160" height="420" fill="none" stroke="#00e5ff" stroke-width="0.3" opacity="0.05" class="miku-scanline-box"/>
 
-                                <div class="android-torso">
-                                    <div class="android-collar"></div>
-                                    <div class="android-chest-plate">
-                                        <div class="android-chest-line"></div>
-                                        <div class="android-chest-line"></div>
-                                        <div class="android-chest-line"></div>
-                                    </div>
-                                    <div class="android-reactor">
-                                        <div class="android-reactor-ring"></div>
-                                        <div class="android-reactor-core"></div>
-                                    </div>
-                                    <div class="android-ab-panel">
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
-                                    </div>
-                                </div>
+                                    <!-- === TWIN TAILS (back layer) === -->
+                                    <!-- Left twin tail -->
+                                    <path d="M 68 115 Q 30 180 20 280 Q 15 340 25 400 Q 30 420 40 415 Q 50 410 48 380 Q 42 320 50 260 Q 58 200 75 140 Z" fill="url(#hairGrad)" opacity="0.85" filter="url(#holoGlow)" class="miku-twintail-l"/>
+                                    <!-- Tail highlight left -->
+                                    <path d="M 70 120 Q 40 190 32 280 Q 28 330 35 380" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.6"/>
 
-                                <div class="android-cable android-cable--left"></div>
-                                <div class="android-cable android-cable--right"></div>
-                                <div class="android-hip"></div>
-                                <div class="android-leg android-leg--left"></div>
-                                <div class="android-leg android-leg--right"></div>
-                                <div class="android-shin android-shin--left"></div>
-                                <div class="android-shin android-shin--right"></div>
-                                <div class="android-foot android-foot--left"></div>
-                                <div class="android-foot android-foot--right"></div>
+                                    <!-- Right twin tail -->
+                                    <path d="M 152 115 Q 190 180 200 280 Q 205 340 195 400 Q 190 420 180 415 Q 170 410 172 380 Q 178 320 170 260 Q 162 200 145 140 Z" fill="url(#hairGrad)" opacity="0.85" filter="url(#holoGlow)" class="miku-twintail-r"/>
+                                    <!-- Tail highlight right -->
+                                    <path d="M 150 120 Q 180 190 188 280 Q 192 330 185 380" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.6"/>
 
-                                <button type="button" class="android-hotspot is-active" data-title="REACTOR CENTRAL" data-detail="Núcleo energético estabilizado. Regula potencia, movilidad y pulsos visuales del chasis DEPOOL." data-status="ENERGIA 98%" style="--x: 50%; --y: 58%;">
+                                    <!-- === HAIR BASE === -->
+                                    <!-- Back hair -->
+                                    <ellipse cx="110" cy="95" rx="52" ry="55" fill="url(#hairGrad)" opacity="0.6"/>
+                                    <!-- Main hair top -->
+                                    <path d="M 58 80 Q 62 40 110 35 Q 158 40 162 80 Q 165 100 160 110 Q 140 95 110 93 Q 80 95 60 110 Z" fill="url(#hairGrad)" filter="url(#holoGlow)"/>
+                                    <!-- Hair bangs -->
+                                    <path d="M 68 78 Q 65 95 72 108 Q 78 105 80 98 Q 82 90 85 85 Z" fill="url(#hairGrad)" opacity="0.9"/>
+                                    <path d="M 85 72 Q 84 88 90 100 Q 95 97 96 88 Q 97 79 100 75 Z" fill="url(#hairGrad)" opacity="0.9"/>
+                                    <path d="M 103 70 Q 103 87 108 99 Q 113 96 113 87 Q 113 78 115 72 Z" fill="url(#hairGrad)" opacity="0.9"/>
+                                    <path d="M 120 72 Q 122 88 128 98 Q 132 95 131 86 Q 130 77 127 73 Z" fill="url(#hairGrad)" opacity="0.9"/>
+                                    <path d="M 135 76 Q 140 93 145 106 Q 150 103 149 95 Q 148 86 142 80 Z" fill="url(#hairGrad)" opacity="0.9"/>
+                                    <!-- Hair side left -->
+                                    <path d="M 63 90 Q 55 110 58 130 Q 62 140 68 135 Q 72 125 70 110 Q 68 100 66 92 Z" fill="url(#hairGrad)" opacity="0.9"/>
+                                    <!-- Hair side right -->
+                                    <path d="M 157 90 Q 165 110 162 130 Q 158 140 152 135 Q 148 125 150 110 Q 152 100 154 92 Z" fill="url(#hairGrad)" opacity="0.9"/>
+
+                                    <!-- Hair twin-tail base ties -->
+                                    <rect x="63" y="108" width="14" height="10" rx="3" fill="#ff4fc3" opacity="0.9" filter="url(#holoGlow)"/>
+                                    <rect x="143" y="108" width="14" height="10" rx="3" fill="#ff4fc3" opacity="0.9" filter="url(#holoGlow)"/>
+
+                                    <!-- === HEAD / FACE === -->
+                                    <!-- Head shape -->
+                                    <ellipse cx="110" cy="115" rx="42" ry="48" fill="url(#skinGrad)" filter="url(#holoGlow)"/>
+                                    <!-- Head outline -->
+                                    <ellipse cx="110" cy="115" rx="42" ry="48" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity="0.7"/>
+
+                                    <!-- Eyes -->
+                                    <!-- Left eye white -->
+                                    <ellipse cx="93" cy="112" rx="10" ry="8" fill="#d0f8ff" opacity="0.9"/>
+                                    <!-- Left iris -->
+                                    <ellipse cx="93" cy="113" rx="7" ry="6.5" fill="url(#mikuGrad)" opacity="1"/>
+                                    <!-- Left pupil -->
+                                    <ellipse cx="93" cy="113" rx="3.5" ry="3.5" fill="#003d45" opacity="0.9"/>
+                                    <!-- Left eye shine -->
+                                    <ellipse cx="90" cy="110" rx="2" ry="1.5" fill="white" opacity="0.9"/>
+                                    <!-- Left eye outline -->
+                                    <ellipse cx="93" cy="112" rx="10" ry="8" fill="none" stroke="#00e5ff" stroke-width="1" opacity="0.8"/>
+                                    <!-- Left lashes -->
+                                    <path d="M 83 108 Q 87 104 93 104 Q 99 104 103 108" fill="none" stroke="#003d45" stroke-width="2" opacity="0.8"/>
+
+                                    <!-- Right eye white -->
+                                    <ellipse cx="127" cy="112" rx="10" ry="8" fill="#d0f8ff" opacity="0.9"/>
+                                    <!-- Right iris -->
+                                    <ellipse cx="127" cy="113" rx="7" ry="6.5" fill="url(#mikuGrad)" opacity="1"/>
+                                    <!-- Right pupil -->
+                                    <ellipse cx="127" cy="113" rx="3.5" ry="3.5" fill="#003d45" opacity="0.9"/>
+                                    <!-- Right eye shine -->
+                                    <ellipse cx="124" cy="110" rx="2" ry="1.5" fill="white" opacity="0.9"/>
+                                    <!-- Right eye outline -->
+                                    <ellipse cx="127" cy="112" rx="10" ry="8" fill="none" stroke="#00e5ff" stroke-width="1" opacity="0.8"/>
+                                    <!-- Right lashes -->
+                                    <path d="M 117 108 Q 121 104 127 104 Q 133 104 137 108" fill="none" stroke="#003d45" stroke-width="2" opacity="0.8"/>
+
+                                    <!-- Eyebrows -->
+                                    <path d="M 84 103 Q 89 100 96 102" fill="none" stroke="#39c5bb" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+                                    <path d="M 118 102 Q 125 100 130 103" fill="none" stroke="#39c5bb" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+
+                                    <!-- Nose (subtle) -->
+                                    <path d="M 109 122 Q 107 128 110 130 Q 113 128 111 122" fill="none" stroke="#80deea" stroke-width="1" opacity="0.5"/>
+
+                                    <!-- Mouth / smile -->
+                                    <path d="M 101 137 Q 110 143 119 137" fill="none" stroke="#ff80cc" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+                                    <!-- Lips -->
+                                    <path d="M 103 137 Q 110 141 117 137" fill="#ff80cc" opacity="0.4"/>
+
+                                    <!-- Cheek blush -->
+                                    <ellipse cx="86" cy="128" rx="8" ry="5" fill="#ff80cc" opacity="0.25"/>
+                                    <ellipse cx="134" cy="128" rx="8" ry="5" fill="#ff80cc" opacity="0.25"/>
+
+                                    <!-- Ear left -->
+                                    <ellipse cx="68" cy="118" rx="6" ry="9" fill="url(#skinGrad)" opacity="0.8"/>
+                                    <ellipse cx="68" cy="118" rx="6" ry="9" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
+                                    <!-- Ear right -->
+                                    <ellipse cx="152" cy="118" rx="6" ry="9" fill="url(#skinGrad)" opacity="0.8"/>
+                                    <ellipse cx="152" cy="118" rx="6" ry="9" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
+
+                                    <!-- Headset left -->
+                                    <rect x="56" y="111" width="16" height="16" rx="4" fill="#1a1a2e" stroke="#00e5ff" stroke-width="1.5" opacity="0.95" filter="url(#holoGlow)"/>
+                                    <rect x="59" y="113" width="10" height="12" rx="2" fill="#00e5ff" opacity="0.25"/>
+                                    <circle cx="64" cy="119" r="4" fill="#00e5ff" opacity="0.5"/>
+                                    <!-- Headset right -->
+                                    <rect x="148" y="111" width="16" height="16" rx="4" fill="#1a1a2e" stroke="#00e5ff" stroke-width="1.5" opacity="0.95" filter="url(#holoGlow)"/>
+                                    <rect x="151" y="113" width="10" height="12" rx="2" fill="#00e5ff" opacity="0.25"/>
+                                    <circle cx="156" cy="119" r="4" fill="#00e5ff" opacity="0.5"/>
+
+                                    <!-- === NECK === -->
+                                    <rect x="101" y="160" width="18" height="20" rx="4" fill="url(#skinGrad)" opacity="0.85"/>
+                                    <rect x="101" y="160" width="18" height="20" rx="4" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+
+                                    <!-- === SHOULDERS & ARMS === -->
+                                    <!-- Left shoulder -->
+                                    <ellipse cx="73" cy="192" rx="20" ry="14" fill="url(#mikuGrad)" opacity="0.8" filter="url(#holoGlow)"/>
+                                    <ellipse cx="73" cy="192" rx="20" ry="14" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity="0.8"/>
+                                    <!-- Left arm upper -->
+                                    <rect x="54" y="195" width="16" height="55" rx="8" fill="url(#skinGrad)" opacity="0.8"/>
+                                    <rect x="54" y="195" width="16" height="55" rx="8" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+                                    <!-- Left arm sleeve -->
+                                    <rect x="52" y="192" width="20" height="28" rx="7" fill="url(#mikuGrad)" opacity="0.7"/>
+                                    <!-- Left forearm -->
+                                    <rect x="55" y="248" width="14" height="45" rx="7" fill="url(#skinGrad)" opacity="0.8"/>
+                                    <!-- Left hand -->
+                                    <ellipse cx="62" cy="300" rx="9" ry="11" fill="url(#skinGrad)" opacity="0.85" filter="url(#holoGlow)"/>
+                                    <!-- Left fingers hint -->
+                                    <path d="M 56 296 Q 54 308 56 312" fill="none" stroke="#80deea" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+                                    <path d="M 62 300 Q 61 313 63 317" fill="none" stroke="#80deea" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+                                    <path d="M 68 296 Q 70 308 68 312" fill="none" stroke="#80deea" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+
+                                    <!-- Right shoulder -->
+                                    <ellipse cx="147" cy="192" rx="20" ry="14" fill="url(#mikuGrad)" opacity="0.8" filter="url(#holoGlow)"/>
+                                    <ellipse cx="147" cy="192" rx="20" ry="14" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity="0.8"/>
+                                    <!-- Right arm upper -->
+                                    <rect x="150" y="195" width="16" height="55" rx="8" fill="url(#skinGrad)" opacity="0.8"/>
+                                    <rect x="150" y="195" width="16" height="55" rx="8" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+                                    <!-- Right arm sleeve -->
+                                    <rect x="148" y="192" width="20" height="28" rx="7" fill="url(#mikuGrad)" opacity="0.7"/>
+                                    <!-- Right forearm -->
+                                    <rect x="151" y="248" width="14" height="45" rx="7" fill="url(#skinGrad)" opacity="0.8"/>
+                                    <!-- Right hand -->
+                                    <ellipse cx="158" cy="300" rx="9" ry="11" fill="url(#skinGrad)" opacity="0.85" filter="url(#holoGlow)"/>
+                                    <!-- Right fingers hint -->
+                                    <path d="M 152 296 Q 150 308 152 312" fill="none" stroke="#80deea" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+                                    <path d="M 158 300 Q 157 313 159 317" fill="none" stroke="#80deea" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+                                    <path d="M 164 296 Q 166 308 164 312" fill="none" stroke="#80deea" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+
+                                    <!-- === TORSO (shirt/uniform) === -->
+                                    <!-- Main torso -->
+                                    <path d="M 75 182 Q 73 210 72 260 Q 72 290 75 310 L 145 310 Q 148 290 148 260 Q 147 210 145 182 Q 130 175 110 174 Q 90 175 75 182 Z" fill="url(#mikuGrad)" opacity="0.85" filter="url(#holoGlow)"/>
+                                    <path d="M 75 182 Q 73 210 72 260 Q 72 290 75 310 L 145 310 Q 148 290 148 260 Q 147 210 145 182 Q 130 175 110 174 Q 90 175 75 182 Z" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity="0.8"/>
+
+                                    <!-- Collar -->
+                                    <path d="M 96 175 Q 103 183 110 185 Q 117 183 124 175 Q 117 172 110 172 Q 103 172 96 175 Z" fill="#d0f8ff" opacity="0.7"/>
+
+                                    <!-- Tie -->
+                                    <path d="M 107 183 Q 110 190 113 183 Q 112 195 110 205 Q 108 195 107 183 Z" fill="url(#tieGrad)" opacity="0.95" filter="url(#holoGlow)"/>
+                                    <!-- Tie knot -->
+                                    <rect x="107" y="181" width="6" height="5" rx="1" fill="#ff4fc3" opacity="0.9"/>
+
+                                    <!-- Chest detail lines (uniform) -->
+                                    <line x1="88" y1="195" x2="88" y2="240" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+                                    <line x1="132" y1="195" x2="132" y2="240" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+                                    <line x1="88" y1="220" x2="132" y2="220" stroke="#00e5ff" stroke-width="0.8" opacity="0.4"/>
+
+                                    <!-- Shirt cuffs left -->
+                                    <rect x="52" y="245" width="20" height="8" rx="3" fill="url(#mikuGrad)" opacity="0.8"/>
+                                    <!-- Shirt cuffs right -->
+                                    <rect x="148" y="245" width="20" height="8" rx="3" fill="url(#mikuGrad)" opacity="0.8"/>
+
+                                    <!-- === SKIRT === -->
+                                    <path d="M 73 308 Q 65 330 60 370 Q 58 400 62 420 L 158 420 Q 162 400 160 370 Q 155 330 147 308 Z" fill="url(#mikuGrad)" opacity="0.8" filter="url(#holoGlow)"/>
+                                    <path d="M 73 308 Q 65 330 60 370 Q 58 400 62 420 L 158 420 Q 162 400 160 370 Q 155 330 147 308 Z" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity="0.7"/>
+
+                                    <!-- Skirt pleat lines -->
+                                    <line x1="80" y1="312" x2="72" y2="420" stroke="#00e5ff" stroke-width="0.7" opacity="0.4"/>
+                                    <line x1="95" y1="310" x2="90" y2="420" stroke="#00e5ff" stroke-width="0.7" opacity="0.4"/>
+                                    <line x1="110" y1="310" x2="110" y2="420" stroke="#00e5ff" stroke-width="0.7" opacity="0.4"/>
+                                    <line x1="125" y1="310" x2="130" y2="420" stroke="#00e5ff" stroke-width="0.7" opacity="0.4"/>
+                                    <line x1="140" y1="312" x2="148" y2="420" stroke="#00e5ff" stroke-width="0.7" opacity="0.4"/>
+
+                                    <!-- Skirt hem details -->
+                                    <path d="M 60 410 Q 110 425 160 410" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.6"/>
+
+                                    <!-- === LEGS === -->
+                                    <!-- Left leg upper (thigh) -->
+                                    <rect x="74" y="418" width="26" height="25" rx="10" fill="url(#skinGrad)" opacity="0.8"/>
+                                    <!-- Left leg lower (stocking dark) -->
+                                    <rect x="73" y="440" width="28" height="18" rx="8" fill="#1a1a2e" opacity="0.9" stroke="#00e5ff" stroke-width="0.8"/>
+                                    <!-- Left boot -->
+                                    <path d="M 72 456 Q 68 465 65 470 Q 72 476 100 476 Q 103 470 101 456 Z" fill="#1a1a2e" opacity="0.95" stroke="#00e5ff" stroke-width="1.2" filter="url(#holoGlow)"/>
+                                    <!-- Boot highlight -->
+                                    <path d="M 73 458 Q 70 465 68 469" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity="0.6"/>
+
+                                    <!-- Right leg upper (thigh) -->
+                                    <rect x="120" y="418" width="26" height="25" rx="10" fill="url(#skinGrad)" opacity="0.8"/>
+                                    <!-- Right leg lower (stocking dark) -->
+                                    <rect x="119" y="440" width="28" height="18" rx="8" fill="#1a1a2e" opacity="0.9" stroke="#00e5ff" stroke-width="0.8"/>
+                                    <!-- Right boot -->
+                                    <path d="M 119 456 Q 117 465 115 470 Q 122 476 148 476 Q 152 470 150 456 Z" fill="#1a1a2e" opacity="0.95" stroke="#00e5ff" stroke-width="1.2" filter="url(#holoGlow)"/>
+                                    <!-- Boot highlight -->
+                                    <path d="M 148 458 Q 150 465 149 469" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity="0.6"/>
+
+                                    <!-- Boot details (lines) left -->
+                                    <line x1="74" y1="462" x2="98" y2="462" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+                                    <line x1="72" y1="468" x2="98" y2="470" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+                                    <!-- Boot details right -->
+                                    <line x1="120" y1="462" x2="148" y2="462" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+                                    <line x1="120" y1="468" x2="148" y2="470" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+
+                                    <!-- === HOLOGRAM EFFECTS === -->
+                                    <!-- Hologram horizontal scan lines -->
+                                    <rect x="30" y="40" width="160" height="1" fill="#00e5ff" opacity="0.06" class="miku-scan-1"/>
+                                    <rect x="30" y="90" width="160" height="1" fill="#00e5ff" opacity="0.06" class="miku-scan-2"/>
+                                    <rect x="30" y="140" width="160" height="1" fill="#00e5ff" opacity="0.06"/>
+                                    <rect x="30" y="190" width="160" height="1" fill="#00e5ff" opacity="0.06"/>
+                                    <rect x="30" y="240" width="160" height="1" fill="#00e5ff" opacity="0.06"/>
+                                    <rect x="30" y="290" width="160" height="1" fill="#00e5ff" opacity="0.06"/>
+                                    <rect x="30" y="340" width="160" height="1" fill="#00e5ff" opacity="0.06"/>
+                                    <rect x="30" y="390" width="160" height="1" fill="#00e5ff" opacity="0.06"/>
+                                    <rect x="30" y="440" width="160" height="1" fill="#00e5ff" opacity="0.06"/>
+
+                                    <!-- Floating hologram data particles -->
+                                    <circle cx="35" cy="200" r="2" fill="#00e5ff" opacity="0.6" class="miku-particle-a"/>
+                                    <circle cx="185" cy="160" r="2" fill="#ff4fc3" opacity="0.6" class="miku-particle-b"/>
+                                    <circle cx="30" cy="320" r="1.5" fill="#00e5ff" opacity="0.5" class="miku-particle-c"/>
+                                    <circle cx="190" cy="280" r="1.5" fill="#b388ff" opacity="0.5" class="miku-particle-d"/>
+                                    <circle cx="40" cy="120" r="1" fill="#00e5ff" opacity="0.4" class="miku-particle-e"/>
+                                    <circle cx="180" cy="400" r="1" fill="#ff4fc3" opacity="0.4" class="miku-particle-f"/>
+
+                                    <!-- Holo vertical edge flicker lines -->
+                                    <line x1="33" y1="50" x2="33" y2="470" stroke="#00e5ff" stroke-width="0.5" opacity="0.12"/>
+                                    <line x1="187" y1="50" x2="187" y2="470" stroke="#00e5ff" stroke-width="0.5" opacity="0.12"/>
+
+                                    <!-- Name badge hologram -->
+                                    <rect x="75" y="44" width="70" height="18" rx="4" fill="#00e5ff" opacity="0.1" stroke="#00e5ff" stroke-width="0.8" opacity="0.4"/>
+                                    <text x="110" y="57" text-anchor="middle" font-family="Orbitron, monospace" font-size="7" fill="#00e5ff" opacity="0.85" letter-spacing="2">HATSUNE MIKU</text>
+                                </svg>
+
+                                <!-- Hotspots mapped to Miku -->
+                                <button type="button" class="android-hotspot is-active" data-title="NÚCLEO VOCAL" data-detail="Sistema de síntesis vocal avanzado. Motor VOCALOID con frecuencia de 16kHz y rango de 3.5 octavas. Proyecta audio holográfico en tiempo real." data-status="VOCAL 100%" style="--x: 50%; --y: 40%;">
                                     <span></span>
                                 </button>
-                                <button type="button" class="android-hotspot" data-title="VISOR TÁCTICO" data-detail="Óptica frontal con barrido de amenazas y lectura del entorno. Sigue movimiento y refuerza la presencia del avatar." data-status="TRACKING ON" style="--x: 50%; --y: 17%;">
+                                <button type="button" class="android-hotspot" data-title="SISTEMA ÓPTICO" data-detail="Sensores oculares de alta resolución con seguimiento ocular 360°. Generan renderizado de escenario y proyección de efectos visuales en tiempo real." data-status="TRACKING ON" style="--x: 50%; --y: 20%;">
                                     <span></span>
                                 </button>
-                                <button type="button" class="android-hotspot" data-title="SERVOS DE HOMBRO" data-detail="Módulos laterales para estabilidad de brazos y microajustes. Añaden volumen mecánico y sensación de potencia." data-status="SERVO READY" style="--x: 21%; --y: 42%;">
+                                <button type="button" class="android-hotspot" data-title="INTERFAZ HOLO-L" data-detail="Emisores holográficos del lado izquierdo. Controlan la proyección tridimensional del avatar y efectos de partículas ambientales." data-status="HOLO READY" style="--x: 18%; --y: 55%;">
                                     <span></span>
                                 </button>
-                                <button type="button" class="android-hotspot" data-title="BLINDAJE TORÁCICO" data-detail="Placas frontales con capas compuestas y líneas lumínicas activas para un look más premium y agresivo." data-status="ARMOR LOCK" style="--x: 79%; --y: 42%;">
+                                <button type="button" class="android-hotspot" data-title="INTERFAZ HOLO-R" data-detail="Emisores holográficos del lado derecho. Sincronizan con el canal L para una proyección holográfica estable y sin parpadeo." data-status="SYNC LOCK" style="--x: 82%; --y: 55%;">
                                     <span></span>
                                 </button>
                             </div>
 
                             <div class="android-readout panel panel--glass">
                                 <div class="android-readout-top">
-                                    <span class="android-readout-kicker">CHASSIS ANALYSIS</span>
-                                    <span class="android-readout-status" id="androidReadoutStatus">ENERGIA 98%</span>
+                                    <span class="android-readout-kicker">HOLOGRAM ANALYSIS</span>
+                                    <span class="android-readout-status" id="androidReadoutStatus">VOCAL 100%</span>
                                 </div>
-                                <h3 class="android-readout-title" id="androidReadoutTitle">REACTOR CENTRAL</h3>
-                                <p class="android-readout-copy" id="androidReadoutCopy">Núcleo energético estabilizado. Regula potencia, movilidad y pulsos visuales del chasis DEPOOL.</p>
+                                <h3 class="android-readout-title" id="androidReadoutTitle">NÚCLEO VOCAL</h3>
+                                <p class="android-readout-copy" id="androidReadoutCopy">Sistema de síntesis vocal avanzado. Motor VOCALOID con frecuencia de 16kHz y rango de 3.5 octavas. Proyecta audio holográfico en tiempo real.</p>
                                 <div class="android-readout-metrics">
                                     <div class="android-metric">
                                         <span class="android-metric-label">ESTADO</span>
-                                        <strong>OPERATIVO</strong>
+                                        <strong>ACTIVO</strong>
                                     </div>
                                     <div class="android-metric">
-                                        <span class="android-metric-label">RESPUESTA</span>
-                                        <strong>6 MS</strong>
+                                        <span class="android-metric-label">LATENCIA</span>
+                                        <strong>2 MS</strong>
                                     </div>
                                     <div class="android-metric">
                                         <span class="android-metric-label">MODO</span>
-                                        <strong>INTERACTIVO</strong>
+                                        <strong>HOLO</strong>
                                     </div>
                                 </div>
                             </div>
