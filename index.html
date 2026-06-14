@@ -414,7 +414,7 @@
     <!-- Terminal -->
     <div class="cyber-terminal" id="terminal">
         <div class="terminal-header">
-            <span>BVH3_SYSTEM v1.1.0</span>
+            <span>BVH3_SYSTEM v1.2.0</span>
             <button class="terminal-toggle" id="terminalToggle">_</button>
         </div>
         <div class="terminal-body">
@@ -447,9 +447,28 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; 2025 BVH3 INDUSTRIES. Todos los derechos reservados.</p>
-            <p>Diseñado con tecnología cyberpunk del futuro.</p>
+            <p>Diseñado con tecnología del futuro.</p>
         </div>
     </footer>
+    
+    <!-- Caution Pattern for Footer -->
+    <style>
+        .cyber-footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: repeating-linear-gradient(
+                45deg,
+                #000,
+                #000 10px,
+                var(--primary-yellow) 10px,
+                var(--primary-yellow) 20px
+            );
+        }
+    </style>
 
     <!-- Media Viewer Modal -->
     <div id="media-viewer" class="media-viewer">

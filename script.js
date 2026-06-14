@@ -1,23 +1,11 @@
-﻿class CyberpunkPortfolio {
+﻿﻿class CyberpunkPortfolio {
     constructor() {
         this.init();
         this.setupEventListeners();
         this.startParticles();
         this.startTerminal();
         this.loadContent();
-        this.navigateFromHash();
-        this.musicPlayer = null;
-        this.isPlaying = false;
-        this.currentTrack = 0;
-        this.tracks = [
-            {
-                file: 'cyberpunk.mp3',
-                title: 'Cyberpunk: Edgerunners',
-                artist: 'This Fire by Franz Ferdinand',
-                duration: '3:45'
-            }
-        ];
-        
+        this.setupIntersectionObserver();
         // Performance optimizations
         this.isLowEndDevice = this.detectLowEndDevice();
         this.performanceMode = this.getPerformanceMode();
@@ -39,6 +27,28 @@
 
     init() {
         this.activeSection = 'home';
+        this.isPlaying = false;
+        this.currentDiscordTrack = 0;
+        this.discordTracks = [
+            {
+                file: 'cyberpunk.mp3',
+                title: 'Cyberpunk: Edgerunners',
+                artist: 'This Fire by Franz Ferdinand',
+                duration: '3:45'
+            },
+            { 
+                file: 'Let it happen.mp3', 
+                title: 'Let It Happen', 
+                artist: 'Tame Impala', 
+                duration: '7:47' 
+            },
+            { 
+                file: 'DARE.mp3', 
+                title: 'Dare', 
+                artist: 'Sayfalse, TRXVELER & DJ ALIM', 
+                duration: '4:23' 
+            }
+        ];
         this.prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
         this.particles = [];
         this.terminalLines = [
@@ -75,6 +85,28 @@
             titleMain.setAttribute('data-text', titleMain.textContent);
             titleMain.classList.add('glitch');
         }
+    }
+
+    setupIntersectionObserver() {
+        // Optimización: Solo animar elementos visibles
+        const options = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                    entry.target.classList.add('is-visible');
+                } else {
+                    entry.target.style.animationPlayState = 'paused';
+                }
+            });
+        }, options);
+
+        // Observar elementos actuales y futuros
+        const elements = document.querySelectorAll('.panel, .card, .stat, .hero-content');
+        elements.forEach(el => {
+            observer.observe(el);
+        });
+        this.observer = observer;
     }
 
     setupEventListeners() {
@@ -147,11 +179,6 @@
             }
         });
 
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            this.handleResize();
-        });
-
        
         this.nsfwCloseBtn?.addEventListener('click', () => this.hideNsfwModal());
         this.nsfwSubmitBtn?.addEventListener('click', () => this.checkNsfwPassword());
@@ -203,6 +230,7 @@
 
         const activeSection = this.showSection(section);
         this.loadSectionContent(activeSection);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     showNsfwModal() {
@@ -345,7 +373,7 @@
 
     loadAndShowForbiddenContent() {
         if (!this.forbiddenContentBody) return;
-        
+
         // Show loading state
         this.forbiddenContentBody.innerHTML = `
             <div class="forbidden-loading">
@@ -353,22 +381,26 @@
                 <p>CARGANDO COLECCIÓN EXCLUSIVA...</p>
             </div>
         `;
-        
+
         this.showForbiddenContentModal();
-        
-        // Load content with performance optimization
-        setTimeout(() => {
-            const content = this.getContentForSection('forbidden-zone');
-            this.forbiddenContentBody.innerHTML = content;
-            this.setupForbiddenZoneInteractions();
-            this.setupLazyLoadingForGames();
-        }, this.isLowEndDevice ? 300 : 100);
+
+        // Load content with performance optimization - use requestAnimationFrame
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                const content = this.getContentForSection('forbidden-zone');
+                this.forbiddenContentBody.innerHTML = content;
+                this.setupForbiddenZoneInteractions();
+                this.setupLazyLoadingForGames();
+            }, this.isLowEndDevice ? 50 : 0);
+        });
     }
 
     showForbiddenContentModal() {
         if (!this.forbiddenContentModal) return;
         this.forbiddenContentModal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        // Force GPU acceleration
+        this.forbiddenContentModal.style.transform = 'translateZ(0)';
     }
 
     hideForbiddenContentModal() {
@@ -376,6 +408,8 @@
         this.forbiddenContentModal.style.display = 'none';
         document.body.style.overflow = '';
         this.forbiddenContentBody.innerHTML = ''; // Clear content on close
+        // Clean up GPU acceleration
+        this.forbiddenContentModal.style.transform = '';
     }
 
 
@@ -420,9 +454,14 @@
 
         if (!contentElement) return;
 
-        const content = this.getContentForSection(section);
-        this.animateContentLoad(contentElement, content, () => {
-            this.onSectionRendered(section, contentElement);
+        // Use requestAnimationFrame for better performance
+        requestAnimationFrame(() => {
+            const content = this.getContentForSection(section);
+            this.animateContentLoad(contentElement, content, () => {
+                this.onSectionRendered(section, contentElement);
+            });
+            // Re-observar nuevos elementos inyectados
+            this.setupIntersectionObserver();
         });
     }
 
@@ -442,6 +481,7 @@
             }
         }
 
+        // Setup lazy loading for images in all sections
         if (section === 'projects') {
             const buttons = contentElement.querySelectorAll('.project-view-btn');
             buttons.forEach(btn => {
@@ -500,7 +540,7 @@
         const status = contentElement.querySelector('#androidReadoutStatus');
         const hotspots = contentElement.querySelectorAll('.android-hotspot');
 
-        if (!stage || !shell || !title || !copy || !status || !hotspots.length) return;
+        if (!stage || !shell || !hotspots.length) return;
 
         const activateHotspot = (hotspot) => {
             hotspots.forEach((item) => item.classList.toggle('is-active', item === hotspot));
@@ -626,6 +666,10 @@
             videoElement.style.maxWidth = '100%';
             videoElement.style.maxHeight = '100%';
             videoElement.style.objectFit = 'contain';
+            
+            // Set medium size constraints
+            videoElement.style.width = 'min(800px, 90vw)';
+            videoElement.style.aspectRatio = '16 / 9';
             
             // Add performance monitoring
             this.addVideoPerformanceMonitoring(videoElement);
@@ -962,6 +1006,29 @@
         if (matrixBg) {
             matrixBg.style.opacity = '0.5';
         }
+
+        // NSFW Modal specific optimizations
+        this.setupNsfwModalLowEndOptimizations();
+    }
+
+    setupNsfwModalLowEndOptimizations() {
+        // Disable NSFW modal animations on low-end devices
+        const nsfwModal = document.getElementById('nsfw-modal');
+        if (nsfwModal) {
+            nsfwModal.classList.add('nsfw-low-performance');
+        }
+
+        // Disable scanline animation
+        const scanline = document.querySelector('.nsfw-scanline');
+        if (scanline) {
+            scanline.style.animation = 'none';
+        }
+
+        // Disable pulse animations
+        const pulsingElements = document.querySelectorAll('.nsfw-system-dot, .nsfw-status-dot, .nsfw-title-lock, .nsfw-icon-inner');
+        pulsingElements.forEach(el => {
+            el.style.animation = 'none';
+        });
     }
 
     setupLowPowerMode() {
@@ -1004,49 +1071,53 @@
         const searchStats = document.getElementById('search-stats');
         const gamesContainer = document.getElementById('games-container');
 
-        // Setup search functionality
+        // Setup search functionality with debounce for performance
         if (searchInput && gamesContainer) {
             const totalGames = gameCards.length;
             if (searchStats) {
                 searchStats.textContent = `${totalGames} juegos`;
             }
 
+            let searchTimeout;
             searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase().trim();
-                let visibleCount = 0;
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const searchTerm = e.target.value.toLowerCase().trim();
+                    let visibleCount = 0;
 
-                gameCards.forEach(card => {
-                    const title = card.getAttribute('data-title')?.toLowerCase() || '';
-                    const type = card.getAttribute('data-type')?.toLowerCase() || '';
-                    const description = card.getAttribute('data-description')?.toLowerCase() || '';
-                    const gameId = card.getAttribute('data-game-id')?.toLowerCase() || '';
+                    gameCards.forEach(card => {
+                        const title = card.getAttribute('data-title')?.toLowerCase() || '';
+                        const type = card.getAttribute('data-type')?.toLowerCase() || '';
+                        const description = card.getAttribute('data-description')?.toLowerCase() || '';
+                        const gameId = card.getAttribute('data-game-id')?.toLowerCase() || '';
 
-                    const matches = title.includes(searchTerm) ||
-                                   type.includes(searchTerm) ||
-                                   description.includes(searchTerm) ||
-                                   gameId.includes(searchTerm);
+                        const matches = title.includes(searchTerm) ||
+                                       type.includes(searchTerm) ||
+                                       description.includes(searchTerm) ||
+                                       gameId.includes(searchTerm);
 
-                    if (matches || searchTerm === '') {
-                        card.style.display = '';
-                        card.classList.remove('game-hidden');
-                        visibleCount++;
-                    } else {
-                        card.style.display = 'none';
-                        card.classList.add('game-hidden');
+                        if (matches || searchTerm === '') {
+                            card.style.display = '';
+                            card.classList.remove('game-hidden');
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                            card.classList.add('game-hidden');
+                        }
+                    });
+
+                    // Update stats
+                    if (searchStats) {
+                        if (searchTerm === '') {
+                            searchStats.textContent = `${totalGames} juegos`;
+                        } else {
+                            searchStats.textContent = `${visibleCount} de ${totalGames}`;
+                        }
                     }
-                });
 
-                // Update stats
-                if (searchStats) {
-                    if (searchTerm === '') {
-                        searchStats.textContent = `${totalGames} juegos`;
-                    } else {
-                        searchStats.textContent = `${visibleCount} de ${totalGames}`;
-                    }
-                }
-
-                // Show "no results" message if needed
-                this.updateNoResultsMessage(gamesContainer, visibleCount, searchTerm);
+                    // Show "no results" message if needed
+                    this.updateNoResultsMessage(gamesContainer, visibleCount, searchTerm);
+                }, 150); // 150ms debounce for better performance
             });
 
             // Add clear button functionality (optional - clicking the icon clears search)
@@ -1094,35 +1165,72 @@
 
     setupLazyLoadingForGames() {
         const gameImages = document.querySelectorAll('.game-image');
-        
-        // Create intersection observer for lazy loading
+
+        // Create intersection observer for lazy loading with better performance
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     const img = entry.target;
                     const card = img.closest('.h-game-card');
-                    
+
                     // Add loading state
                     card.classList.add('loading');
-                    
-                    img.addEventListener('load', () => {
-                        card.classList.remove('loading');
-                        card.classList.add('loaded');
+
+                    // Use requestAnimationFrame for smoother loading
+                    requestAnimationFrame(() => {
+                        img.addEventListener('load', () => {
+                            card.classList.remove('loading');
+                            card.classList.add('loaded');
+                        }, { once: true });
+
+                        img.addEventListener('error', () => {
+                            this.handleImageError(img);
+                        }, { once: true });
+
+                        observer.unobserve(img);
                     });
-                    
-                    img.addEventListener('error', () => {
-                        this.handleImageError(img);
-                    });
-                    
-                    observer.unobserve(img);
                 }
             });
         }, {
-            rootMargin: '50px',
-            threshold: 0.1
+            rootMargin: '100px',
+            threshold: 0.01
         });
-        
+
         gameImages.forEach(img => observer.observe(img));
+    }
+
+    setupLazyLoadingForImages(container) {
+        const images = container.querySelectorAll('img:not([loading])');
+
+        // Create intersection observer for lazy loading
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+
+                    // Use requestAnimationFrame for smoother loading
+                    requestAnimationFrame(() => {
+                        img.addEventListener('load', () => {
+                            img.classList.add('loaded');
+                        }, { once: true });
+
+                        img.addEventListener('error', () => {
+                            img.classList.add('error');
+                        }, { once: true });
+
+                        observer.unobserve(img);
+                    });
+                }
+            });
+        }, {
+            rootMargin: '100px',
+            threshold: 0.01
+        });
+
+        images.forEach(img => {
+            img.setAttribute('loading', 'lazy');
+            observer.observe(img);
+        });
     }
 
     handleGameDownload(button) {
@@ -1234,13 +1342,6 @@
         const visualizer = document.querySelector('.audio-visualizer');
         
         if (!audioPlayer) return;
-        
-        // Track list for Discord-style player
-        this.discordTracks = [
-            { file: 'cyberpunk.mp3', title: 'Cyberpunk: Edgerunners', artist: 'This Fire by Franz Ferdinand', duration: '3:45' },
-            { file: 'Let it happen.mp3', title: 'Let It Happen', artist: 'Tame Impala', duration: '7:47' },
-            { file: 'DARE.mp3', title: 'Dare', artist: 'Sayfalse, TRXVELER & DJ ALIM', duration: '4:23' }
-        ];
         
         this.currentDiscordTrack = 0;
         this.isPlaying = false;
@@ -2055,7 +2156,7 @@
         const content = {
             about: `
                 <div class="layout-grid layout-grid--2">
-                    <div class="panel panel--glass">
+                    <div class="panel panel--edgerunner">
                         <div class="about-head">
                             <div class="avatar-ring" aria-hidden="true">
                                 <img src="src/images/logo.png" alt="" class="avatar-img" decoding="async">
@@ -2098,7 +2199,7 @@
                         </div>
                     </div>
 
-                    <div class="panel panel--scan">
+                    <div class="panel panel--scan panel--yellow-border">
                         <h4 class="panel-title">Líneas de trabajo</h4>
                         <ul class="scan-list">
                             <li><span class="scan-dot" aria-hidden="true"></span>Web Apps: SPA / dashboards / landing premium</li>
@@ -2117,7 +2218,7 @@
 
             projects: `
                 <div class="card-grid">
-                    <article class="card card--hover">
+                    <article class="card card--edgerunner">
                         <div class="card-top">
                             <h3 class="card-title">HATSUNE MIKU BOT</h3>
                             <span class="badge badge--green">ACTIVO</span>
@@ -2143,7 +2244,7 @@
                         <div class="meter" aria-label="Progreso 95%"><span class="meter-fill" style="width:95%"></span></div>
                     </article>
 
-                    <article class="card card--hover">
+                    <article class="card card--edgerunner">
                         <div class="card-top">
                             <h3 class="card-title">SISTEMA DE ACTAS (GORE)</h3>
                             <span class="badge badge--cyan">COMPLETADO</span>
@@ -2157,7 +2258,7 @@
                         <div class="meter" aria-label="Progreso 100%"><span class="meter-fill" style="width:100%"></span></div>
                     </article>
 
-                    <article class="card card--hover">
+                    <article class="card card--edgerunner">
                         <div class="card-top">
                             <h3 class="card-title">CYBERSECURITY DASHBOARD</h3>
                             <span class="badge badge--pink">EN DESARROLLO</span>
@@ -2171,7 +2272,7 @@
                         <div class="meter" aria-label="Progreso 67%"><span class="meter-fill" style="width:67%"></span></div>
                     </article>
 
-                    <article class="card card--hover">
+                    <article class="card card--edgerunner">
                         <div class="card-top">
                             <h3 class="card-title">QUANTUM SIMULATOR</h3>
                             <span class="badge badge--purple">PLANEANDO</span>
@@ -2196,7 +2297,7 @@
 
                     <div class="games-search-container">
                         <div class="games-search-box">
-                            <span class="search-icon">🔍</span>
+                            <span class="search-icon">⚡</span>
                             <input type="text" id="games-search-input" class="games-search-input" placeholder="Buscar juegos por nombre, tipo o descripción...">
                             <span class="search-stats" id="search-stats"></span>
                         </div>
@@ -3030,7 +3131,7 @@
 
             'memories': `
                 <div class="card-grid">
-                    <article class="card card--hover memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/00e5ff/000000?text=Cyberpunk+City">
+                    <article class="card card--edgerunner memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/00e5ff/000000?text=Cyberpunk+City">
                         <div class="card-top">
                             <h3 class="card-title">CIUDAD NEON</h3>
                             <span class="badge badge--cyan">IMAGEN</span>
@@ -3039,7 +3140,7 @@
                         <p class="card-text">Vistas nocturnas de una metrópolis futurista.</p>
                     </article>
 
-                    <article class="card card--hover memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/ff2bd6/000000?text=Hacker+Lair">
+                    <article class="card card--edgerunner memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/ff2bd6/000000?text=Hacker+Lair">
                         <div class="card-top">
                             <h3 class="card-title">GUARIDA DEL HACKER</h3>
                             <span class="badge badge--cyan">IMAGEN</span>
@@ -3048,7 +3149,7 @@
                         <p class="card-text">El lugar de nacimiento de la rebelión digital.</p>
                     </article>
 
-                    <article class="card card--hover memory-card" data-type="video" data-src="https://www.w3schools.com/html/mov_bbb.mp4">
+                    <article class="card card--edgerunner memory-card" data-type="video" data-src="https://www.w3schools.com/html/mov_bbb.mp4">
                         <div class="card-top">
                             <h3 class="card-title">TRANSMISIÓN PIRATA</h3>
                             <span class="badge badge--pink">VIDEO</span>
@@ -3060,7 +3161,7 @@
                         <p class="card-text">Un mensaje codificado para los despiertos.</p>
                     </article>
 
-                    <article class="card card--hover memory-card" data-type="video" data-src="https://files.catbox.moe/utqyjf.mp4">
+                    <article class="card card--edgerunner memory-card" data-type="video" data-src="https://files.catbox.moe/utqyjf.mp4">
                         <div class="card-top">
                             <h3 class="card-title">ARTE NO COMPRENDIDO</h3>
                             <span class="badge badge--pink">VIDEO</span>
@@ -3072,7 +3173,7 @@
                         <p class="card-text">Una pieza de arte digital.</p>
                     </article>
                     
-                    <article class="card card--hover memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/8b5cf6/000000?text=Android+Dream">
+                    <article class="card card--edgerunner memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/8b5cf6/000000?text=Android+Dream">
                         <div class="card-top">
                             <h3 class="card-title">SUEÑO DE ANDROIDE</h3>
                             <span class="badge badge--cyan">IMAGEN</span>
@@ -3085,7 +3186,7 @@
 
             apps: `
                 <div class="card-grid card-grid--apps">
-                    <article class="card card--hover card--rgb app-tile">
+                    <article class="card card--edgerunner card--rgb app-tile">
                         <div class="card-top">
                             <div class="app-tile-head">
                                 <span class="app-tile-icon" aria-hidden="true">
@@ -3116,7 +3217,7 @@
 
             skills: `
                 <div class="layout-grid layout-grid--3">
-                    <div class="panel panel--glass">
+                    <div class="panel panel--edgerunner">
                         <h3 class="panel-title">Frontend</h3>
                         <div class="skill">
                             <div class="skill-top"><span>HTML/CSS</span><span class="skill-pct">98%</span></div>
@@ -3132,7 +3233,7 @@
                         </div>
                     </div>
 
-                    <div class="panel panel--glass">
+                    <div class="panel panel--edgerunner">
                         <h3 class="panel-title">Backend</h3>
                         <div class="skill">
                             <div class="skill-top"><span>Node/Express</span><span class="skill-pct">94%</span></div>
@@ -3148,7 +3249,7 @@
                         </div>
                     </div>
 
-                    <div class="panel panel--glass">
+                    <div class="panel panel--edgerunner">
                         <h3 class="panel-title">Cloud / DevOps</h3>
                         <div class="skill">
                             <div class="skill-top"><span>Linux</span><span class="skill-pct">90%</span></div>
@@ -3647,7 +3748,7 @@
                         </div>
                     </div>
 
-                    <div class="panel panel--glass">
+                    <div class="panel panel--edgerunner">
                         <h3 class="panel-title">Enviar mensaje</h3>
                         <form class="contact-form" id="contactForm">
                             <div class="form-row">
@@ -3703,7 +3804,8 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        const particleCount = Math.max(40, Math.min(90, Math.floor((window.innerWidth * window.innerHeight) / 20000)));
+        const particleCount = this.isLowEndDevice ? 0 : 40;
+        if (particleCount === 0) return;
 
         // Create particles
         for (let i = 0; i < particleCount; i++) {
@@ -3816,7 +3918,7 @@
 
     loadContent() {
         console.log('BVH3 INDUSTRIES - Cyberpunk Portfolio Loaded');
-        this.showSection(this.activeSection);
+        this.navigateFromHash();
     }
 
     handleFormSubmission(e) {
