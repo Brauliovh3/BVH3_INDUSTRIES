@@ -1,17 +1,17 @@
 /* Cyberpunk Portfolio Styles */
 :root {
-    --primary-cyan: #00e5ff;
+    --primary-cyan: #00ff7a; /* Cambiado a verde Edgerunners */
     --primary-pink: #ff2bd6;
-    --secondary-green: #00ff7a;
+    --secondary-green: #00e5ff;
     --secondary-purple: #8b5cf6;
     --primary-yellow: #fcee0a; /* David Martinez Yellow */
     --dark-bg: #050611;
-    --darker-bg: #02030a;
+    --darker-bg: #0a0a0a; /* Un negro más puro para contraste Edgerunners */
     --light-gray: #333333;
     --text-light: #ffffff;
     --text-muted: #f0f0f0; /* Más claro para legibilidad */
-    --border-glow: #00ffff;
-    --shadow-glow: 0 0 20px rgba(0, 255, 255, 0.5);
+    --border-glow: #00ff7a;
+    --shadow-glow: 0 0 20px rgba(0, 255, 122, 0.5);
     --font-primary: 'Orbitron', monospace;
     --font-secondary: 'Rajdhani', sans-serif;
 }
@@ -28,6 +28,9 @@ body {
     color: var(--text-light);
     overflow-x: hidden;
     position: relative;
+    /* Textura de ruido tipo cinta VHS vieja */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-blend-mode: overlay;
 }
 
 /* Matrix Background */
@@ -38,7 +41,12 @@ body {
     width: 100%;
     height: 100%;
     z-index: -2;
-    background: var(--darker-bg);
+    /* Colores base: Negro profundo con flashes amarillos */
+    background: 
+        radial-gradient(circle at 50% 50%, rgba(252, 238, 10, 0.05) 0%, transparent 70%),
+        radial-gradient(circle at 20% 80%, rgba(255, 43, 214, 0.05) 0%, transparent 40%),
+        var(--darker-bg);
+    overflow: hidden;
     opacity: 1;
 }
 
@@ -66,22 +74,45 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15) 0px, rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px);
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0px, rgba(0, 0, 0, 0.2) 1px, transparent 1px, transparent 2px);
     background-size: 100% 2px;
     pointer-events: none;
     z-index: 10;
 }
 
 #matrix-bg::before {
-    content: '';
+    content: 'SYSTEM OVERRIDE SYSTEM OVERRIDE';
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: radial-gradient(var(--primary-yellow) 0.5px, transparent 0.5px);
-    background-size: 30px 30px;
-    opacity: 0.05;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    /* Rayas de advertencia animadas */
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(252, 238, 10, 0.05) 0px,
+        rgba(252, 238, 10, 0.05) 40px,
+        transparent 40px,
+        transparent 80px
+    );
+    /* Texto gigante hueco de fondo */
+    font-family: var(--font-primary);
+    font-size: 20vw;
+    font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(252, 238, 10, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: cautionScroll 20s linear infinite;
+}
+
+@keyframes cautionScroll {
+    0% { background-position: 0 0; }
+    100% { background-position: 500px 500px; }
 }
 
 /* Particle Canvas */
@@ -255,12 +286,13 @@ body {
 
 .section.active {
     display: block;
-    animation: sectionIn 0.35s ease;
+    animation: sectionIn 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @keyframes sectionIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    /* Efecto de parpadeo rápido tipo glitch al entrar */
+    0% { opacity: 0; transform: translateY(5px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 /* Intersection Observer Support */
@@ -2937,7 +2969,7 @@ body {
     background: radial-gradient(ellipse at center, 
         rgba(138, 43, 226, 0.1) 0%, 
         rgba(0, 0, 0, 0.95) 50%, 
-        rgba(0, 255, 255, 0.1) 100%);
+        rgba(0, 255, 122, 0.1) 100%);
     overflow: hidden;
 }
 
