@@ -488,6 +488,13 @@
             buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const title = btn.getAttribute('data-title') || 'PROYECTO';
+
+                    // Vista dedicada del HATSUNE MIKU BOT (estilo RGB/efectos Miku)
+                    if (title === 'HATSUNE MIKU BOT') {
+                        this.openMikuBotView();
+                        return;
+                    }
+
                     const description = btn.getAttribute('data-description') || '';
                     const links = [
                         { label: 'Grupo', url: btn.getAttribute('data-group-url') || '' },
@@ -594,6 +601,9 @@
 
         if (!titleEl || !subtitleEl || !bodyEl) return;
 
+        // Mostrar la seccion de vista de proyecto
+        this.showSection('project-view');
+
         titleEl.textContent = project.title;
         subtitleEl.textContent = project.description || 'Detalles y enlaces oficiales.';
 
@@ -629,6 +639,107 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
+
+    openMikuBotView() {
+        const titleEl = document.getElementById('projectViewTitle');
+        const subtitleEl = document.getElementById('projectViewSubtitle');
+        const bodyEl = document.getElementById('projectViewBody');
+
+        if (!titleEl || !subtitleEl || !bodyEl) return;
+
+        // Mostrar la seccion de vista de proyecto
+        this.showSection('project-view');
+
+        titleEl.textContent = 'HATSUNE MIKU BOT';
+        subtitleEl.textContent = 'Bot de WhatsApp con estética holográfica. Comandos, grupos, canales y más.';
+
+        bodyEl.innerHTML = `
+            <div class="project-view-actions">
+                <button type="button" class="cta-btn cta-btn--ghost project-back-btn">VOLVER A PROYECTOS</button>
+            </div>
+
+            <div class="miku-bot-view">
+                <!-- Hero RGB con Miku -->
+                <div class="miku-bot-hero">
+                    <div class="miku-bot-holo">
+                        <img
+                            src="https://ramenparados.com/wp-content/uploads/2024/07/hatsune-miku-diseno-personaje-548x1024.png"
+                            alt="Hatsune Miku"
+                            class="miku-bot-img"
+                            loading="lazy"
+                        >
+                    </div>
+                    <div class="miku-bot-info">
+                        <h3 class="miku-bot-name" data-text="HATSUNE MIKU BOT">HATSUNE MIKU BOT</h3>
+                        <p class="miku-bot-desc">
+                            Bot de WhatsApp orientado a automatización, comandos y entretenimiento.
+                            Gestiona grupos, canales y responde de forma rápida con estética Miku.
+                        </p>
+                        <div class="miku-bot-tags">
+                            <span class="miku-tag">Node.js</span>
+                            <span class="miku-tag">JavaScript</span>
+                            <span class="miku-tag">Baileys</span>
+                            <span class="miku-tag">WhatsApp</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accesos: grupo, canal, creador, bot -->
+                <div class="project-links-grid miku-links-grid" aria-label="Enlaces del bot">
+                    <a class="project-link-card miku-link" href="https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE?mode=gi_t" target="_blank" rel="noopener">
+                        <span class="project-link-label">GRUPO</span>
+                        <span class="project-link-url">Únete a la comunidad</span>
+                    </a>
+                    <a class="project-link-card miku-link" href="https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o" target="_blank" rel="noopener">
+                        <span class="project-link-label">CANAL</span>
+                        <span class="project-link-url">Sigue el canal oficial</span>
+                    </a>
+                    <a class="project-link-card miku-link" href="https://wa.me/51926017929" target="_blank" rel="noopener">
+                        <span class="project-link-label">BOT</span>
+                        <span class="project-link-url">Habla con el bot</span>
+                    </a>
+                    <a class="project-link-card miku-link" href="https://wa.me/51988514570" target="_blank" rel="noopener">
+                        <span class="project-link-label">CREADOR</span>
+                        <span class="project-link-url">Contacta al desarrollador</span>
+                    </a>
+                </div>
+
+                <!-- Codigo QR del bot (trono de codigo) -->
+                <div class="miku-bot-qr">
+                    <div class="miku-qr-box">
+                        <div id="mikuQrCode" class="miku-qr-canvas"></div>
+                    </div>
+                    <p class="miku-qr-text">Escanea el código QR y escribe <strong>/menu</strong> para ver los comandos del bot.</p>
+                </div>
+            </div>
+        `;
+
+        // Generar el codigo QR del bot
+        this.generateMikuBotQr();
+
+        const backBtn = bodyEl.querySelector('.project-back-btn');
+        backBtn?.addEventListener('click', () => {
+            this.handleNavigation('projects');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    generateMikuBotQr() {
+        const container = document.getElementById('mikuQrCode');
+        if (!container) return;
+
+        const botUrl = 'https://wa.me/51926017929';
+        const qrImg = document.createElement('img');
+        qrImg.className = 'miku-qr-img';
+        qrImg.alt = 'Codigo QR del bot';
+        qrImg.loading = 'lazy';
+
+        // Usa una API publica de generacion de QR (sin dependencias)
+        qrImg.onload = () => container.innerHTML = ''; // limpiar placeholder
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(botUrl)}&color=00f2ea&bgcolor=0d0d0d`;
+        container.appendChild(qrImg);
+    }
+
 
     showMediaViewer(type, src) {
         if (!this.mediaViewer || !this.mediaViewerContent) return;
@@ -1366,10 +1477,14 @@
         audioPlayer.addEventListener('play', () => {
             this.isPlaying = true;
             if (visualizer) visualizer.classList.add('playing');
+            const statusEl = document.getElementById('playerStatus');
+            if (statusEl) statusEl.textContent = 'Playing';
         });
         audioPlayer.addEventListener('pause', () => {
             this.isPlaying = false;
             if (visualizer) visualizer.classList.remove('playing');
+            const statusEl = document.getElementById('playerStatus');
+            if (statusEl) statusEl.textContent = 'Pausado';
         });
     }
 
@@ -1462,6 +1577,12 @@
         this.playDiscordTrack(nextTrack.file);
     }
 
+    playPrevDiscordTrack() {
+        this.currentDiscordTrack = (this.currentDiscordTrack - 1 + this.discordTracks.length) % this.discordTracks.length;
+        const prevTrack = this.discordTracks[this.currentDiscordTrack];
+        this.playDiscordTrack(prevTrack.file);
+    }
+
     updateDiscordUI(track) {
         // Update current track info
         const currentTrackName = document.getElementById('currentTrackName');
@@ -1528,6 +1649,21 @@
         const minutes = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    changeDiscordVolume(delta) {
+        const audioPlayer = document.getElementById('musicPlayer');
+        const volumeFill = document.getElementById('volumeFill');
+        const volumeDisplay = document.getElementById('volumeDisplay');
+        if (!audioPlayer) return;
+
+        let volume = (audioPlayer.volume || 0) + (delta / 100);
+        volume = Math.max(0, Math.min(1, volume));
+        audioPlayer.volume = volume;
+
+        const percent = Math.round(volume * 100);
+        if (volumeFill) volumeFill.style.width = `${percent}%`;
+        if (volumeDisplay) volumeDisplay.textContent = `Vol: ${percent}%`;
     }
 
     showDiscordError(message) {
@@ -3321,89 +3457,49 @@
                             <div class="section-header">
                                 <h3 class="section-title">MUSICA</h3>
                                 <div class="section-status">ACTIVE</div>
-                                <div class="section-controls">
-                                    <button class="control-btn play-btn" id="globalPlayBtn">▶</button>
-                                    <button class="control-btn pause-btn" id="globalPauseBtn">⏸</button>
-                                    <button class="control-btn next-btn" id="globalNextBtn">⏭</button>
-                                </div>
                             </div>
                             <div class="section-content">
                                 <audio id="musicPlayer" preload="auto"></audio>
-                                <div class="audio-visualizer">
-                                    <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
-                                    <div class="wave-bar"></div>
-                                </div>
-                                <div class="track-info">
-                                    <p class="track-name" id="currentTrackName">Cyberpunk: Edgerunners</p>
-                                    <p class="artist-name" id="currentArtistName">This Fire by Franz Ferdinand</p>
-                                    <div class="track-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" id="progressFill"></div>
+
+                                <!-- Media Player estilo Win95 -->
+                                <div class="win95-card win95-player">
+                                    <div class="card-titlebar">
+                                        <span class="card-title-text">Media Player</span>
+                                        <div class="card-controls">
+                                            <button type="button" class="card-btn card-btn-min" aria-label="Minimizar"></button>
+                                            <button type="button" class="card-btn card-btn-max" aria-label="Maximizar"></button>
+                                            <button type="button" class="card-btn card-btn-close win95-close" aria-label="Cerrar"></button>
                                         </div>
-                                        <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
                                     </div>
-                                </div>
-                                <div class="discord-playlist" id="musicPlaylist">
-                                    <div class="discord-track active" data-track="cyberpunk.mp3" onclick="playDiscordTrack('cyberpunk.mp3', this.querySelector('.discord-play-btn'))">
-                                        <div class="discord-avatar">
-                                            <div class="avatar-circle">
-                                                <div class="avatar-image" style="background: linear-gradient(135deg, #ff2bd6, #8b5cf6);"></div>
-                                                <div class="avatar-status playing"></div>
-                                            </div>
-                                        </div>
-                                        <div class="discord-info">
-                                            <div class="discord-title">Cyberpunk: Edgerunners</div>
-                                            <div class="discord-artist">This Fire by Franz Ferdinand</div>
-                                            <div class="discord-meta">
-                                                <span class="discord-duration">3:45</span>
-                                                <span class="discord-status">PLAYING</span>
-                                            </div>
-                                        </div>
-                                        <button class="discord-play-btn active" onclick="event.stopPropagation(); playDiscordTrack('cyberpunk.mp3', this)">
-                                            <span class="play-icon">▶</span>
-                                            <span class="pause-icon">⏸</span>
-                                        </button>
+                                    <div class="card-menubar">
+                                        <span class="menu-item">File</span>
+                                        <span class="menu-item">Play</span>
+                                        <span class="menu-item">Options</span>
                                     </div>
-                                    <div class="discord-track" data-track="Let it happen.mp3" onclick="playDiscordTrack('Let it happen.mp3', this.querySelector('.discord-play-btn'))">
-                                        <div class="discord-avatar">
-                                            <div class="avatar-circle">
-                                                <div class="avatar-image" style="background: linear-gradient(135deg, #00e5ff, #00ff7a);"></div>
-                                                <div class="avatar-status"></div>
-                                            </div>
+                                    <div class="card-body">
+                                        <div class="player-display">
+                                            <span class="track-name win95-track" id="currentTrackName">Cyberpunk: Edgerunners</span>
+                                            <span class="track-time" id="timeDisplay">0:00 / 0:00</span>
                                         </div>
-                                        <div class="discord-info">
-                                            <div class="discord-title">Let It Happen</div>
-                                            <div class="discord-artist">Tame Impala</div>
-                                            <div class="discord-meta">
-                                                <span class="discord-duration">7:47</span>
-                                                <span class="discord-status">READY</span>
-                                            </div>
+                                        <div class="player-progress">
+                                            <div class="progress-fill win95-fill" id="progressFill"></div>
+                                            <div class="progress-thumb win95-thumb"></div>
                                         </div>
-                                        <button class="discord-play-btn" onclick="event.stopPropagation(); playDiscordTrack('Let it happen.mp3', this)">
-                                            <span class="play-icon">▶</span>
-                                            <span class="pause-icon">⏸</span>
-                                        </button>
+                                        <div class="player-controls">
+                                            <button type="button" class="ctrl-btn ctrl-prev" aria-label="Anterior" onclick="playPrevDiscordTrack()"></button>
+                                            <button type="button" class="ctrl-btn ctrl-play" aria-label="Reproducir" onclick="playCurrentDiscordTrackGlobal()"></button>
+                                            <button type="button" class="ctrl-btn ctrl-stop" aria-label="Detener" onclick="pauseDiscordTrackGlobal()"></button>
+                                            <button type="button" class="ctrl-btn ctrl-next" aria-label="Siguiente" onclick="playNextDiscordTrackGlobal()"></button>
+                                        </div>
+                                        <div class="player-volume">
+                                            <button type="button" class="ctrl-btn ctrl-vol-down" aria-label="Bajar volumen" onclick="changeDiscordVolume(-10)">-</button>
+                                            <span class="vol-rail"><span class="vol-fill" id="volumeFill"></span></span>
+                                            <button type="button" class="ctrl-btn ctrl-vol-up" aria-label="Subir volumen" onclick="changeDiscordVolume(10)">+</button>
+                                        </div>
                                     </div>
-                                    <div class="discord-track" data-track="DARE.mp3" onclick="playDiscordTrack('DARE.mp3', this.querySelector('.discord-play-btn'))">
-                                        <div class="discord-avatar">
-                                            <div class="avatar-circle">
-                                                <div class="avatar-image" style="background: linear-gradient(135deg, #ff6b6b, #ffd93d);"></div>
-                                                <div class="avatar-status"></div>
-                                            </div>
-                                        </div>
-                                        <div class="discord-info">
-                                            <div class="discord-title">Dare</div>
-                                            <div class="discord-artist">Sayfalse, TRXVELER & DJ ALIM</div>
-                                            <div class="discord-meta">
-                                                <span class="discord-duration">4:23</span>
-                                                <span class="discord-status">READY</span>
-                                            </div>
-                                        </div>
-                                        <button class="discord-play-btn" onclick="event.stopPropagation(); playDiscordTrack('DARE.mp3', this)">
-                                            <span class="play-icon">▶</span>
-                                            <span class="pause-icon">⏸</span>
-                                        </button>
+                                    <div class="card-statusbar">
+                                        <span class="status-text win95-status" id="playerStatus">Listo</span>
+                                        <span class="status-vol" id="volumeDisplay">Vol: 100%</span>
                                     </div>
                                 </div>
                             </div>
@@ -3718,6 +3814,33 @@ function playDiscordTrack(trackFile, buttonElement) {
 function openMiniGame() {
     if (window.cyberpunkPortfolio) {
         window.cyberpunkPortfolio.openMiniGame();
+    }
+}
+
+// Global controls for the Win95 media player
+function playPrevDiscordTrack() {
+    if (window.cyberpunkPortfolio) {
+        window.cyberpunkPortfolio.playPrevDiscordTrack();
+    }
+}
+function playCurrentDiscordTrackGlobal() {
+    if (window.cyberpunkPortfolio) {
+        window.cyberpunkPortfolio.playCurrentDiscordTrack();
+    }
+}
+function pauseDiscordTrackGlobal() {
+    if (window.cyberpunkPortfolio) {
+        window.cyberpunkPortfolio.pauseDiscordTrack();
+    }
+}
+function playNextDiscordTrackGlobal() {
+    if (window.cyberpunkPortfolio) {
+        window.cyberpunkPortfolio.playNextDiscordTrack();
+    }
+}
+function changeDiscordVolume(delta) {
+    if (window.cyberpunkPortfolio) {
+        window.cyberpunkPortfolio.changeDiscordVolume(delta);
     }
 }
 
