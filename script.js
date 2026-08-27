@@ -1,15 +1,16 @@
-﻿﻿﻿﻿class CyberpunkPortfolio {
+﻿﻿class CyberpunkPortfolio {
     constructor() {
         this.init();
+        // Performance optimizations: se detectan PRIMERO para que los efectos
+        // (particulas, animaciones) ya arranquen optimizados segun el dispositivo
+        this.isLowEndDevice = this.detectLowEndDevice();
+        this.performanceMode = this.getPerformanceMode();
+        this.setupPerformanceOptimizations();
         this.setupEventListeners();
         this.startParticles();
         this.startTerminal();
         this.loadContent();
         this.setupIntersectionObserver();
-        // Performance optimizations
-        this.isLowEndDevice = this.detectLowEndDevice();
-        this.performanceMode = this.getPerformanceMode();
-        this.setupPerformanceOptimizations();
 
         
         window.scrapeHGames = () => {
@@ -2155,47 +2156,49 @@
     getContentForSection(section) {
         const content = {
             about: `
-                <div class="layout-grid layout-grid--2">
-                    <div class="panel panel--edgerunner">
-                        <div class="about-head">
-                            <div class="avatar-ring" aria-hidden="true">
-                                <img src="src/images/logo.png" alt="" class="avatar-img" decoding="async">
+                <div class="layout-grid layout-grid--2 about-grid">
+                    <div class="glitch-profile-wrapper">
+                        <div class="glitch-profile-card">
+                            <div class="card-header-visual"></div>
+
+                            <div class="profile-avatar">
+                                <svg class="octocat-svg" viewBox="0 0 16 16" aria-hidden="true">
+                                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                                </svg>
                             </div>
-                            <div class="about-meta">
-                                <h3 class="neo-title">BVH3 INDUSTRIES</h3>
-                                <p class="neo-subtitle">Full-Stack • Automatización • UI/UX Futurista</p>
+
+                            <div class="card-body profile-body">
+                                <div class="profile-info">
+                                    <h3 class="profile-name" data-text="BVH3 INDUSTRIES">BVH3 INDUSTRIES</h3>
+                                    <p class="profile-title">Full-Stack • Automatización • UI/UX Futurista</p>
+                                </div>
+
                                 <div class="pill-row" aria-label="Especialidades">
                                     <span class="pill pill--cyan">JAVASCRIPT</span>
                                     <span class="pill pill--pink">FRONTEND</span>
                                     <span class="pill pill--green">BACKEND</span>
                                     <span class="pill pill--purple">CLOUD</span>
                                 </div>
-                            </div>
-                        </div>
 
-                        <p class="lead">
-                            Construyo interfaces rápidas, visualmente potentes y sistemas listos para producción. Enfoque: performance,
-                            seguridad, automatización y una estética cyberpunk limpia.
-                        </p>
+                                <div class="profile-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-label">AÑOS</span>
+                                        <span class="stat-value" data-text="5+">5+</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">PROYECTOS</span>
+                                        <span class="stat-value" data-text="150+">150+</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">SOPORTE</span>
+                                        <span class="stat-value" data-text="24/7">24/7</span>
+                                    </div>
+                                </div>
 
-                        <div class="kpi-grid" aria-label="Indicadores">
-                            <div class="kpi">
-                                <span class="kpi-number">5+</span>
-                                <span class="kpi-label">AÑOS</span>
+                                <a href="#projects" class="glitch-btn">
+                                    <span class="btn-text">VER PROYECTOS</span>
+                                </a>
                             </div>
-                            <div class="kpi">
-                                <span class="kpi-number">150+</span>
-                                <span class="kpi-label">PROYECTOS</span>
-                            </div>
-                            <div class="kpi">
-                                <span class="kpi-number">24/7</span>
-                                <span class="kpi-label">SOPORTE</span>
-                            </div>
-                        </div>
-
-                        <div class="cta-row">
-                            <a class="cta-btn cta-btn--primary" href="#projects">VER PROYECTOS</a>
-                            <a class="cta-btn cta-btn--ghost" href="#contact">CONTACTAR</a>
                         </div>
                     </div>
 
@@ -3521,7 +3524,9 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        const particleCount = this.isLowEndDevice ? 0 : 20;
+        const particleCount = this.performanceMode === 'low' ? 0
+            : this.performanceMode === 'medium' ? 12
+            : 20;
         if (particleCount === 0) return;
 
         // Create particles
@@ -3536,7 +3541,17 @@
             });
         }
 
-        const animateParticles = () => {
+        // Limite de FPS: 60 en alto, 30 en medio/bajo. Evita dibujar a 120 Hz
+        const frameBudget = this.performanceMode === 'high' ? 1000 / 60 : 1000 / 30;
+        let lastFrame = 0;
+
+        const animateParticles = (timestamp) => {
+            // No dibujar hasta que pase el presupuesto de tiempo del frame
+            if (timestamp - lastFrame < frameBudget) {
+                requestAnimationFrame(animateParticles);
+                return;
+            }
+            lastFrame = timestamp;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             this.particles.forEach(particle => {
@@ -3659,7 +3674,7 @@ _Enviado desde el portafolio BVH3 Industries_
         
         
         const encodedMessage = encodeURIComponent(whatsappMessage);
-        const whatsappURL = `https://wa.me/51988514570?text=${encodedMessage}`;
+        const whatsappURL = `https://wa.me/51904676991?text=${encodedMessage}`;
         
        
         const submitBtn = e.target.querySelector('.submit-btn');
@@ -3711,21 +3726,38 @@ const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduc
 const hasFinePointer = window.matchMedia?.('(pointer: fine)')?.matches ?? true;
 
 if (!prefersReducedMotion && hasFinePointer) {
+
+    let cursorEl = null;
+    let cursorX = -100;
+    let cursorY = -100;
+    let cursorTicking = false;
+
+    const paintCursor = () => {
+        cursorTicking = false;
+        if (cursorEl) {
+            cursorEl.style.left = (cursorX - 10) + 'px';
+            cursorEl.style.top = (cursorY - 10) + 'px';
+        }
+    };
+
     document.addEventListener('mousemove', (e) => {
-        const cursor = document.querySelector('.cursor-effect');
-        if (!cursor) {
-            const cursorEffect = document.createElement('div');
-            cursorEffect.className = 'cursor-effect';
-            document.body.appendChild(cursorEffect);
+        cursorX = e.clientX;
+        cursorY = e.clientY;
+
+        if (!cursorEl) {
+            cursorEl = document.createElement('div');
+            cursorEl.className = 'cursor-effect';
+            document.body.appendChild(cursorEl);
         }
 
-        const cursorEffect = document.querySelector('.cursor-effect');
-        cursorEffect.style.left = e.clientX - 10 + 'px';
-        cursorEffect.style.top = e.clientY - 10 + 'px';
+        if (!cursorTicking) {
+            cursorTicking = true;
+            requestAnimationFrame(paintCursor);
+        }
     });
 }
 
-// Add glitch effect to random elements
+
 if (!prefersReducedMotion) {
     setInterval(() => {
         const elements = document.querySelectorAll('h1, h2, h3');
@@ -3739,7 +3771,7 @@ if (!prefersReducedMotion) {
     }, 15000);
 }
 
-// Horizontal scroll with mouse wheel for playlist
+
 document.addEventListener('DOMContentLoaded', () => {
     const playlist = document.getElementById('musicPlaylist');
     if (playlist) {

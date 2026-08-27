@@ -6713,6 +6713,30 @@ body {
     z-index: 2;
 }
 
+/* Miku projection image (portrait 548x1024).
+   Reducimos la altura vertical para que quepa mejor y no estire el layout. */
+.miku-projection-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-height: 480px;
+    overflow: hidden;
+}
+
+.miku-projection-img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    max-height: 550px; /* limita la altura vertical de la imagen */
+    object-fit: contain;
+    filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.7)) drop-shadow(0 0 25px rgba(57, 197, 187, 0.4));
+    animation: mikuFloat 4s ease-in-out infinite, mikuHoloFlicker 8s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+}
+
 /* Hologram float animation */
 @keyframes mikuFloat {
     0%, 100% { transform: translateY(0px); }
@@ -6798,4 +6822,297 @@ body {
     background: rgba(57, 197, 187, 0.2);
     border-color: #39c5bb;
     color: #39c5bb;
+}
+
+/* ------------------------------------------------ */
+/* Optimizaciones de efectos                         */
+/* ------------------------------------------------ */
+
+/* Reducir animaciones continuas en dispositivos medios (3G, cores limitados).
+   Ya existe .performance-low; esta regla baja tambien la carga del modo medio. */
+.performance-medium #matrix-bg::after,
+.performance-low #matrix-bg::after {
+    display: none; /* Quita el scanline repetido */
+}
+
+.performance-medium #matrix-bg::before,
+.performance-low #matrix-bg::before {
+    animation: none; /* Detiene el scroll infinito de las rayas de advertencia */
+    opacity: 0.15;
+}
+
+/* Respeta la preferencia del usuario "reducir movimiento":
+   frena todas las animaciones/transiciones al instante */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ------------------------------------------------ */
+/* Tarjeta de perfil con efecto glitch               */
+/* ------------------------------------------------ */
+.about-grid {
+    align-items: start;
+}
+
+.glitch-profile-wrapper {
+    --bg-color: #0d0d0d;
+    --primary-color: #00f2ea;
+    --secondary-color: #a855f7;
+    --text-color: #e5e5e5;
+    --font-family: "Fira Code", Consolas, "Courier New", Courier, monospace;
+    --glitch-anim-duration: 0.4s;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: var(--font-family);
+    padding: 1rem;
+}
+
+.glitch-profile-card {
+    position: relative;
+    background-color: var(--bg-color);
+    width: 19rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(0, 242, 234, 0.2);
+    box-shadow:
+        0 0 1.5rem rgba(0, 242, 234, 0.1),
+        inset 0 0 1rem rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.glitch-profile-card .card-header-visual {
+    height: 3.5rem;
+    background: linear-gradient(
+            45deg,
+            rgba(0, 242, 234, 0.1),
+            rgba(13, 13, 13, 0.8)
+        ),
+        radial-gradient(circle, rgba(168, 85, 247, 0.05) 0%, transparent 70%);
+    border-bottom: 1px solid rgba(0, 242, 234, 0.1);
+}
+
+.glitch-profile-card .profile-avatar {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0.75rem;
+    z-index: 2;
+    width: 5.5rem;
+    height: 5.5rem;
+    background: var(--bg-color);
+    border-radius: 50%;
+    padding: 0.9rem;
+    box-shadow: 0 0 1.5rem rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 242, 234, 0.3);
+    transition: background-color 0.5s ease-in-out;
+}
+
+.glitch-profile-card .octocat-svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--primary-color);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 0 10px rgba(0, 242, 234, 0.3));
+}
+
+.glitch-profile-card .profile-avatar:hover {
+    background-color: var(--primary-color);
+}
+.glitch-profile-card .profile-avatar:hover .octocat-svg {
+    fill: var(--bg-color);
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.glitch-profile-card .card-body {
+    padding: 1.1rem;
+    padding-top: 0;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.glitch-profile-card .profile-body {
+    align-items: center;
+    text-align: center;
+    padding-top: 2.75rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.glitch-profile-card .profile-info {
+    margin-bottom: 1.1rem;
+}
+.glitch-profile-card .profile-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0;
+    position: relative;
+    cursor: pointer;
+}
+.glitch-profile-card .profile-title {
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    opacity: 0.8;
+    margin: 0.25rem 0 0 0;
+    letter-spacing: 0.1em;
+}
+
+.glitch-profile-card .profile-stats {
+    width: 100%;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 242, 234, 0.2);
+    display: flex;
+    justify-content: space-around;
+}
+.glitch-profile-card .stat-item {
+    text-align: center;
+    cursor: pointer;
+    font-family: var(--font-family);
+}
+.glitch-profile-card .stat-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-color);
+    opacity: 0.6;
+    letter-spacing: 0.1em;
+    display: block;
+}
+.glitch-profile-card .stat-value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: 0.25rem;
+    position: relative;
+    font-family: var(--font-family);
+}
+
+.glitch-profile-card .glitch-btn {
+    display: block;
+    width: 100%;
+    margin-top: 1.1rem;
+    padding: 0.7em 1em;
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s;
+    overflow: hidden;
+    text-align: center;
+    text-decoration: none;
+}
+
+.glitch-profile-card .glitch-btn:hover,
+.glitch-profile-card .glitch-btn:focus {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    box-shadow: 0 0 1.5rem var(--primary-color);
+    outline: none;
+}
+
+.glitch-profile-card .glitch-btn:active {
+    transform: scale(0.97);
+}
+.glitch-profile-card .glitch-btn .btn-text {
+    position: relative;
+    z-index: 1;
+    transition: opacity 0.2s ease;
+}
+
+/* --- Glitch Effects --- */
+.glitch-profile-wrapper .profile-name:hover::before,
+.glitch-profile-wrapper .profile-name:hover::after,
+.glitch-profile-wrapper .stat-value:hover::before,
+.glitch-profile-wrapper .stat-value:hover::after,
+.glitch-profile-wrapper .glitch-btn:hover::before,
+.glitch-profile-wrapper .glitch-btn:hover::after,
+.glitch-profile-wrapper .glitch-btn:focus::before,
+.glitch-profile-wrapper .glitch-btn:focus::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.glitch-profile-wrapper .profile-name:hover,
+.glitch-profile-wrapper .stat-item:hover .stat-value {
+    color: transparent;
+}
+.glitch-profile-wrapper .glitch-btn:hover .btn-text {
+    opacity: 0;
+}
+.glitch-profile-wrapper .profile-name:hover::before,
+.glitch-profile-wrapper .stat-value:hover::before,
+.glitch-profile-wrapper .glitch-btn:hover::before,
+.glitch-profile-wrapper .glitch-btn:focus::before {
+    color: var(--secondary-color);
+    animation: glitch-anim var(--glitch-anim-duration)
+        cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+.glitch-profile-wrapper .profile-name:hover::after,
+.glitch-profile-wrapper .stat-value:hover::after {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+    animation: glitch-anim var(--glitch-anim-duration)
+        cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;
+}
+
+.glitch-profile-wrapper .glitch-btn:hover::after,
+.glitch-profile-wrapper .glitch-btn:focus::after {
+    color: var(--bg-color);
+    animation: glitch-anim var(--glitch-anim-duration)
+        cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;
+}
+
+@keyframes glitch-anim {
+    0% {
+        transform: translate(0);
+        clip-path: inset(0 0 0 0);
+    }
+    20% {
+        transform: translate(-0.3rem, 0.15rem);
+        clip-path: inset(50% 0 20% 0);
+    }
+    40% {
+        transform: translate(0.15rem, -0.1rem);
+        clip-path: inset(20% 0 60% 0);
+    }
+    60% {
+        transform: translate(-0.25rem, 0.1rem);
+        clip-path: inset(80% 0 5% 0);
+    }
+    80% {
+        transform: translate(0.25rem, -0.15rem);
+        clip-path: inset(30% 0 45% 0);
+    }
+    100% {
+        transform: translate(0);
+        clip-path: inset(0 0 0 0);
+    }
 }
