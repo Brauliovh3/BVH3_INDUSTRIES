@@ -8,7 +8,6 @@
         this.setupPerformanceOptimizations();
         this.setupEventListeners();
         this.startParticles();
-        this.startTerminal();
         this.loadContent();
         this.setupIntersectionObserver();
 
@@ -52,15 +51,6 @@
         ];
         this.prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
         this.particles = [];
-        this.terminalLines = [
-            'BVH3 INDUSTRIES SYSTEM INITIALIZED...',
-            'LOADING CYBERPUNK PROTOCOLS...',
-            'SECURITY SCAN: [OK]',
-            'NEURAL NETWORK: [ACTIVE]',
-            'QUANTUM ENCRYPTION: [ENABLED]',
-            'WELCOME TO THE FUTURE...'
-        ];
-        this.currentTerminalLine = 0;
 
         // Modal NSFW
         this.nsfwModal = document.getElementById('nsfw-modal');
@@ -135,12 +125,6 @@
             btn.addEventListener('touchend', (e) => {
                 e.currentTarget.style.transform = '';
             });
-        });
-
-        
-        const terminalToggle = document.getElementById('terminalToggle');
-        terminalToggle.addEventListener('click', () => {
-            this.toggleTerminal();
         });
 
         
@@ -694,11 +678,11 @@
                         <span class="project-link-label">CANAL</span>
                         <span class="project-link-url">Sigue el canal oficial</span>
                     </a>
-                    <a class="project-link-card miku-link" href="https://wa.me/51926017929" target="_blank" rel="noopener">
+                    <a class="project-link-card miku-link" href="https://wa.me/51953073477" target="_blank" rel="noopener">
                         <span class="project-link-label">BOT</span>
                         <span class="project-link-url">Habla con el bot</span>
                     </a>
-                    <a class="project-link-card miku-link" href="https://wa.me/51988514570" target="_blank" rel="noopener">
+                    <a class="project-link-card miku-link" href="https://wa.me/51921090483" target="_blank" rel="noopener">
                         <span class="project-link-label">CREADOR</span>
                         <span class="project-link-url">Contacta al desarrollador</span>
                     </a>
@@ -728,7 +712,7 @@
         const container = document.getElementById('mikuQrCode');
         if (!container) return;
 
-        const botUrl = 'https://wa.me/51926017929';
+        const botUrl = 'https://wa.me/51953073477';
         const qrImg = document.createElement('img');
         qrImg.className = 'miku-qr-img';
         qrImg.alt = 'Codigo QR del bot';
@@ -3347,7 +3331,61 @@
                         </div>
 
                         <div class="app-tile-footer">
-                            <a class="app-download-btn app-download-btn--sm" href="src/apps/BVH3_WALLPAPER.apk" download>DESCARGAR</a>
+                            <a class="app-download-btn app-download-btn--sm" href="src/apks/bvh3.apk" download>DESCARGAR</a>
+                            <span class="app-note-inline">Si Android bloquea: Seguridad → Apps desconocidas</span>
+                        </div>
+                    </article>
+
+                    <article class="card card--edgerunner card--rgb app-tile">
+                        <div class="card-top">
+                            <div class="app-tile-head">
+                                <span class="app-tile-icon" aria-hidden="true">
+                                    <img src="src/images/logomp3.png" alt="" decoding="async">
+                                </span>
+                                <div>
+                                    <h3 class="card-title">BVH3 PLAYER</h3>
+                                    <p class="app-tile-sub">Android • APK</p>
+                                </div>
+                            </div>
+                            <span class="badge badge--cyan">APK</span>
+                        </div>
+
+                        <p class="card-text">Reproductor multimedia con estilo cyberpunk.</p>
+
+                        <div class="tag-row" aria-label="Etiquetas">
+                            <span class="tag">ANDROID</span>
+                            <span class="tag">MEDIA</span>
+                        </div>
+
+                        <div class="app-tile-footer">
+                            <a class="app-download-btn app-download-btn--sm" href="src/apks/BVH3_PLAYER.apk" download>DESCARGAR</a>
+                            <span class="app-note-inline">Si Android bloquea: Seguridad → Apps desconocidas</span>
+                        </div>
+                    </article>
+
+                    <article class="card card--edgerunner card--rgb app-tile">
+                        <div class="card-top">
+                            <div class="app-tile-head">
+                                <span class="app-tile-icon" aria-hidden="true">
+                                    <img src="src/images/flapyfacho.png" alt="" decoding="async">
+                                </span>
+                                <div>
+                                    <h3 class="card-title">FLAPPY FACHO</h3>
+                                    <p class="app-tile-sub">Android • APK</p>
+                                </div>
+                            </div>
+                            <span class="badge badge--pink">GAME</span>
+                        </div>
+
+                        <p class="card-text">Juego estilo flappy con estética cyberpunk.</p>
+
+                        <div class="tag-row" aria-label="Etiquetas">
+                            <span class="tag">ANDROID</span>
+                            <span class="tag">GAME</span>
+                        </div>
+
+                        <div class="app-tile-footer">
+                            <a class="app-download-btn app-download-btn--sm" href="src/apks/flappyfacho.apk" download>DESCARGAR</a>
                             <span class="app-note-inline">Si Android bloquea: Seguridad → Apps desconocidas</span>
                         </div>
                     </article>
@@ -3684,36 +3722,6 @@
         };
         
         animateParticles();
-    }
-
-    startTerminal() {
-        const terminal = document.querySelector('.terminal-body');
-        const addTerminalLine = () => {
-            if (this.currentTerminalLine < this.terminalLines.length) {
-                const line = document.createElement('div');
-                line.className = 'terminal-line';
-                line.innerHTML = `<span class="prompt">root@bvh3:~$</span> ${this.terminalLines[this.currentTerminalLine]}`;
-                terminal.appendChild(line);
-                this.currentTerminalLine++;
-                
-                setTimeout(addTerminalLine, 2000);
-            }
-        };
-        
-        setTimeout(addTerminalLine, 3000);
-    }
-
-    toggleTerminal() {
-        const terminal = document.getElementById('terminal');
-        const terminalBody = terminal.querySelector('.terminal-body');
-        
-        if (terminalBody.style.display === 'none') {
-            terminalBody.style.display = 'block';
-            terminal.querySelector('.terminal-toggle').textContent = '_';
-        } else {
-            terminalBody.style.display = 'none';
-            terminal.querySelector('.terminal-toggle').textContent = '□';
-        }
     }
 
     toggleMobileMenu(navMenu, navToggle) {
