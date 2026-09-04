@@ -17,9 +17,8 @@ BVH3_INDUSTRIES/
 ├── styles.css
 ├── script.js
 ├── manifest.json
+├── .gitattributes
 └── src/
-    ├── apps/
-    │   └── BVH3_WALLPAPER.apk
     └── images/
         ├── logo.png
         ├── favicon-16.png
@@ -28,6 +27,14 @@ BVH3_INDUSTRIES/
         ├── icon-192.png
         └── icon-512.png
 ```
+
+## 📱 Aplicaciones
+
+Las APKs se alojan en [GitHub Releases](https://github.com/Brauliovh3/HATSUNE-MIKU/releases/tag/Juegosv1) y se descargan directamente desde allí:
+
+- **BVH3 WALLPAPER** - Wallpapers cyberpunk para Android
+- **BVH3 PLAYER** - Reproductor multimedia con estilo cyberpunk
+- **FLAPPY FACHO** - Juego estilo flappy con estética cyberpunk
 
 ## 📞 Contacto
 
