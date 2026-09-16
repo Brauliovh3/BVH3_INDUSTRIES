@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Túnel Holográfico Cyberpunk</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000; /* Fondo negro puro clásico de terminal */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: monospace;
+        }
+
+        #tunnelCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Pequeño overlay estático para darle un toque más de "pantalla CRT" */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0) 50%,
+                rgba(0, 0, 0, 0.2) 50%,
+                rgba(0, 0, 0, 0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <canvas id="tunnelCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('tunnelCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, halfWidth, halfHeight;
+
+        // Variables para el control de la cámara y la velocidad
+        let speed = 0.3; // Velocidad aún más reducida para un viaje muy lento
+        let time = 0; // Tiempo global para animaciones
+
+        const FOV = 350; // Campo de visión aumentado para que el túnel "envuelva" más la cámara y oculte los bordes
+        const NUMBER_OF_RINGS = 70; // Más anillos para mayor profundidad
+        const POINTS_PER_RING = 40; // Más vértices para un túnel más denso
+        const RING_RADIUS = 250; // Radio más grande para estar "dentro" del túnel
+        const RING_SPACING = 25; // Anillos más juntos
+
+        // Array para almacenar los vértices calculados
+        let rings = [];
+
+        // Colores cyberpunk (Tonos verdes Matrix)
+        const primaryColor = '#0f0'; // Verde puro brillante
+        const secondaryColor = '#003300'; // Verde oscuro para profundidad
+        const highlightColor = '#33ff33';
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            halfWidth = width / 2;
+            halfHeight = height / 2;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Point3D {
+            constructor(x, y, z) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+            }
+
+            // Proyección 3D a 2D básica
+            project() {
+                // Prevenir división por cero si la cámara está exactamente sobre el punto
+                let zScale = FOV / (FOV + this.z);
+                if (this.z < -FOV) return null; // Detrás de la cámara
+
+                return {
+                    x: halfWidth + this.x * zScale,
+                    y: halfHeight + this.y * zScale,
+                    scale: zScale
+                };
+            }
+        }
+
+        function initRings() {
+            rings = [];
+            for (let i = 0; i < NUMBER_OF_RINGS; i++) {
+                let currentZ = i * RING_SPACING;
+                rings.push(createRingPoints(currentZ));
+            }
+        }
+
+        // Función auxiliar para generar los puntos de un anillo específico en Z
+        function createRingPoints(z) {
+            let points = [];
+            let angleStep = (Math.PI * 2) / POINTS_PER_RING;
+            for (let j = 0; j < POINTS_PER_RING; j++) {
+                let angle = j * angleStep;
+                let x = Math.cos(angle) * RING_RADIUS;
+                let y = Math.sin(angle) * RING_RADIUS;
+                points.push(new Point3D(x, y, z));
+            }
+            return points;
+        }
+
+        function getPathOffset(z, t) {
+            // Utilizamos funciones seno y coseno combinadas con Z y el Tiempo para crear curvas serpenteantes
+            let xOffset = Math.sin((z * 0.005) + (t * 0.05)) * 100 + Math.cos(z * 0.002) * 50;
+            let yOffset = Math.cos((z * 0.004) + (t * 0.06)) * 80 + Math.sin(z * 0.003) * 40;
+            
+            // Ligera rotación del túnel
+            let rotation = Math.sin(t * 0.02 + z * 0.001) * Math.PI;
+
+            return { xOffset, yOffset, rotation };
+        }
+
+        function animate() {
+            // Limpiando el frame anterior con un ligero trailing effect (efecto estela)
+            ctx.fillStyle = 'rgba(0, 5, 0, 0.2)'; // Estela más larga reduciendo la opacidad (de 0.4 a 0.2)
+            ctx.fillRect(0, 0, width, height);
+
+            time++;
+
+            // Mover todos los anillos hacia la cámara (reduciendo Z)
+            for (let i = 0; i < rings.length; i++) {
+                for (let j = 0; j < rings[i].length; j++) {
+                    rings[i][j].z -= speed;
+                }
+
+                // Si un anillo pasa detrás de la cámara, reciclarlo enviándolo al fondo
+                if (rings[i][0].z < -FOV + 50) { // Margen antes de desaparecer
+                    let furthestZ = getFurthestZ();
+                    
+                    // Reposicionar este anillo al final
+                    let angleStep = (Math.PI * 2) / POINTS_PER_RING;
+                    for (let j = 0; j < POINTS_PER_RING; j++) {
+                        let angle = j * angleStep;
+                        rings[i][j].x = Math.cos(angle) * RING_RADIUS;
+                        rings[i][j].y = Math.sin(angle) * RING_RADIUS;
+                        rings[i][j].z = furthestZ + RING_SPACING;
+                    }
+                }
+            }
+
+            
+            // Iterar desde el fondo hacia adelante para que se dibuje correctamente
+            let sortedRings = rings.slice().sort((a, b) => b[0].z - a[0].z);
+
+            for (let i = 0; i < sortedRings.length - 1; i++) {
+                let currentRing = sortedRings[i];
+                let nextRing = sortedRings[i + 1];
+
+                // Saltarse anillos muy lejanos o que estén detrás de la cámara para optimizar
+                if(currentRing[0].z > NUMBER_OF_RINGS * RING_SPACING || currentRing[0].z < -FOV) continue;
+
+                // Calcular desviaciones para la curva del túnel para ambos anillos
+                let offsets1 = getPathOffset(currentRing[0].z, time);
+                let offsets2 = getPathOffset(nextRing[0].z, time);
+
+                // Proyectar todos los puntos del anillo actual y el siguiente
+                let projCurrent = [];
+                let projNext = [];
+                
+                let angleStep = (Math.PI * 2) / POINTS_PER_RING;
+
+                for(let j=0; j < POINTS_PER_RING; j++) {
+                    // Copiar punto original y aplicar offsets y rotación
+                    let p1 = new Point3D(currentRing[j].x, currentRing[j].y, currentRing[j].z);
+                    
+                    // Rotación local del anillo 1
+                    let angle1 = (j * angleStep) + offsets1.rotation;
+                    p1.x = Math.cos(angle1) * RING_RADIUS + offsets1.xOffset;
+                    p1.y = Math.sin(angle1) * RING_RADIUS + offsets1.yOffset;
+                    
+                    let p2 = new Point3D(nextRing[j].x, nextRing[j].y, nextRing[j].z);
+                    // Rotación local del anillo 2
+                    let angle2 = (j * angleStep) + offsets2.rotation;
+                    p2.x = Math.cos(angle2) * RING_RADIUS + offsets2.xOffset;
+                    p2.y = Math.sin(angle2) * RING_RADIUS + offsets2.yOffset;
+
+                    projCurrent.push(p1.project());
+                    projNext.push(p2.project());
+                }
+
+                ctx.lineWidth = 1;
+
+                // Calcular la intensidad del color basada en la profundidad Z (Fading in the distance)
+                let zRatio = 1 - (currentRing[0].z / (NUMBER_OF_RINGS * RING_SPACING));
+                // Asegurar que ratio esté entre 0 y 1
+                zRatio = Math.max(0, Math.min(1, zRatio)); 
+                
+                // Color más brillante cerca, más oscuro lejos (Efecto niebla de profundidad)
+                ctx.strokeStyle = `rgba(0, 255, 0, ${zRatio})`;
+                
+                // Efecto de pulso u holograma esporádico
+                if (Math.random() > 0.99) {
+                    ctx.strokeStyle = highlightColor;
+                    ctx.lineWidth = 2;
+                }
+
+                for (let j = 0; j < POINTS_PER_RING; j++) {
+                    let p1 = projCurrent[j];
+                    let p2 = projCurrent[(j + 1) % POINTS_PER_RING]; // Conectar con el siguiente punto del mismo anillo
+                    let p3 = projNext[j]; // Conectar con el punto equivalente del siguiente anillo
+
+                    if (p1 && p2 && p3) {
+                        ctx.beginPath();
+                        
+                        // Dibujar línea del anillo (Horizontal)
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        
+                        // Dibujar línea conectora entre anillos (Profundidad)
+                        ctx.lineTo(p3.x, p3.y);
+                        
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Función auxiliar para encontrar la máxima profundidad actual de los anillos
+        function getFurthestZ() {
+            let maxZ = -Infinity;
+            for (let i = 0; i < rings.length; i++) {
+                if (rings[i][0].z > maxZ) {
+                    maxZ = rings[i][0].z;
+                }
+            }
+            return maxZ;
+        }
+
+        initRings();
+        animate();
+
+    </script>
+</body>
+</html>

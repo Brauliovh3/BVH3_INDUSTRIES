@@ -1,4 +1,4 @@
-﻿﻿class CyberpunkPortfolio {
+﻿class CyberpunkPortfolio {
     constructor() {
         this.init();
         // Performance optimizations: se detectan PRIMERO para que los efectos
@@ -508,6 +508,7 @@
 
         if (section === 'depool') {
             this.initDepoolAndroid(contentElement);
+            this.initDepoolPortal(contentElement);
             this.initDiscordMusicPlayer();
         }
 
@@ -576,6 +577,421 @@
         }, { passive: true });
 
         stage.addEventListener('touchend', resetTilt, { passive: true });
+    }
+
+    initDepoolPortal(contentElement) {
+        const canvas = contentElement.querySelector('#depoolPortalCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const container = canvas.parentElement;
+
+        const img = contentElement.querySelector('.depool-portal-img');
+        const coreEl = contentElement.querySelector('.depool-portal-core');
+
+        let width, height, centerX, centerY, coreRadius;
+
+        const resize = () => {
+            const rect = container.getBoundingClientRect();
+            width = canvas.width = rect.width;
+            height = canvas.height = rect.height;
+            centerX = width / 2;
+            centerY = height / 2;
+            coreRadius = Math.min(width, height) * 0.42;
+            if (coreEl) {
+                const coreSize = Math.min(rect.width, rect.height) * 0.5;
+                coreEl.style.width = `${coreSize}px`;
+                coreEl.style.height = `${coreSize}px`;
+            }
+        };
+
+        resize();
+        window.addEventListener('resize', resize);
+
+        const CYAN = { r: 0, g: 229, b: 255 };
+        const MAGENTA = { r: 255, g: 43, b: 214 };
+        const PURPLE = { r: 123, g: 45, b: 255 };
+
+        const lerpColor = (a, b, t) => ({
+            r: a.r + (b.r - a.r) * t,
+            g: a.g + (b.g - a.g) * t,
+            b: a.b + (b.b - a.b) * t
+        });
+
+        const colorToCSS = (c, alpha = 1) => `rgba(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)},${alpha})`;
+
+        class DragonTendril {
+            constructor(config) {
+                this.baseAngle = config.baseAngle;
+                this.segments = config.segments || 14;
+                this.thickness = config.thickness || 8;
+                this.colorPhase = config.colorPhase || 0;
+                this.waveAmp = config.waveAmp || 0.25;
+                this.waveFreq = config.waveFreq || 2.5;
+                this.speed = config.speed || 1.0;
+                this.wrapDir = config.wrapDir || 1;
+                this.orbitRadius = config.orbitRadius || 0.85;
+                this.phase = config.phase || 0;
+                this.taper = config.taper !== false;
+                this.shimmerIntensity = config.shimmerIntensity || 0.6;
+                this.isHead = config.isHead || false;
+                this.segmentData = [];
+                this.initSegments();
+            }
+
+            initSegments() {
+                this.segmentData = [];
+                for (let i = 0; i < this.segments; i++) {
+                    this.segmentData.push({ x: 0, y: 0, angle: 0, radius: 0, shimmer: Math.random() });
+                }
+            }
+
+            update(t, mx, my) {
+                const segCount = this.segmentData.length;
+                const maxR = coreRadius * this.orbitRadius;
+                const minR = coreRadius * 0.35;
+                for (let i = 0; i < segCount; i++) {
+                    const frac = i / (segCount - 1);
+                    const effectiveFrac = Math.pow(frac, 0.7);
+                    const angleOffset = effectiveFrac * Math.PI * 1.8 * this.wrapDir;
+                    const wave = Math.sin(t * this.waveFreq + frac * Math.PI * 3 + this.phase) * this.waveAmp;
+                    const mouseInfluence = (1 - frac) * 0.3;
+                    const mouseAngleOffset = (mx - 0.5) * Math.PI * mouseInfluence;
+                    const mouseRadiusOffset = (my - 0.5) * 0.15;
+                    const angle = this.baseAngle + angleOffset + wave * 0.5 + mouseAngleOffset;
+                    const radiusBase = minR + (maxR - minR) * effectiveFrac;
+                    const radius = radiusBase + wave * coreRadius * 0.2 + mouseRadiusOffset * coreRadius;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    this.segmentData[i].x = x;
+                    this.segmentData[i].y = y;
+                    this.segmentData[i].angle = angle;
+                    this.segmentData[i].radius = radius;
+                    this.segmentData[i].shimmer = (Math.sin(t * 3 + i * 0.5 + this.phase) * 0.5 + 0.5) * this.shimmerIntensity;
+                }
+            }
+
+            draw(ctx, t) {
+                const segs = this.segmentData;
+                if (segs.length < 2) return;
+                const layers = [
+                    { blur: 18, alpha: 0.15, widthMul: 3.5 },
+                    { blur: 10, alpha: 0.3, widthMul: 2.0 },
+                    { blur: 4, alpha: 0.6, widthMul: 1.2 },
+                    { blur: 0, alpha: 0.9, widthMul: 1.0 }
+                ];
+                layers.forEach(layer => {
+                    ctx.save();
+                    ctx.shadowBlur = layer.blur;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    for (let i = 0; i < segs.length - 1; i++) {
+                        const p0 = segs[Math.max(0, i - 1)];
+                        const p1 = segs[i];
+                        const p2 = segs[i + 1];
+                        const p3 = segs[Math.min(segs.length - 1, i + 2)];
+                        const frac = i / (segs.length - 1);
+                        const thickness = this.thickness * (this.taper ? (1 - frac * 0.7) : 1) * layer.widthMul;
+                        const safeThickness = Math.max(0.5, thickness);
+                        const colorT = (frac * this.waveFreq + t * this.speed + this.colorPhase) % 1;
+                        const col = lerpColor(CYAN, lerpColor(MAGENTA, PURPLE, colorT), colorT);
+                        ctx.strokeStyle = colorToCSS(col, layer.alpha);
+                        ctx.lineWidth = safeThickness;
+                        ctx.shadowColor = colorToCSS(col, 0.6);
+                        ctx.beginPath();
+                        const cp1x = p1.x + (p2.x - p0.x) * 0.2;
+                        const cp1y = p1.y + (p2.y - p0.y) * 0.2;
+                        const cp2x = p2.x - (p3.x - p1.x) * 0.2;
+                        const cp2y = p2.y - (p3.y - p1.y) * 0.2;
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                });
+                for (let i = 2; i < segs.length - 2; i += 2) {
+                    const p = segs[i];
+                    const shimmerAlpha = p.shimmer * 0.8;
+                    if (shimmerAlpha < 0.1) continue;
+                    const nodeSize = this.thickness * 0.5 * (1 - i / segs.length);
+                    const col = lerpColor(CYAN, MAGENTA, p.shimmer);
+                    ctx.save();
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = colorToCSS(col, 0.8);
+                    ctx.fillStyle = colorToCSS(col, shimmerAlpha);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, Math.max(0.5, nodeSize), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                if (this.isHead && segs.length > 4) {
+                    this.drawDragonHead(ctx, t, segs);
+                }
+            }
+
+            drawDragonHead(ctx, t, segs) {
+                const head = segs[0];
+                const neck = segs[1];
+                const angle = Math.atan2(head.y - neck.y, head.x - neck.x);
+                ctx.save();
+                ctx.translate(head.x, head.y);
+                ctx.rotate(angle);
+                const headSize = Math.max(10, this.thickness * 2.2);
+                const colorT = (Math.sin(t * 2 + this.colorPhase) * 0.5 + 0.5);
+                const primary = lerpColor(CYAN, MAGENTA, colorT);
+                const accent = lerpColor(MAGENTA, PURPLE, colorT);
+                const dark = lerpColor(PURPLE, { r: 12, g: 8, b: 30 }, 0.5);
+                ctx.shadowBlur = 28;
+                ctx.shadowColor = colorToCSS(dark, 0.95);
+                ctx.fillStyle = colorToCSS(dark, 0.92);
+                ctx.beginPath();
+                ctx.moveTo(-headSize * 0.35, -headSize * 0.5);
+                ctx.bezierCurveTo(-headSize * 1.25, -headSize * 0.15, -headSize * 1.35, headSize * 0.85, -headSize * 0.85, headSize * 1.45);
+                ctx.lineTo(headSize * 0.85, headSize * 1.45);
+                ctx.bezierCurveTo(headSize * 1.35, headSize * 0.85, headSize * 1.25, -headSize * 0.15, headSize * 0.35, -headSize * 0.5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = colorToCSS(accent, 0.97);
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = colorToCSS(accent, 0.9);
+                ctx.stroke();
+                ctx.fillStyle = colorToCSS(primary, 0.38);
+                ctx.beginPath();
+                ctx.moveTo(-headSize * 0.6, -headSize * 0.05);
+                ctx.bezierCurveTo(-headSize * 1.05, headSize * 0.4, -headSize * 1.0, headSize * 1.1, -headSize * 0.65, headSize * 1.25);
+                ctx.lineTo(headSize * 0.65, headSize * 1.25);
+                ctx.bezierCurveTo(headSize * 1.0, headSize * 1.1, headSize * 1.05, headSize * 0.4, headSize * 0.6, -headSize * 0.05);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = colorToCSS(primary, 0.95);
+                ctx.lineWidth = 2.2;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = colorToCSS(primary, 0.8);
+                ctx.stroke();
+                ctx.strokeStyle = colorToCSS(accent, 0.9);
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                ctx.moveTo(-headSize * 0.8, headSize * 1.22);
+                ctx.bezierCurveTo(-headSize * 0.3, headSize * 1.78, headSize * 0.3, headSize * 1.78, headSize * 0.8, headSize * 1.22);
+                ctx.stroke();
+                const eyeY = -headSize * 0.35;
+                const eyeX = headSize * 0.68;
+                const eyeGlow = 0.85 + Math.sin(t * 5.2 + this.phase) * 0.18;
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = colorToCSS({ r: 0, g: 255, b: 122 }, eyeGlow);
+                ctx.fillStyle = colorToCSS({ r: 0, g: 255, b: 122 }, eyeGlow * 0.95);
+                ctx.beginPath();
+                ctx.moveTo(eyeX - headSize * 0.22, eyeY - headSize * 0.38);
+                ctx.quadraticCurveTo(eyeX + headSize * 0.38, eyeY - headSize * 0.48, eyeX + headSize * 0.42, eyeY);
+                ctx.quadraticCurveTo(eyeX + headSize * 0.38, eyeY + headSize * 0.38, eyeX - headSize * 0.22, eyeY + headSize * 0.38);
+                ctx.quadraticCurveTo(eyeX - headSize * 0.32, eyeY, eyeX - headSize * 0.22, eyeY - headSize * 0.38);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+            getEndpoint() {
+                return this.segmentData[this.segmentData.length - 1];
+            }
+        }
+
+        const tendrils = [
+            new DragonTendril({ baseAngle: Math.PI * 0.25, segments: 18, thickness: 12, colorPhase: 0, waveAmp: 0.32, waveFreq: 2.2, speed: 1.0, wrapDir: 1, orbitRadius: 0.92, phase: 0, isHead: true }),
+            new DragonTendril({ baseAngle: Math.PI * 0.75, segments: 15, thickness: 9, colorPhase: 0.33, waveAmp: 0.28, waveFreq: 2.6, speed: 1.1, wrapDir: -1, orbitRadius: 0.88, phase: 1.2 }),
+            new DragonTendril({ baseAngle: Math.PI * 1.25, segments: 16, thickness: 10, colorPhase: 0.66, waveAmp: 0.3, waveFreq: 2.0, speed: 0.9, wrapDir: 1, orbitRadius: 0.9, phase: 2.5 }),
+            new DragonTendril({ baseAngle: Math.PI * 1.7, segments: 14, thickness: 8, colorPhase: 0.5, waveAmp: 0.26, waveFreq: 2.8, speed: 1.2, wrapDir: -1, orbitRadius: 0.85, phase: 3.8 }),
+            new DragonTendril({ baseAngle: Math.PI * 0.0, segments: 13, thickness: 7, colorPhase: 0.8, waveAmp: 0.24, waveFreq: 3.0, speed: 1.3, wrapDir: 1, orbitRadius: 0.82, phase: 0.7 }),
+            new DragonTendril({ baseAngle: Math.PI * 0.5, segments: 14, thickness: 8, colorPhase: 0.15, waveAmp: 0.27, waveFreq: 2.4, speed: 1.15, wrapDir: -1, orbitRadius: 0.84, phase: 4.2 }),
+            new DragonTendril({ baseAngle: Math.PI * 1.5, segments: 12, thickness: 6, colorPhase: 0.4, waveAmp: 0.22, waveFreq: 3.2, speed: 1.4, wrapDir: 1, orbitRadius: 0.78, phase: 1.9 }),
+            new DragonTendril({ baseAngle: Math.PI * 1.9, segments: 11, thickness: 6, colorPhase: 0.7, waveAmp: 0.2, waveFreq: 3.5, speed: 1.5, wrapDir: -1, orbitRadius: 0.75, phase: 5.0 })
+        ];
+
+        const particles = [];
+        for (let i = 0; i < 80; i++) particles.push({
+            x: centerX, y: centerY,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: (Math.random() - 0.5) * 1.5,
+            life: 1,
+            decay: 0.003 + Math.random() * 0.015,
+            size: 0.5 + Math.random() * 2.5,
+            colorT: Math.random()
+        });
+
+        const resetParticle = (p) => {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = coreRadius * (0.3 + Math.random() * 1.2);
+            p.x = centerX + Math.cos(angle) * dist;
+            p.y = centerY + Math.sin(angle) * dist;
+            p.vx = (Math.random() - 0.5) * 1.5;
+            p.vy = (Math.random() - 0.5) * 1.5;
+            p.life = 1;
+            p.decay = 0.003 + Math.random() * 0.015;
+            p.size = 0.5 + Math.random() * 2.5;
+            p.colorT = Math.random();
+        };
+
+        class LightTrail {
+            constructor() {
+                this.points = [];
+                this.maxPoints = 30;
+                this.active = false;
+                this.life = 1;
+                this.colorPhase = Math.random();
+            }
+            addPoint(x, y) {
+                this.points.push({ x, y, life: 1 });
+                if (this.points.length > this.maxPoints) this.points.shift();
+                this.active = true;
+                this.life = 1;
+            }
+            update() {
+                if (!this.active) return;
+                this.life -= 0.008;
+                if (this.life <= 0) {
+                    this.points = [];
+                    this.active = false;
+                    this.life = 0;
+                    return;
+                }
+                for (let i = this.points.length - 1; i >= 0; i--) {
+                    this.points[i].life -= 0.03;
+                    if (this.points[i].life <= 0) this.points.splice(i, 1);
+                }
+            }
+            draw(ctx, t) {
+                if (this.points.length < 2) return;
+                const col = lerpColor(CYAN, MAGENTA, (Math.sin(t * 3 + this.colorPhase) * 0.5 + 0.5));
+                ctx.save();
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = colorToCSS(col, 0.5);
+                ctx.strokeStyle = colorToCSS(col, this.life * 0.4);
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+                for (let i = 1; i < this.points.length; i++) {
+                    const p = this.points[i];
+                    ctx.lineTo(p.x, p.y);
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 4;
+                ctx.strokeStyle = colorToCSS(col, this.life * 0.8);
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+                for (let i = 1; i < this.points.length; i++) {
+                    const p = this.points[i];
+                    ctx.lineTo(p.x, p.y);
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        const lightTrails = [new LightTrail(), new LightTrail(), new LightTrail(), new LightTrail(), new LightTrail()];
+        let trailTimer = 0;
+        let activeTrailIdx = 0;
+
+        let mouseX = 0.5;
+        let mouseY = 0.5;
+        const targetMouseX = 0.5;
+        const targetMouseY = 0.5;
+
+        container.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            mouseX = (e.clientX - rect.left) / rect.width;
+            mouseY = (e.clientY - rect.top) / rect.height;
+        });
+        container.addEventListener('touchmove', (e) => {
+            const rect = container.getBoundingClientRect();
+            const touch = e.touches[0];
+            if (!touch) return;
+            mouseX = (touch.clientX - rect.left) / rect.width;
+            mouseY = (touch.clientY - rect.top) / rect.height;
+        }, { passive: true });
+
+        const portalContainer = container;
+        const hudTL = document.createElement('div');
+        hudTL.className = 'portal-hud portal-hud--tl';
+        portalContainer.appendChild(hudTL);
+
+        const hudTR = document.createElement('div');
+        hudTR.className = 'portal-hud portal-hud--tr';
+        portalContainer.appendChild(hudTR);
+
+        let frameCount = 0;
+        let lastFpsUpdate = performance.now();
+        let currentFps = 60;
+        const updateFps = (now) => {
+            frameCount++;
+            if (now - lastFpsUpdate >= 1000) {
+                currentFps = Math.round(frameCount / ((now - lastFpsUpdate) / 1000));
+                frameCount = 0;
+                lastFpsUpdate = now;
+            }
+        };
+
+        const animatePortal = (time) => {
+            requestAnimationFrame(animatePortal);
+            updateFps(time);
+            const t = time / 1000;
+            ctx.clearRect(0, 0, width, height);
+            tendrils.forEach(tendril => {
+                tendril.update(t, mouseX, mouseY);
+                tendril.draw(ctx, t);
+            });
+            const auraGrad = ctx.createRadialGradient(centerX, centerY, coreRadius * 0.5, centerX, centerY, coreRadius * 1.5);
+            const auraAlpha = 0.12 + Math.sin(t * 2) * 0.05;
+            auraGrad.addColorStop(0, `rgba(0,229,255,${auraAlpha})`);
+            auraGrad.addColorStop(0.5, `rgba(255,43,214,${auraAlpha * 0.5})`);
+            auraGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = auraGrad;
+            ctx.fillRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                const dx = p.x - centerX;
+                const dy = p.y - centerY;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                const angle = Math.atan2(dy, dx);
+                p.vx += Math.cos(angle + Math.PI * 0.5) * 0.02;
+                p.vy += Math.sin(angle + Math.PI * 0.5) * 0.02;
+                p.vx -= (dx / dist) * 0.01;
+                p.vy -= (dy / dist) * 0.01;
+                if (p.life <= 0 || dist > coreRadius * 2.5) resetParticle(p);
+                const alpha = p.life * 0.8;
+                const col = lerpColor(CYAN, MAGENTA, p.colorT);
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = colorToCSS(col, 0.6);
+                ctx.fillStyle = colorToCSS(col, alpha);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            trailTimer += 1;
+            if (trailTimer % 60 === 0 && activeTrailIdx < lightTrails.length) {
+                const tendril = tendrils[activeTrailIdx % tendrils.length];
+                const endpoint = tendril.getEndpoint();
+                if (endpoint && Number.isFinite(endpoint.x) && Number.isFinite(endpoint.y)) {
+                    lightTrails[activeTrailIdx].addPoint(endpoint.x, endpoint.y);
+                }
+                activeTrailIdx = (activeTrailIdx + 1) % lightTrails.length;
+            }
+            lightTrails.forEach(trail => {
+                trail.update();
+                trail.draw(ctx, t);
+            });
+
+            hudTL.innerHTML = `<span class="portal-hud__line">SYS::DRAGON_V4.2</span><span class="portal-hud__line">HOLO::ACTIVE</span><span class="portal-hud__line">SYNC::NOMINAL</span>`;
+            hudTR.innerHTML = `<span class="portal-hud__line">FPS: <span class="portal-hud__val">${currentFps}</span></span><span class="portal-hud__line">ENTITIES: ${tendrils.length + particles.length}</span>`;
+        };
+
+        requestAnimationFrame(animatePortal);
     }
 
     openProjectView(project) {
@@ -3485,6 +3901,14 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <!-- DEPOOL Portal -->
+                    <div class="depool-portal" id="depoolPortal">
+                        <canvas id="depoolPortalCanvas"></canvas>
+                        <div class="depool-portal-core">
+                            <img src="src/images/depool_icon.png" alt="DEPOOL" class="depool-portal-img" decoding="async">
                         </div>
                     </div>
                     
