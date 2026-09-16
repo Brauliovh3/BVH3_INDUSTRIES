@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerebro Digital Holográfico</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #020205; /* Un tono muy oscuro de azul/negro */
+            font-family: sans-serif;
+        }
+
+        #neuralCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Efecto de viñeta para dar profundidad a la pantalla */
+        .vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 30%, rgba(0,0,0,0.95) 100%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Brillo sutil de fondo para el holograma */
+        .glow-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vmin;
+            height: 80vmin;
+            background: radial-gradient(circle, rgba(20, 50, 100, 0.15) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glow-bg"></div>
+    <div class="vignette"></div>
+    <canvas id="neuralCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('neuralCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, cx, cy;
+        
+        // Parámetros de la cámara 3D
+        const FOV = 450; 
+        let angleX = 0;
+        let angleY = 0;
+
+        // Parámetros de la Red Neuronal
+        const NUM_NODES = 700; // Más nodos que la versión binaria
+        const MAX_CONNECTION_DISTANCE = 75; // Distancia para crear red
+        const PULSE_SPEED = 0.015; 
+
+        let nodes = [];
+        let connections = [];
+        let pulses = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            cx = width / 2;
+            cy = height / 2;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Node {
+            constructor(x, y, z, hemisphere) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.hemisphere = hemisphere; // 'left' o 'right'
+                
+                // Color basado en el hemisferio
+                if (hemisphere === 'left') {
+                    // Tonos Cian y Azules para la lógica
+                    this.color = Math.random() > 0.3 ? '#00f3ff' : '#0077ff'; 
+                } else {
+                    // Tonos Magenta y Púrpura para la creatividad
+                    this.color = Math.random() > 0.3 ? '#bc13fe' : '#ff00aa';
+                }
+
+                // Tamaño base aleatorio
+                this.baseRadius = Math.random() * 1.5 + 0.5;
+                
+                // Variación de brillo (parpadeo sutil)
+                this.brightnessOffset = Math.random() * Math.PI * 2;
+                this.brightnessSpeed = Math.random() * 0.05 + 0.01;
+            }
+
+            // Proyección 3D a 2D
+            project(rotX, rotY) {
+                // Rotación en Y
+                let cosY = Math.cos(rotY);
+                let sinY = Math.sin(rotY);
+                let x1 = this.x * cosY - this.z * sinY;
+                let z1 = this.z * cosY + this.x * sinY;
+
+                // Rotación en X
+                let cosX = Math.cos(rotX);
+                let sinX = Math.sin(rotX);
+                let y2 = this.y * cosX - z1 * sinX;
+                let z2 = z1 * cosX + this.y * sinX;
+
+                let scale = FOV / (FOV + z2);
+                
+                // Descartar si está demasiado cerca o detrás de la cámara
+                if (z2 < -FOV + 50) return null; 
+
+                return {
+                    x2d: cx + x1 * scale,
+                    y2d: cy + y2 * scale,
+                    scale: scale,
+                    z: z2, 
+                    node: this // Referencia al objeto original
+                };
+            }
+        }
+
+        class Connection {
+            constructor(n1, n2) {
+                this.n1 = n1;
+                this.n2 = n2;
+                this.distance = Math.sqrt(
+                    Math.pow(n2.x - n1.x, 2) + 
+                    Math.pow(n2.y - n1.y, 2) + 
+                    Math.pow(n2.z - n1.z, 2)
+                );
+                // La opacidad de la línea depende de qué tan corta sea
+                this.alpha = (1 - (this.distance / MAX_CONNECTION_DISTANCE)) * 0.4;
+            }
+        }
+
+        class Pulse {
+            constructor(connection) {
+                this.connection = connection;
+                this.progress = 0; 
+                this.active = true;
+                
+                // Color del pulso toma el color del nodo de origen
+                this.color = connection.n1.color;
+                // Los pulsos magenta van un poco más rápido
+                this.speed = connection.n1.hemisphere === 'right' ? PULSE_SPEED * 1.2 : PULSE_SPEED;
+            }
+
+            update() {
+                this.progress += this.speed;
+                if (this.progress >= 1) {
+                    this.active = false;
+                }
+            }
+        }
+
+        function buildBrain() {
+            nodes = [];
+            connections = [];
+            pulses = [];
+
+            // Radios del elipsoide (forma del cerebro)
+            let rx = 150, ry = 110, rz = 170;
+            let hemisphereOffset = 50; // Separación entre hemisferios
+
+            for (let i = 0; i < NUM_NODES; i++) {
+                // Generar puntos en el volumen de un elipsoide
+                let u = Math.random();
+                let v = Math.random();
+                let theta = u * 2.0 * Math.PI;
+                let phi = Math.acos(2.0 * v - 1.0);
+                let r = Math.cbrt(Math.random()); 
+
+                let x = r * Math.sin(phi) * Math.cos(theta) * rx;
+                let y = r * Math.sin(phi) * Math.sin(theta) * ry;
+                let z = r * Math.cos(phi) * rz;
+
+                let hemisphere = Math.random() > 0.5 ? 'right' : 'left';
+                
+                if (hemisphere === 'right') {
+                    x += hemisphereOffset;
+                } else {
+                    x -= hemisphereOffset;
+                }
+
+                nodes.push(new Node(x, y, z, hemisphere));
+            }
+
+            // Conectar nodos (Crear la red neuronal)
+            for (let i = 0; i < nodes.length; i++) {
+                let connCount = 0;
+                for (let j = i + 1; j < nodes.length; j++) {
+                    let d = Math.sqrt(
+                        Math.pow(nodes[j].x - nodes[i].x, 2) +
+                        Math.pow(nodes[j].y - nodes[i].y, 2) +
+                        Math.pow(nodes[j].z - nodes[i].z, 2)
+                    );
+
+                    // Conectar si están cerca. Limitar conexiones por nodo.
+                    // Favorecer conexiones dentro del mismo hemisferio
+                    let isSameHemisphere = nodes[i].hemisphere === nodes[j].hemisphere;
+                    let maxConns = isSameHemisphere ? 5 : 1; // Pocas conexiones inter-hemisferios
+                    let distanceLimit = isSameHemisphere ? MAX_CONNECTION_DISTANCE : MAX_CONNECTION_DISTANCE * 1.5;
+
+                    if (d < distanceLimit && connCount < maxConns) {
+                        connections.push(new Connection(nodes[i], nodes[j]));
+                        connCount++;
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            // Fondo oscuro semitransparente para un ligerísimo efecto de estela
+            ctx.fillStyle = 'rgba(2, 2, 5, 0.4)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Rotación automática muy lenta
+            angleY += 0.002;
+            let time = Date.now() * 0.001;
+
+            let projectedNodes = [];
+
+            // 1. Proyectar todos los nodos
+            for (let i = 0; i < nodes.length; i++) {
+                let p = nodes[i].project(angleX, angleY);
+                if (p) projectedNodes.push(p);
+            }
+
+            // Generar pulsos aleatorios
+            if (Math.random() < 0.25 && connections.length > 0) {
+                let randomConn = connections[Math.floor(Math.random() * connections.length)];
+                pulses.push(new Pulse(randomConn));
+            }
+
+            // 2. Dibujar Conexiones (Malla estática)
+            ctx.lineWidth = 0.5;
+            // Para optimizar, no ordenamos las líneas por Z, se dibujan todas con adición
+            ctx.globalCompositeOperation = 'screen'; // Modo de fusión para que las luces se sumen
+            
+            for (let i = 0; i < connections.length; i++) {
+                let c = connections[i];
+                let p1 = c.n1.project(angleX, angleY);
+                let p2 = c.n2.project(angleX, angleY);
+
+                if (p1 && p2) {
+                    let avgScale = (p1.scale + p2.scale) / 2;
+                    let alpha = c.alpha * avgScale * 0.8;
+                    
+                    if (alpha > 0.02) { // Solo dibujar si es visible
+                        // Color neutro para la malla con un toque azulado
+                        ctx.strokeStyle = `rgba(100, 150, 255, ${alpha})`;
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x2d, p1.y2d);
+                        ctx.lineTo(p2.x2d, p2.y2d);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // 3. Actualizar y dibujar Pulsos
+            for (let i = pulses.length - 1; i >= 0; i--) {
+                let pulse = pulses[i];
+                pulse.update();
+
+                if (!pulse.active) {
+                    pulses.splice(i, 1);
+                    continue;
+                }
+
+                let p1 = pulse.connection.n1.project(angleX, angleY);
+                let p2 = pulse.connection.n2.project(angleX, angleY);
+
+                if (p1 && p2) {
+                    let px = p1.x2d + (p2.x2d - p1.x2d) * pulse.progress;
+                    let py = p1.y2d + (p2.y2d - p1.y2d) * pulse.progress;
+                    let pScale = p1.scale + (p2.scale - p1.scale) * pulse.progress;
+
+                    let alpha = Math.min(1, pScale * 1.5);
+                    
+                    ctx.shadowBlur = 10 * pScale;
+                    ctx.shadowColor = pulse.color;
+                    ctx.fillStyle = pulse.color;
+                    ctx.globalAlpha = alpha;
+                    
+                    ctx.beginPath();
+                    ctx.arc(px, py, 2 * pScale, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.shadowBlur = 0; // Apagar sombra para lo demás
+                }
+            }
+
+            // 4. Dibujar Nodos
+            // Ordenar de atrás hacia adelante
+            projectedNodes.sort((a, b) => b.z - a.z);
+
+            for (let i = 0; i < projectedNodes.length; i++) {
+                let p = projectedNodes[i];
+                let node = p.node;
+                
+                // Parpadeo sutil usando seno
+                let flicker = Math.sin(time * 5 + node.brightnessOffset) * 0.3 + 0.7; // entre 0.4 y 1.0
+                
+                let alpha = Math.min(1, Math.max(0.1, p.scale * 1.2)) * flicker;
+                let radius = node.baseRadius * p.scale;
+
+                ctx.fillStyle = node.color;
+                ctx.globalAlpha = alpha;
+
+                ctx.beginPath();
+                ctx.arc(p.x2d, p.y2d, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Nodos más cercanos tienen un pequeño brillo extra
+                if (p.scale > 1.2) {
+                    ctx.beginPath();
+                    ctx.fillStyle = 'rgba(255, 255, 255, ' + (alpha * 0.5) + ')';
+                    ctx.arc(p.x2d, p.y2d, radius * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            ctx.globalAlpha = 1.0;
+            ctx.globalCompositeOperation = 'source-over'; // Restaurar modo de renderizado normal
+
+            requestAnimationFrame(animate);
+        }
+
+        buildBrain();
+        animate();
+
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.offsetX, y: e.offsetY };
+        });
+
+        canvas.addEventListener('mouseup', () => isDragging = false);
+        canvas.addEventListener('mouseleave', () => isDragging = false);
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                let deltaMove = {
+                    x: e.offsetX - previousMousePosition.x,
+                    y: e.offsetY - previousMousePosition.y
+                };
+                // Invertimos deltaY para que arrastrar hacia arriba mire hacia abajo
+                angleY += deltaMove.x * 0.005;
+                angleX += deltaMove.y * 0.005;
+                
+                // Limitar rotación vertical para no voltear el cerebro de cabeza
+                angleX = Math.max(-Math.PI/3, Math.min(Math.PI/3, angleX));
+                
+                previousMousePosition = { x: e.offsetX, y: e.offsetY };
+            }
+        });
+
+        // Soporte táctil
+        canvas.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }, {passive: true});
+        canvas.addEventListener('touchend', () => isDragging = false);
+        canvas.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                let deltaMove = {
+                    x: e.touches[0].clientX - previousMousePosition.x,
+                    y: e.touches[0].clientY - previousMousePosition.y
+                };
+                angleY += deltaMove.x * 0.005;
+                angleX += deltaMove.y * 0.005;
+                angleX = Math.max(-Math.PI/3, Math.min(Math.PI/3, angleX));
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        }, {passive: true});
+
+    </script>
+</body>
+</html>

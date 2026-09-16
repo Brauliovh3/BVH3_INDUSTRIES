@@ -582,6 +582,12 @@
     initDepoolPortal(contentElement) {
         const canvas = contentElement.querySelector('#depoolPortalCanvas');
         if (!canvas) return;
+        if (canvas.dataset.portalInit === 'true') return;
+        if (this.prefersReducedMotion) {
+            canvas.style.display = 'none';
+            return;
+        }
+        canvas.dataset.portalInit = 'true';
         const ctx = canvas.getContext('2d');
         const container = canvas.parentElement;
 
@@ -589,6 +595,8 @@
         const coreEl = contentElement.querySelector('.depool-portal-core');
 
         const isLowEndDevice = this.detectLowEndDevice?.() || false;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const mobileOrLow = isMobile || isLowEndDevice;
 
         let width, height, centerX, centerY, coreRadius;
 
@@ -624,8 +632,8 @@
         class DragonTendril {
             constructor(config) {
                 this.baseAngle = config.baseAngle;
-                this.segments = config.segments || 14;
-                this.thickness = config.thickness || 8;
+                this.segments = config.segments || 10;
+                this.thickness = config.thickness || 6;
                 this.colorPhase = config.colorPhase || 0;
                 this.waveAmp = config.waveAmp || 0.25;
                 this.waveFreq = config.waveFreq || 2.5;
@@ -675,53 +683,50 @@
             draw(ctx, t) {
                 const segs = this.segmentData;
                 if (segs.length < 2) return;
-                const layers = isLowEndDevice
-                    ? [{ blur: 10, alpha: 0.35, widthMul: 1.0 }]
-                    : [
-                        { blur: 18, alpha: 0.15, widthMul: 3.5 },
-                        { blur: 10, alpha: 0.3, widthMul: 2.0 },
-                        { blur: 4, alpha: 0.6, widthMul: 1.2 },
-                        { blur: 0, alpha: 0.9, widthMul: 1.0 }
-                    ];
-                layers.forEach(layer => {
-                    ctx.save();
-                    ctx.shadowBlur = layer.blur;
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    for (let i = 0; i < segs.length - 1; i++) {
-                        const p0 = segs[Math.max(0, i - 1)];
-                        const p1 = segs[i];
-                        const p2 = segs[i + 1];
-                        const p3 = segs[Math.min(segs.length - 1, i + 2)];
-                        const frac = i / (segs.length - 1);
-                        const thickness = this.thickness * (this.taper ? (1 - frac * 0.7) : 1) * layer.widthMul;
-                        const safeThickness = Math.max(0.5, thickness);
-                        const colorT = (frac * this.waveFreq + t * this.speed + this.colorPhase) % 1;
-                        const col = lerpColor(CYAN, lerpColor(MAGENTA, PURPLE, colorT), colorT);
-                        ctx.strokeStyle = colorToCSS(col, layer.alpha);
-                        ctx.lineWidth = safeThickness;
-                        ctx.shadowColor = colorToCSS(col, 0.6);
-                        ctx.beginPath();
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                for (let i = 0; i < segs.length - 1; i++) {
+                    const p0 = segs[Math.max(0, i - 1)];
+                    const p1 = segs[i];
+                    const p2 = segs[i + 1];
+                    const p3 = segs[Math.min(segs.length - 1, i + 2)];
+                    const frac = i / (segs.length - 1);
+                    const thickness = this.thickness * (this.taper ? (1 - frac * 0.7) : 1);
+                    const safeThickness = Math.max(0.5, thickness);
+                    const colorT = (frac * this.waveFreq + t * this.speed + this.colorPhase) % 1;
+                    const col = lerpColor(CYAN, lerpColor(MAGENTA, PURPLE, colorT), colorT);
+                    ctx.strokeStyle = colorToCSS(col, 0.9);
+                    ctx.lineWidth = safeThickness;
+                    if (!mobileOrLow) {
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = colorToCSS(col, 0.4);
+                    }
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    if (!mobileOrLow) {
                         const cp1x = p1.x + (p2.x - p0.x) * 0.2;
                         const cp1y = p1.y + (p2.y - p0.y) * 0.2;
                         const cp2x = p2.x - (p3.x - p1.x) * 0.2;
                         const cp2y = p2.y - (p3.y - p1.y) * 0.2;
-                        ctx.moveTo(p1.x, p1.y);
                         ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
-                        ctx.stroke();
+                    } else {
+                        ctx.lineTo(p2.x, p2.y);
                     }
-                    ctx.restore();
-                });
-                if (!isLowEndDevice) {
+                    ctx.stroke();
+                }
+                if (this.isHead && segs.length > 4) {
+                    this.drawDragonHead(ctx, t, segs);
+                }
+                if (!mobileOrLow) {
                     for (let i = 2; i < segs.length - 2; i += 2) {
                         const p = segs[i];
-                        const shimmerAlpha = p.shimmer * 0.8;
+                        const shimmerAlpha = p.shimmer * 0.7;
                         if (shimmerAlpha < 0.1) continue;
-                        const nodeSize = this.thickness * 0.5 * (1 - i / segs.length);
+                        const nodeSize = this.thickness * 0.4 * (1 - i / segs.length);
                         const col = lerpColor(CYAN, MAGENTA, p.shimmer);
                         ctx.save();
-                        ctx.shadowBlur = 15;
-                        ctx.shadowColor = colorToCSS(col, 0.8);
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = colorToCSS(col, 0.7);
                         ctx.fillStyle = colorToCSS(col, shimmerAlpha);
                         ctx.beginPath();
                         ctx.arc(p.x, p.y, Math.max(0.5, nodeSize), 0, Math.PI * 2);
@@ -729,25 +734,21 @@
                         ctx.restore();
                     }
                 }
-                if (this.isHead && segs.length > 4) {
-                    this.drawDragonHead(ctx, t, segs);
-                }
             }
 
             drawDragonHead(ctx, t, segs) {
+                if (segs.length < 2) return;
                 const head = segs[0];
                 const neck = segs[1];
                 const angle = Math.atan2(head.y - neck.y, head.x - neck.x);
                 ctx.save();
                 ctx.translate(head.x, head.y);
                 ctx.rotate(angle);
-                const headSize = Math.max(10, this.thickness * 2.2);
+                const headSize = Math.max(10, this.thickness * 2);
                 const colorT = (Math.sin(t * 2 + this.colorPhase) * 0.5 + 0.5);
                 const primary = lerpColor(CYAN, MAGENTA, colorT);
                 const accent = lerpColor(MAGENTA, PURPLE, colorT);
                 const dark = lerpColor(PURPLE, { r: 12, g: 8, b: 30 }, 0.5);
-                ctx.shadowBlur = isLowEndDevice ? 12 : 28;
-                ctx.shadowColor = colorToCSS(dark, 0.95);
                 ctx.fillStyle = colorToCSS(dark, 0.92);
                 ctx.beginPath();
                 ctx.moveTo(-headSize * 0.35, -headSize * 0.5);
@@ -756,12 +757,10 @@
                 ctx.bezierCurveTo(headSize * 1.35, headSize * 0.85, headSize * 1.25, -headSize * 0.15, headSize * 0.35, -headSize * 0.5);
                 ctx.closePath();
                 ctx.fill();
-                ctx.strokeStyle = colorToCSS(accent, 0.97);
-                ctx.lineWidth = 3;
-                ctx.shadowBlur = isLowEndDevice ? 10 : 20;
-                ctx.shadowColor = colorToCSS(accent, 0.9);
+                ctx.strokeStyle = colorToCSS(accent, 0.95);
+                ctx.lineWidth = 2.5;
                 ctx.stroke();
-                ctx.fillStyle = colorToCSS(primary, 0.38);
+                ctx.fillStyle = colorToCSS(primary, 0.35);
                 ctx.beginPath();
                 ctx.moveTo(-headSize * 0.6, -headSize * 0.05);
                 ctx.bezierCurveTo(-headSize * 1.05, headSize * 0.4, -headSize * 1.0, headSize * 1.1, -headSize * 0.65, headSize * 1.25);
@@ -769,22 +768,16 @@
                 ctx.bezierCurveTo(headSize * 1.0, headSize * 1.1, headSize * 1.05, headSize * 0.4, headSize * 0.6, -headSize * 0.05);
                 ctx.closePath();
                 ctx.fill();
-                ctx.strokeStyle = colorToCSS(primary, 0.95);
-                ctx.lineWidth = 2.2;
-                ctx.shadowBlur = isLowEndDevice ? 6 : 12;
-                ctx.shadowColor = colorToCSS(primary, 0.8);
-                ctx.stroke();
-                ctx.strokeStyle = colorToCSS(accent, 0.9);
-                ctx.lineWidth = 2.4;
-                ctx.beginPath();
-                ctx.moveTo(-headSize * 0.8, headSize * 1.22);
-                ctx.bezierCurveTo(-headSize * 0.3, headSize * 1.78, headSize * 0.3, headSize * 1.78, headSize * 0.8, headSize * 1.22);
+                ctx.strokeStyle = colorToCSS(primary, 0.9);
+                ctx.lineWidth = 2;
                 ctx.stroke();
                 const eyeY = -headSize * 0.35;
                 const eyeX = headSize * 0.68;
                 const eyeGlow = 0.85 + Math.sin(t * 5.2 + this.phase) * 0.18;
-                ctx.shadowBlur = isLowEndDevice ? 16 : 30;
-                ctx.shadowColor = colorToCSS({ r: 0, g: 255, b: 122 }, eyeGlow);
+                if (!mobileOrLow) {
+                    ctx.shadowBlur = 18;
+                    ctx.shadowColor = colorToCSS({ r: 0, g: 255, b: 122 }, eyeGlow);
+                }
                 ctx.fillStyle = colorToCSS({ r: 0, g: 255, b: 122 }, eyeGlow * 0.95);
                 ctx.beginPath();
                 ctx.moveTo(eyeX - headSize * 0.22, eyeY - headSize * 0.38);
@@ -802,26 +795,24 @@
         }
 
         const allTendrils = [
-            new DragonTendril({ baseAngle: Math.PI * 0.25, segments: 18, thickness: 12, colorPhase: 0, waveAmp: 0.32, waveFreq: 2.2, speed: 1.0, wrapDir: 1, orbitRadius: 0.92, phase: 0, isHead: true }),
-            new DragonTendril({ baseAngle: Math.PI * 0.75, segments: 15, thickness: 9, colorPhase: 0.33, waveAmp: 0.28, waveFreq: 2.6, speed: 1.1, wrapDir: -1, orbitRadius: 0.88, phase: 1.2 }),
-            new DragonTendril({ baseAngle: Math.PI * 1.25, segments: 16, thickness: 10, colorPhase: 0.66, waveAmp: 0.3, waveFreq: 2.0, speed: 0.9, wrapDir: 1, orbitRadius: 0.9, phase: 2.5 }),
-            new DragonTendril({ baseAngle: Math.PI * 1.7, segments: 14, thickness: 8, colorPhase: 0.5, waveAmp: 0.26, waveFreq: 2.8, speed: 1.2, wrapDir: -1, orbitRadius: 0.85, phase: 3.8 }),
-            new DragonTendril({ baseAngle: Math.PI * 0.0, segments: 13, thickness: 7, colorPhase: 0.8, waveAmp: 0.24, waveFreq: 3.0, speed: 1.3, wrapDir: 1, orbitRadius: 0.82, phase: 0.7 }),
-            new DragonTendril({ baseAngle: Math.PI * 0.5, segments: 14, thickness: 8, colorPhase: 0.15, waveAmp: 0.27, waveFreq: 2.4, speed: 1.15, wrapDir: -1, orbitRadius: 0.84, phase: 4.2 }),
-            new DragonTendril({ baseAngle: Math.PI * 1.5, segments: 12, thickness: 6, colorPhase: 0.4, waveAmp: 0.22, waveFreq: 3.2, speed: 1.4, wrapDir: 1, orbitRadius: 0.78, phase: 1.9 }),
-            new DragonTendril({ baseAngle: Math.PI * 1.9, segments: 11, thickness: 6, colorPhase: 0.7, waveAmp: 0.2, waveFreq: 3.5, speed: 1.5, wrapDir: -1, orbitRadius: 0.75, phase: 5.0 })
+            new DragonTendril({ baseAngle: Math.PI * 0.25, segments: 10, thickness: 7, colorPhase: 0, waveAmp: 0.3, waveFreq: 2.2, speed: 1.0, wrapDir: 1, orbitRadius: 0.92, phase: 0, isHead: true }),
+            new DragonTendril({ baseAngle: Math.PI * 0.75, segments: 9, thickness: 6, colorPhase: 0.33, waveAmp: 0.28, waveFreq: 2.6, speed: 1.1, wrapDir: -1, orbitRadius: 0.88, phase: 1.2 }),
+            new DragonTendril({ baseAngle: Math.PI * 1.25, segments: 10, thickness: 6, colorPhase: 0.66, waveAmp: 0.3, waveFreq: 2.0, speed: 0.9, wrapDir: 1, orbitRadius: 0.9, phase: 2.5 }),
+            new DragonTendril({ baseAngle: Math.PI * 1.7, segments: 9, thickness: 5, colorPhase: 0.5, waveAmp: 0.26, waveFreq: 2.8, speed: 1.2, wrapDir: -1, orbitRadius: 0.85, phase: 3.8 }),
+            new DragonTendril({ baseAngle: Math.PI * 0.0, segments: 8, thickness: 5, colorPhase: 0.8, waveAmp: 0.24, waveFreq: 3.0, speed: 1.3, wrapDir: 1, orbitRadius: 0.82, phase: 0.7 }),
+            new DragonTendril({ baseAngle: Math.PI * 0.5, segments: 9, thickness: 5, colorPhase: 0.15, waveAmp: 0.27, waveFreq: 2.4, speed: 1.15, wrapDir: -1, orbitRadius: 0.84, phase: 4.2 })
         ];
-        const tendrils = isLowEndDevice ? allTendrils.slice(0, 4) : allTendrils;
+        const tendrils = mobileOrLow ? allTendrils.slice(0, 3) : allTendrils;
 
-        const particleCount = isLowEndDevice ? 25 : 80;
+        const particleCount = mobileOrLow ? 15 : 35;
         const particles = [];
         for (let i = 0; i < particleCount; i++) particles.push({
             x: centerX, y: centerY,
-            vx: (Math.random() - 0.5) * 1.5,
-            vy: (Math.random() - 0.5) * 1.5,
+            vx: (Math.random() - 0.5) * 1.2,
+            vy: (Math.random() - 0.5) * 1.2,
             life: 1,
-            decay: 0.003 + Math.random() * 0.015,
-            size: 0.5 + Math.random() * 2.5,
+            decay: 0.004 + Math.random() * 0.012,
+            size: 0.5 + Math.random() * 1.5,
             colorT: Math.random()
         });
 
@@ -830,77 +821,62 @@
             const dist = coreRadius * (0.3 + Math.random() * 1.2);
             p.x = centerX + Math.cos(angle) * dist;
             p.y = centerY + Math.sin(angle) * dist;
-            p.vx = (Math.random() - 0.5) * 1.5;
-            p.vy = (Math.random() - 0.5) * 1.5;
+            p.vx = (Math.random() - 0.5) * 1.2;
+            p.vy = (Math.random() - 0.5) * 1.2;
             p.life = 1;
-            p.decay = 0.003 + Math.random() * 0.015;
-            p.size = 0.5 + Math.random() * 2.5;
+            p.decay = 0.004 + Math.random() * 0.012;
+            p.size = 0.5 + Math.random() * 1.5;
             p.colorT = Math.random();
         };
 
-        class LightTrail {
-            constructor() {
-                this.points = [];
-                this.maxPoints = 30;
-                this.active = false;
-                this.life = 1;
-                this.colorPhase = Math.random();
-            }
-            addPoint(x, y) {
-                this.points.push({ x, y, life: 1 });
-                if (this.points.length > this.maxPoints) this.points.shift();
-                this.active = true;
-                this.life = 1;
-            }
-            update() {
-                if (!this.active) return;
-                this.life -= 0.008;
-                if (this.life <= 0) {
-                    this.points = [];
-                    this.active = false;
-                    this.life = 0;
-                    return;
+        const lightTrails = [];
+        if (!mobileOrLow) {
+            for (let i = 0; i < 2; i++) lightTrails.push({
+                points: [],
+                maxPoints: 24,
+                active: false,
+                life: 1,
+                colorPhase: Math.random(),
+                addPoint(x, y) {
+                    this.points.push({ x, y, life: 1 });
+                    if (this.points.length > this.maxPoints) this.points.shift();
+                    this.active = true;
+                    this.life = 1;
+                },
+                update() {
+                    if (!this.active) return;
+                    this.life -= 0.01;
+                    if (this.life <= 0) {
+                        this.points = [];
+                        this.active = false;
+                        this.life = 0;
+                        return;
+                    }
+                    for (let i = this.points.length - 1; i >= 0; i--) {
+                        this.points[i].life -= 0.04;
+                        if (this.points[i].life <= 0) this.points.splice(i, 1);
+                    }
+                },
+                draw(ctx, t) {
+                    if (this.points.length < 2) return;
+                    const col = lerpColor(CYAN, MAGENTA, (Math.sin(t * 3 + this.colorPhase) * 0.5 + 0.5));
+                    ctx.strokeStyle = colorToCSS(col, this.life * 0.35);
+                    ctx.lineWidth = 2;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(this.points[0].x, this.points[0].y);
+                    for (let i = 1; i < this.points.length; i++) {
+                        const p = this.points[i];
+                        ctx.lineTo(p.x, p.y);
+                    }
+                    ctx.stroke();
                 }
-                for (let i = this.points.length - 1; i >= 0; i--) {
-                    this.points[i].life -= 0.03;
-                    if (this.points[i].life <= 0) this.points.splice(i, 1);
-                }
-            }
-            draw(ctx, t) {
-                if (this.points.length < 2) return;
-                const col = lerpColor(CYAN, MAGENTA, (Math.sin(t * 3 + this.colorPhase) * 0.5 + 0.5));
-                ctx.save();
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.shadowBlur = isLowEndDevice ? 6 : 12;
-                ctx.shadowColor = colorToCSS(col, 0.5);
-                ctx.strokeStyle = colorToCSS(col, this.life * 0.4);
-                ctx.lineWidth = isLowEndDevice ? 3 : 6;
-                ctx.beginPath();
-                ctx.moveTo(this.points[0].x, this.points[0].y);
-                for (let i = 1; i < this.points.length; i++) {
-                    const p = this.points[i];
-                    ctx.lineTo(p.x, p.y);
-                }
-                ctx.stroke();
-                ctx.shadowBlur = isLowEndDevice ? 2 : 4;
-                ctx.strokeStyle = colorToCSS(col, this.life * 0.8);
-                ctx.lineWidth = isLowEndDevice ? 1 : 2;
-                ctx.beginPath();
-                ctx.moveTo(this.points[0].x, this.points[0].y);
-                for (let i = 1; i < this.points.length; i++) {
-                    const p = this.points[i];
-                    ctx.lineTo(p.x, p.y);
-                }
-                ctx.stroke();
-                ctx.restore();
-            }
+            });
         }
-
-        const lightTrails = isLowEndDevice ? [] : [new LightTrail(), new LightTrail(), new LightTrail(), new LightTrail(), new LightTrail()];
         let trailTimer = 0;
         let activeTrailIdx = 0;
-        const TRAIL_INTERVAL = isLowEndDevice ? 180 : 60;
+        const TRAIL_INTERVAL = mobileOrLow ? 9999 : 100;
 
         let mouseX = 0.5;
         let mouseY = 0.5;
@@ -940,17 +916,21 @@
         };
 
         let lastHudUpdate = 0;
-        const HUD_UPDATE_INTERVAL = isLowEndDevice ? 1000 : 250;
+        const HUD_UPDATE_INTERVAL = mobileOrLow ? 4000 : 2000;
 
+        let portalRunning = true;
         const animatePortal = (time) => {
+            if (!portalRunning) return;
             requestAnimationFrame(animatePortal);
             updateFps(time);
             const t = time / 1000;
             ctx.clearRect(0, 0, width, height);
+
             tendrils.forEach(tendril => {
                 tendril.update(t, mouseX, mouseY);
                 tendril.draw(ctx, t);
             });
+
             const auraGrad = ctx.createRadialGradient(centerX, centerY, coreRadius * 0.5, centerX, centerY, coreRadius * 1.5);
             const auraAlpha = 0.12 + Math.sin(t * 2) * 0.05;
             auraGrad.addColorStop(0, `rgba(0,229,255,${auraAlpha})`);
@@ -958,6 +938,7 @@
             auraGrad.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = auraGrad;
             ctx.fillRect(0, 0, width, height);
+
             particles.forEach(p => {
                 p.x += p.vx;
                 p.y += p.vy;
@@ -971,19 +952,15 @@
                 p.vx -= (dx / dist) * 0.01;
                 p.vy -= (dy / dist) * 0.01;
                 if (p.life <= 0 || dist > coreRadius * 2.5) resetParticle(p);
-                const alpha = p.life * 0.8;
+                const alpha = p.life * 0.75;
                 const col = lerpColor(CYAN, MAGENTA, p.colorT);
-                ctx.save();
-                ctx.shadowBlur = isLowEndDevice ? 4 : 8;
-                ctx.shadowColor = colorToCSS(col, 0.6);
                 ctx.fillStyle = colorToCSS(col, alpha);
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.restore();
             });
 
-            if (!isLowEndDevice) {
+            if (!mobileOrLow) {
                 trailTimer += 1;
                 if (trailTimer % TRAIL_INTERVAL === 0 && activeTrailIdx < lightTrails.length) {
                     const tendril = tendrils[activeTrailIdx % tendrils.length];
@@ -1001,12 +978,25 @@
 
             if (time - lastHudUpdate >= HUD_UPDATE_INTERVAL) {
                 lastHudUpdate = time;
-                hudTL.innerHTML = `<span class="portal-hud__line">SYS::DRAGON_V4.2</span><span class="portal-hud__line">HOLO::ACTIVE</span><span class="portal-hud__line">SYNC::NOMINAL</span>`;
-                hudTR.innerHTML = `<span class="portal-hud__line">FPS: <span class="portal-hud__val">${currentFps}</span></span><span class="portal-hud__line">ENTITIES: ${tendrils.length + particles.length}</span>`;
+                hudTL.innerHTML = `<span class="portal-hud__line">SYS::DRAGON_V4.2</span>`;
+                hudTR.innerHTML = `<span class="portal-hud__line">ENTITIES: ${tendrils.length + particles.length}</span>`;
             }
         };
 
         requestAnimationFrame(animatePortal);
+
+        const portalSection = document.getElementById('depool');
+        if (portalSection && 'IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                portalRunning = entries[0].isIntersecting;
+                if (portalRunning) {
+                    lastFpsUpdate = performance.now();
+                    frameCount = 0;
+                    requestAnimationFrame(animatePortal);
+                }
+            }, { threshold: 0.05 });
+            observer.observe(portalSection);
+        }
     }
 
     openProjectView(project) {
@@ -4119,7 +4109,6 @@
         let lastFrame = 0;
 
         const animateParticles = (timestamp) => {
-            // No dibujar hasta que pase el presupuesto de tiempo del frame
             if (timestamp - lastFrame < frameBudget) {
                 requestAnimationFrame(animateParticles);
                 return;
@@ -4134,27 +4123,10 @@
                 if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
                 if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
                 
+                ctx.fillStyle = `rgba(0, 255, 255, ${particle.opacity})`;
                 ctx.beginPath();
                 ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 255, 255, ${particle.opacity})`;
                 ctx.fill();
-            });
-            
-            // Draw connections
-            this.particles.forEach((particle1, i) => {
-                this.particles.slice(i + 1).forEach(particle2 => {
-                    const dx = particle1.x - particle2.x;
-                    const dy = particle1.y - particle2.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < 70) {
-                        ctx.beginPath();
-                        ctx.moveTo(particle1.x, particle1.y);
-                        ctx.lineTo(particle2.x, particle2.y);
-                        ctx.strokeStyle = `rgba(0, 255, 255, ${0.1 * (1 - distance / 70)})`;
-                        ctx.stroke();
-                    }
-                });
             });
             
             requestAnimationFrame(animateParticles);

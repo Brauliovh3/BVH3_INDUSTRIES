@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerebro Neuronal Binario</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #050505; /* Fondo casi negro */
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #brainCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Efecto de líneas de escaneo (Scanlines) para look retro-futurista */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0) 50%,
+                rgba(0, 0, 0, 0.3) 50%,
+                rgba(0, 0, 0, 0.3)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Viñeteado para oscurecer los bordes y centrar la atención */
+        .vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <canvas id="brainCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('brainCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, cx, cy;
+        
+        // Parámetros de la cámara 3D
+        const FOV = 400; 
+        let angleX = 0;
+        let angleY = 0;
+
+        // Parámetros de la Red Neuronal
+        const NUM_NEURONS = 450; // Cantidad de nodos (0s y 1s)
+        const MAX_CONNECTION_DISTANCE = 80; // Distancia máxima para conectar neuronas
+        const SIGNAL_SPEED = 0.02; // Velocidad de los pulsos de datos
+
+        let neurons = [];
+        let synapses = [];
+        let signals = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            cx = width / 2;
+            cy = height / 2;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Neuron {
+            constructor(x, y, z) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                
+                // Representación binaria
+                this.value = Math.random() > 0.5 ? '1' : '0';
+                this.nextFlip = Math.random() * 100 + 50; // Tiempo para cambiar de estado
+                this.counter = 0;
+
+                // Color cyberpunk (verde hacker, cian, magenta esporádico)
+                let rand = Math.random();
+                if (rand < 0.7) this.color = '#0f0'; // Verde
+                else if (rand < 0.9) this.color = '#0ff'; // Cian
+                else this.color = '#f0f'; // Magenta
+            }
+
+            // Actualiza el estado binario
+            update() {
+                this.counter++;
+                if (this.counter >= this.nextFlip) {
+                    this.value = this.value === '1' ? '0' : '1';
+                    this.counter = 0;
+                    this.nextFlip = Math.random() * 100 + 50;
+                }
+            }
+
+            // Proyección 3D a 2D
+            project(rotX, rotY) {
+                // Rotación en el eje Y
+                let cosY = Math.cos(rotY);
+                let sinY = Math.sin(rotY);
+                let x1 = this.x * cosY - this.z * sinY;
+                let z1 = this.z * cosY + this.x * sinY;
+
+                // Rotación en el eje X
+                let cosX = Math.cos(rotX);
+                let sinX = Math.sin(rotX);
+                let y2 = this.y * cosX - z1 * sinX;
+                let z2 = z1 * cosX + this.y * sinX;
+
+                let scale = FOV / (FOV + z2);
+                // Prevenir renderizado detrás de la cámara
+                if (z2 < -FOV + 10) return null; 
+
+                return {
+                    x2d: cx + x1 * scale,
+                    y2d: cy + y2 * scale,
+                    scale: scale,
+                    z: z2, // Guardamos Z para el ordenamiento (Depth sorting)
+                    rawX: x1, // Guardamos coordenadas rotadas para los pulsos
+                    rawY: y2
+                };
+            }
+        }
+
+        class Synapse {
+            constructor(n1, n2) {
+                this.n1 = n1;
+                this.n2 = n2;
+                this.distance = Math.sqrt(
+                    Math.pow(n2.x - n1.x, 2) + 
+                    Math.pow(n2.y - n1.y, 2) + 
+                    Math.pow(n2.z - n1.z, 2)
+                );
+                this.alpha = 1 - (this.distance / MAX_CONNECTION_DISTANCE);
+            }
+        }
+
+        class Signal {
+            constructor(synapse) {
+                this.synapse = synapse;
+                this.progress = 0; // De 0 a 1
+                this.active = true;
+                
+                // La señal toma el color de una de las neuronas
+                this.color = Math.random() > 0.5 ? synapse.n1.color : '#fff';
+            }
+
+            update() {
+                this.progress += SIGNAL_SPEED;
+                if (this.progress >= 1) {
+                    this.active = false;
+                }
+            }
+        }
+
+        function initBrain() {
+            neurons = [];
+            synapses = [];
+            signals = [];
+
+            // Generar puntos dentro de dos elipsoides (hemisferios)
+            for (let i = 0; i < NUM_NEURONS; i++) {
+                // Distribución esférica aleatoria
+                let u = Math.random();
+                let v = Math.random();
+                let theta = u * 2.0 * Math.PI;
+                let phi = Math.acos(2.0 * v - 1.0);
+                let r = Math.cbrt(Math.random()); // Raíz cúbica para distribución uniforme en el volumen
+
+                // Radios del elipsoide (forma de cerebro)
+                let rx = 140, ry = 100, rz = 160;
+                
+                let x = r * Math.sin(phi) * Math.cos(theta) * rx;
+                let y = r * Math.sin(phi) * Math.sin(theta) * ry;
+                let z = r * Math.cos(phi) * rz;
+
+                // Separar en hemisferio izquierdo y derecho
+                let hemisphereOffset = 45;
+                if (Math.random() > 0.5) {
+                    x += hemisphereOffset; // Hemisferio Derecho
+                } else {
+                    x -= hemisphereOffset; // Hemisferio Izquierdo
+                }
+
+                neurons.push(new Neuron(x, y, z));
+            }
+
+            // Conectar neuronas cercanas para formar la red
+            for (let i = 0; i < neurons.length; i++) {
+                let connections = 0;
+                for (let j = i + 1; j < neurons.length; j++) {
+                    let d = Math.sqrt(
+                        Math.pow(neurons[j].x - neurons[i].x, 2) +
+                        Math.pow(neurons[j].y - neurons[i].y, 2) +
+                        Math.pow(neurons[j].z - neurons[i].z, 2)
+                    );
+
+                    // Conectar si están cerca, pero limitar conexiones por neurona para no saturar
+                    if (d < MAX_CONNECTION_DISTANCE && connections < 4) {
+                        synapses.push(new Synapse(neurons[i], neurons[j]));
+                        connections++;
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            // Fondo sólido en lugar de estela, porque el texto se mancha mucho con las estelas
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, width, height);
+
+            // Rotación continua y suave
+            angleY += 0.003;
+            // angleX = Math.sin(Date.now() * 0.0005) * 0.2; // Ligera oscilación arriba/abajo
+
+            let projectedNeurons = [];
+
+            // Actualizar y proyectar neuronas
+            for (let i = 0; i < neurons.length; i++) {
+                neurons[i].update();
+                let p = neurons[i].project(angleX, angleY);
+                if (p) {
+                    p.neuron = neurons[i]; // Guardar referencia
+                    projectedNeurons.push(p);
+                }
+            }
+
+            // Generar nuevas señales de datos aleatoriamente
+            if (Math.random() < 0.1 && synapses.length > 0) {
+                let randomSynapse = synapses[Math.floor(Math.random() * synapses.length)];
+                signals.push(new Signal(randomSynapse));
+            }
+
+            // Dibujar Sinapsis (Líneas)
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < synapses.length; i++) {
+                let s = synapses[i];
+                let p1 = s.n1.project(angleX, angleY);
+                let p2 = s.n2.project(angleX, angleY);
+
+                if (p1 && p2) {
+                    // Opacidad basada en la distancia original y la escala de profundidad
+                    let alpha = s.alpha * Math.min(p1.scale, p2.scale) * 0.6;
+                    ctx.strokeStyle = `rgba(0, 255, 100, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x2d, p1.y2d);
+                    ctx.lineTo(p2.x2d, p2.y2d);
+                    ctx.stroke();
+                }
+            }
+
+            // Actualizar y dibujar Señales (Pulsos viajando)
+            for (let i = signals.length - 1; i >= 0; i--) {
+                let sig = signals[i];
+                sig.update();
+
+                if (!sig.active) {
+                    signals.splice(i, 1);
+                    continue;
+                }
+
+                let p1 = sig.synapse.n1.project(angleX, angleY);
+                let p2 = sig.synapse.n2.project(angleX, angleY);
+
+                if (p1 && p2) {
+                    // Interpolar posición de la señal
+                    let sigX = p1.x2d + (p2.x2d - p1.x2d) * sig.progress;
+                    let sigY = p1.y2d + (p2.y2d - p1.y2d) * sig.progress;
+                    let sigScale = p1.scale + (p2.scale - p1.scale) * sig.progress;
+
+                    ctx.fillStyle = sig.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = sig.color;
+                    
+                    ctx.beginPath();
+                    ctx.arc(sigX, sigY, 2 * sigScale, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.shadowBlur = 0; // Resetear sombra para no afectar al resto
+                }
+            }
+
+            // Ordenar neuronas proyectadas por profundidad (z) para pintar las lejanas primero
+            projectedNeurons.sort((a, b) => b.z - a.z);
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            for (let i = 0; i < projectedNeurons.length; i++) {
+                let p = projectedNeurons[i];
+                
+                // Calcular tamaño de fuente basado en la escala (profundidad)
+                let fontSize = Math.max(8, 18 * p.scale);
+                ctx.font = `bold ${fontSize}px monospace`;
+                
+                // Efecto de atenuación en la distancia (fog)
+                let alpha = Math.min(1, Math.max(0.1, p.scale * 1.5));
+                
+                // Aplicar alpha al color base hex (conversión rápida)
+                ctx.fillStyle = p.neuron.color;
+                ctx.globalAlpha = alpha;
+
+                // Dibujar el 0 o 1
+                ctx.fillText(p.neuron.value, p.x2d, p.y2d);
+            }
+            
+            ctx.globalAlpha = 1.0; // Reset
+
+            requestAnimationFrame(animate);
+        }
+
+        initBrain();
+        animate();
+
+        // Interactividad básica: Mover el cerebro con el ratón
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                let deltaMove = {
+                    x: e.offsetX - previousMousePosition.x,
+                    y: e.offsetY - previousMousePosition.y
+                };
+                
+                // Ajustar rotación basada en el movimiento del ratón
+                angleY += deltaMove.x * 0.005;
+                angleX += deltaMove.y * 0.005;
+            }
+            previousMousePosition = { x: e.offsetX, y: e.offsetY };
+        });
+
+        // Soporte táctil básico
+        canvas.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }, {passive: true});
+        canvas.addEventListener('touchend', () => isDragging = false);
+        canvas.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                let deltaMove = {
+                    x: e.touches[0].clientX - previousMousePosition.x,
+                    y: e.touches[0].clientY - previousMousePosition.y
+                };
+                angleY += deltaMove.x * 0.005;
+                angleX += deltaMove.y * 0.005;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        }, {passive: true});
+
+    </script>
+</body>
+</html>
