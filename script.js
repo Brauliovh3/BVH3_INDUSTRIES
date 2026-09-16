@@ -588,6 +588,8 @@
         const img = contentElement.querySelector('.depool-portal-img');
         const coreEl = contentElement.querySelector('.depool-portal-core');
 
+        const isLowEndDevice = this.detectLowEndDevice?.() || false;
+
         let width, height, centerX, centerY, coreRadius;
 
         const resize = () => {
@@ -673,12 +675,14 @@
             draw(ctx, t) {
                 const segs = this.segmentData;
                 if (segs.length < 2) return;
-                const layers = [
-                    { blur: 18, alpha: 0.15, widthMul: 3.5 },
-                    { blur: 10, alpha: 0.3, widthMul: 2.0 },
-                    { blur: 4, alpha: 0.6, widthMul: 1.2 },
-                    { blur: 0, alpha: 0.9, widthMul: 1.0 }
-                ];
+                const layers = isLowEndDevice
+                    ? [{ blur: 10, alpha: 0.35, widthMul: 1.0 }]
+                    : [
+                        { blur: 18, alpha: 0.15, widthMul: 3.5 },
+                        { blur: 10, alpha: 0.3, widthMul: 2.0 },
+                        { blur: 4, alpha: 0.6, widthMul: 1.2 },
+                        { blur: 0, alpha: 0.9, widthMul: 1.0 }
+                    ];
                 layers.forEach(layer => {
                     ctx.save();
                     ctx.shadowBlur = layer.blur;
@@ -708,20 +712,22 @@
                     }
                     ctx.restore();
                 });
-                for (let i = 2; i < segs.length - 2; i += 2) {
-                    const p = segs[i];
-                    const shimmerAlpha = p.shimmer * 0.8;
-                    if (shimmerAlpha < 0.1) continue;
-                    const nodeSize = this.thickness * 0.5 * (1 - i / segs.length);
-                    const col = lerpColor(CYAN, MAGENTA, p.shimmer);
-                    ctx.save();
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = colorToCSS(col, 0.8);
-                    ctx.fillStyle = colorToCSS(col, shimmerAlpha);
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, Math.max(0.5, nodeSize), 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
+                if (!isLowEndDevice) {
+                    for (let i = 2; i < segs.length - 2; i += 2) {
+                        const p = segs[i];
+                        const shimmerAlpha = p.shimmer * 0.8;
+                        if (shimmerAlpha < 0.1) continue;
+                        const nodeSize = this.thickness * 0.5 * (1 - i / segs.length);
+                        const col = lerpColor(CYAN, MAGENTA, p.shimmer);
+                        ctx.save();
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = colorToCSS(col, 0.8);
+                        ctx.fillStyle = colorToCSS(col, shimmerAlpha);
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, Math.max(0.5, nodeSize), 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
                 }
                 if (this.isHead && segs.length > 4) {
                     this.drawDragonHead(ctx, t, segs);
@@ -740,7 +746,7 @@
                 const primary = lerpColor(CYAN, MAGENTA, colorT);
                 const accent = lerpColor(MAGENTA, PURPLE, colorT);
                 const dark = lerpColor(PURPLE, { r: 12, g: 8, b: 30 }, 0.5);
-                ctx.shadowBlur = 28;
+                ctx.shadowBlur = isLowEndDevice ? 12 : 28;
                 ctx.shadowColor = colorToCSS(dark, 0.95);
                 ctx.fillStyle = colorToCSS(dark, 0.92);
                 ctx.beginPath();
@@ -752,7 +758,7 @@
                 ctx.fill();
                 ctx.strokeStyle = colorToCSS(accent, 0.97);
                 ctx.lineWidth = 3;
-                ctx.shadowBlur = 20;
+                ctx.shadowBlur = isLowEndDevice ? 10 : 20;
                 ctx.shadowColor = colorToCSS(accent, 0.9);
                 ctx.stroke();
                 ctx.fillStyle = colorToCSS(primary, 0.38);
@@ -765,7 +771,7 @@
                 ctx.fill();
                 ctx.strokeStyle = colorToCSS(primary, 0.95);
                 ctx.lineWidth = 2.2;
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = isLowEndDevice ? 6 : 12;
                 ctx.shadowColor = colorToCSS(primary, 0.8);
                 ctx.stroke();
                 ctx.strokeStyle = colorToCSS(accent, 0.9);
@@ -777,7 +783,7 @@
                 const eyeY = -headSize * 0.35;
                 const eyeX = headSize * 0.68;
                 const eyeGlow = 0.85 + Math.sin(t * 5.2 + this.phase) * 0.18;
-                ctx.shadowBlur = 30;
+                ctx.shadowBlur = isLowEndDevice ? 16 : 30;
                 ctx.shadowColor = colorToCSS({ r: 0, g: 255, b: 122 }, eyeGlow);
                 ctx.fillStyle = colorToCSS({ r: 0, g: 255, b: 122 }, eyeGlow * 0.95);
                 ctx.beginPath();
@@ -795,7 +801,7 @@
             }
         }
 
-        const tendrils = [
+        const allTendrils = [
             new DragonTendril({ baseAngle: Math.PI * 0.25, segments: 18, thickness: 12, colorPhase: 0, waveAmp: 0.32, waveFreq: 2.2, speed: 1.0, wrapDir: 1, orbitRadius: 0.92, phase: 0, isHead: true }),
             new DragonTendril({ baseAngle: Math.PI * 0.75, segments: 15, thickness: 9, colorPhase: 0.33, waveAmp: 0.28, waveFreq: 2.6, speed: 1.1, wrapDir: -1, orbitRadius: 0.88, phase: 1.2 }),
             new DragonTendril({ baseAngle: Math.PI * 1.25, segments: 16, thickness: 10, colorPhase: 0.66, waveAmp: 0.3, waveFreq: 2.0, speed: 0.9, wrapDir: 1, orbitRadius: 0.9, phase: 2.5 }),
@@ -805,9 +811,11 @@
             new DragonTendril({ baseAngle: Math.PI * 1.5, segments: 12, thickness: 6, colorPhase: 0.4, waveAmp: 0.22, waveFreq: 3.2, speed: 1.4, wrapDir: 1, orbitRadius: 0.78, phase: 1.9 }),
             new DragonTendril({ baseAngle: Math.PI * 1.9, segments: 11, thickness: 6, colorPhase: 0.7, waveAmp: 0.2, waveFreq: 3.5, speed: 1.5, wrapDir: -1, orbitRadius: 0.75, phase: 5.0 })
         ];
+        const tendrils = isLowEndDevice ? allTendrils.slice(0, 4) : allTendrils;
 
+        const particleCount = isLowEndDevice ? 25 : 80;
         const particles = [];
-        for (let i = 0; i < 80; i++) particles.push({
+        for (let i = 0; i < particleCount; i++) particles.push({
             x: centerX, y: centerY,
             vx: (Math.random() - 0.5) * 1.5,
             vy: (Math.random() - 0.5) * 1.5,
@@ -864,10 +872,10 @@
                 ctx.save();
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = isLowEndDevice ? 6 : 12;
                 ctx.shadowColor = colorToCSS(col, 0.5);
                 ctx.strokeStyle = colorToCSS(col, this.life * 0.4);
-                ctx.lineWidth = 6;
+                ctx.lineWidth = isLowEndDevice ? 3 : 6;
                 ctx.beginPath();
                 ctx.moveTo(this.points[0].x, this.points[0].y);
                 for (let i = 1; i < this.points.length; i++) {
@@ -875,9 +883,9 @@
                     ctx.lineTo(p.x, p.y);
                 }
                 ctx.stroke();
-                ctx.shadowBlur = 4;
+                ctx.shadowBlur = isLowEndDevice ? 2 : 4;
                 ctx.strokeStyle = colorToCSS(col, this.life * 0.8);
-                ctx.lineWidth = 2;
+                ctx.lineWidth = isLowEndDevice ? 1 : 2;
                 ctx.beginPath();
                 ctx.moveTo(this.points[0].x, this.points[0].y);
                 for (let i = 1; i < this.points.length; i++) {
@@ -889,14 +897,13 @@
             }
         }
 
-        const lightTrails = [new LightTrail(), new LightTrail(), new LightTrail(), new LightTrail(), new LightTrail()];
+        const lightTrails = isLowEndDevice ? [] : [new LightTrail(), new LightTrail(), new LightTrail(), new LightTrail(), new LightTrail()];
         let trailTimer = 0;
         let activeTrailIdx = 0;
+        const TRAIL_INTERVAL = isLowEndDevice ? 180 : 60;
 
         let mouseX = 0.5;
         let mouseY = 0.5;
-        const targetMouseX = 0.5;
-        const targetMouseY = 0.5;
 
         container.addEventListener('mousemove', (e) => {
             const rect = container.getBoundingClientRect();
@@ -932,6 +939,9 @@
             }
         };
 
+        let lastHudUpdate = 0;
+        const HUD_UPDATE_INTERVAL = isLowEndDevice ? 1000 : 250;
+
         const animatePortal = (time) => {
             requestAnimationFrame(animatePortal);
             updateFps(time);
@@ -964,7 +974,7 @@
                 const alpha = p.life * 0.8;
                 const col = lerpColor(CYAN, MAGENTA, p.colorT);
                 ctx.save();
-                ctx.shadowBlur = 8;
+                ctx.shadowBlur = isLowEndDevice ? 4 : 8;
                 ctx.shadowColor = colorToCSS(col, 0.6);
                 ctx.fillStyle = colorToCSS(col, alpha);
                 ctx.beginPath();
@@ -973,22 +983,27 @@
                 ctx.restore();
             });
 
-            trailTimer += 1;
-            if (trailTimer % 60 === 0 && activeTrailIdx < lightTrails.length) {
-                const tendril = tendrils[activeTrailIdx % tendrils.length];
-                const endpoint = tendril.getEndpoint();
-                if (endpoint && Number.isFinite(endpoint.x) && Number.isFinite(endpoint.y)) {
-                    lightTrails[activeTrailIdx].addPoint(endpoint.x, endpoint.y);
+            if (!isLowEndDevice) {
+                trailTimer += 1;
+                if (trailTimer % TRAIL_INTERVAL === 0 && activeTrailIdx < lightTrails.length) {
+                    const tendril = tendrils[activeTrailIdx % tendrils.length];
+                    const endpoint = tendril.getEndpoint();
+                    if (endpoint && Number.isFinite(endpoint.x) && Number.isFinite(endpoint.y)) {
+                        lightTrails[activeTrailIdx].addPoint(endpoint.x, endpoint.y);
+                    }
+                    activeTrailIdx = (activeTrailIdx + 1) % lightTrails.length;
                 }
-                activeTrailIdx = (activeTrailIdx + 1) % lightTrails.length;
+                lightTrails.forEach(trail => {
+                    trail.update();
+                    trail.draw(ctx, t);
+                });
             }
-            lightTrails.forEach(trail => {
-                trail.update();
-                trail.draw(ctx, t);
-            });
 
-            hudTL.innerHTML = `<span class="portal-hud__line">SYS::DRAGON_V4.2</span><span class="portal-hud__line">HOLO::ACTIVE</span><span class="portal-hud__line">SYNC::NOMINAL</span>`;
-            hudTR.innerHTML = `<span class="portal-hud__line">FPS: <span class="portal-hud__val">${currentFps}</span></span><span class="portal-hud__line">ENTITIES: ${tendrils.length + particles.length}</span>`;
+            if (time - lastHudUpdate >= HUD_UPDATE_INTERVAL) {
+                lastHudUpdate = time;
+                hudTL.innerHTML = `<span class="portal-hud__line">SYS::DRAGON_V4.2</span><span class="portal-hud__line">HOLO::ACTIVE</span><span class="portal-hud__line">SYNC::NOMINAL</span>`;
+                hudTR.innerHTML = `<span class="portal-hud__line">FPS: <span class="portal-hud__val">${currentFps}</span></span><span class="portal-hud__line">ENTITIES: ${tendrils.length + particles.length}</span>`;
+            }
         };
 
         requestAnimationFrame(animatePortal);
