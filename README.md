@@ -17,16 +17,31 @@ BVH3_INDUSTRIES/
 ├── styles.css
 ├── script.js
 ├── manifest.json
+├── vercel.json
 ├── .gitattributes
 └── src/
-    └── images/
+    ├── images/
         ├── logo.png
         ├── favicon-16.png
         ├── favicon-32.png
         ├── apple-touch-icon.png
         ├── icon-192.png
         └── icon-512.png
+        └── skills/
+        ├── cerebro_digital_hologr_fico.html
+        └── cerebro_neuronal_binario.html
 ```
+
+    ## Despliegue en Vercel
+
+    Este es un sitio estático. Vercel puede desplegarlo directamente desde el repositorio, sin instalar dependencias ni ejecutar un comando de build:
+
+    1. Importa el repositorio `BVH3_INDUSTRIES` en Vercel.
+    2. Deja vacío el campo **Build Command**.
+    3. Usa `./` como **Output Directory**.
+    4. Pulsa **Deploy**.
+
+    La configuración de cabeceras está en `vercel.json` y los experimentos de Habilidades se sirven desde `src/skills/`.
 
 ## 📱 Aplicaciones
 
