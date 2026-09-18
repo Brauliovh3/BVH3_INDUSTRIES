@@ -329,18 +329,6 @@
             this.nsfwErrorMessage.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
             this.nsfwPasswordInput.value = '';
 
-            // Efecto de sacudida mejorado
-            modalContent.animate([
-                { transform: 'translateX(0)' },
-                { transform: 'translateX(-10px)' },
-                { transform: 'translateX(10px)' },
-                { transform: 'translateX(-10px)' },
-                { transform: 'translateX(0)' }
-            ], {
-                duration: 400,
-                easing: 'ease-in-out'
-            });
-
             // Reset después de la animación
             setTimeout(() => {
                 modalContent.classList.remove('nsfw-state--denied');
@@ -3814,9 +3802,31 @@
             `,
 
             skills: `
-                <div class="layout-grid layout-grid--3">
-                    <div class="panel panel--edgerunner">
-                        <h3 class="panel-title">Frontend</h3>
+                <div class="skills-command-deck">
+                    <div class="skills-stack-header">
+                        <div>
+                            <span class="skills-kicker">STACK // OPERADOR BVH3</span>
+                            <h3 class="skills-deck-title">SISTEMAS QUE PIENSAN</h3>
+                            <p class="skills-deck-copy">Interfaces, servicios y entornos digitales conectados en una sola arquitectura.</p>
+                        </div>
+                        <div class="skills-signal" aria-label="Stack operativo">
+                            <span class="skills-signal-dot"></span>
+                            <span>STACK ONLINE</span>
+                        </div>
+                    </div>
+
+                    <div class="tech-stack-grid" aria-label="Tecnologías principales">
+                        <div class="tech-chip tech-chip--html"><span class="tech-chip-mark">&lt;/&gt;</span><span><strong>HTML</strong><small>ESTRUCTURA</small></span></div>
+                        <div class="tech-chip tech-chip--js"><span class="tech-chip-mark">JS</span><span><strong>JavaScript</strong><small>INTERACCIÓN</small></span></div>
+                        <div class="tech-chip tech-chip--react"><span class="tech-chip-mark">R</span><span><strong>React</strong><small>COMPONENTES</small></span></div>
+                        <div class="tech-chip tech-chip--python"><span class="tech-chip-mark">Py</span><span><strong>Python</strong><small>AUTOMATIZACIÓN</small></span></div>
+                        <div class="tech-chip tech-chip--php"><span class="tech-chip-mark">PHP</span><span><strong>Laravel</strong><small>BACKEND</small></span></div>
+                        <div class="tech-chip tech-chip--docker"><span class="tech-chip-mark">[]</span><span><strong>Docker</strong><small>DESPLIEGUE</small></span></div>
+                    </div>
+
+                    <div class="skills-metrics-grid">
+                        <div class="panel panel--edgerunner skill-domain-panel">
+                            <div class="skill-domain-head"><h3 class="panel-title">Frontend</h3><span class="skill-domain-code">UI_01</span></div>
                         <div class="skill">
                             <div class="skill-top"><span>HTML/CSS</span><span class="skill-pct">98%</span></div>
                             <div class="meter"><span class="meter-fill" style="width:98%"></span></div>
@@ -3831,8 +3841,8 @@
                         </div>
                     </div>
 
-                    <div class="panel panel--edgerunner">
-                        <h3 class="panel-title">Backend</h3>
+                    <div class="panel panel--edgerunner skill-domain-panel">
+                        <div class="skill-domain-head"><h3 class="panel-title">Backend</h3><span class="skill-domain-code">API_02</span></div>
                         <div class="skill">
                             <div class="skill-top"><span>Node/Express</span><span class="skill-pct">94%</span></div>
                             <div class="meter"><span class="meter-fill" style="width:94%"></span></div>
@@ -3847,8 +3857,8 @@
                         </div>
                     </div>
 
-                    <div class="panel panel--edgerunner">
-                        <h3 class="panel-title">Cloud / DevOps</h3>
+                    <div class="panel panel--edgerunner skill-domain-panel">
+                        <div class="skill-domain-head"><h3 class="panel-title">Cloud / DevOps</h3><span class="skill-domain-code">OPS_03</span></div>
                         <div class="skill">
                             <div class="skill-top"><span>Linux</span><span class="skill-pct">90%</span></div>
                             <div class="meter"><span class="meter-fill" style="width:90%"></span></div>
@@ -3861,6 +3871,24 @@
                             <div class="skill-top"><span>CI/CD</span><span class="skill-pct">78%</span></div>
                             <div class="meter"><span class="meter-fill" style="width:78%"></span></div>
                         </div>
+                    </div>
+                </div>
+
+                    <div class="skill-demos-header">
+                        <span class="skills-kicker">EXPERIMENTOS // CÓDIGO EJECUTABLE</span>
+                        <span class="skill-demos-line"></span>
+                    </div>
+                    <div class="skill-demos-grid">
+                        <article class="skill-demo-card">
+                            <div class="skill-demo-top"><div><span class="skill-demo-index">DEMO_01</span><h3>Cerebro Digital Holográfico</h3></div><span class="skill-demo-status">LIVE</span></div>
+                            <div class="skill-demo-frame"><iframe src="src/skills/cerebro_digital_hologr_fico.html" title="Demo Cerebro Digital Holográfico" loading="lazy"></iframe></div>
+                            <p>Red neuronal 3D con pulsos de datos y renderizado en canvas.</p>
+                        </article>
+                        <article class="skill-demo-card">
+                            <div class="skill-demo-top"><div><span class="skill-demo-index">DEMO_02</span><h3>Cerebro Neuronal Binario</h3></div><span class="skill-demo-status skill-demo-status--cyan">RUN</span></div>
+                            <div class="skill-demo-frame"><iframe src="src/skills/cerebro_neuronal_binario.html" title="Demo Cerebro Neuronal Binario" loading="lazy"></iframe></div>
+                            <p>Arquitectura de neuronas binarias con señales y conexiones dinámicas.</p>
+                        </article>
                     </div>
                 </div>
             `,
@@ -3906,14 +3934,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- DEPOOL Portal -->
-                    <div class="depool-portal" id="depoolPortal">
-                        <canvas id="depoolPortalCanvas"></canvas>
-                        <div class="depool-portal-core">
-                            <img src="src/images/depool_icon.png" alt="DEPOOL" class="depool-portal-img" decoding="async">
                         </div>
                     </div>
                     

@@ -6,10 +6,10 @@
     --secondary-purple: #8b5cf6;
     --primary-yellow: #fcee0a; /* David Martinez Yellow */
     --dark-bg: #050611;
-    --darker-bg: #0a0a0a; /* Un negro más puro para contraste Edgerunners */
+    --darker-bg: #0a0a0a; /* Un negro mï¿½s puro para contraste Edgerunners */
     --light-gray: #333333;
     --text-light: #ffffff;
-    --text-muted: #f0f0f0; /* Más claro para legibilidad */
+    --text-muted: #f0f0f0; /* Mï¿½s claro para legibilidad */
     --border-glow: #00ff7a;
     --shadow-glow: 0 0 20px rgba(0, 255, 122, 0.5);
     --font-primary: 'Orbitron', monospace;
@@ -50,13 +50,13 @@ body {
     opacity: 1;
 }
 
-/* Optimización: Si el dispositivo es lento, quitamos los efectos de escaneo pesados */
+/* Optimizaciï¿½n: Si el dispositivo es lento, quitamos los efectos de escaneo pesados */
 .performance-low #matrix-bg::after {
     display: none;
 }
 
 .performance-low #matrix-bg::before {
-    animation: none; /* Quitamos la animación de scroll de la rejilla */
+    animation: none; /* Quitamos la animaciï¿½n de scroll de la rejilla */
     opacity: 0.2;
 }
 
@@ -290,7 +290,7 @@ body {
 }
 
 @keyframes sectionIn {
-    /* Efecto de parpadeo rápido tipo glitch al entrar */
+    /* Efecto de parpadeo rï¿½pido tipo glitch al entrar */
     0% { opacity: 0; transform: translateY(5px); }
     100% { opacity: 1; transform: translateY(0); }
 }
@@ -385,7 +385,7 @@ body {
     border: 2px solid rgba(0, 229, 255, 0.55);
     background: rgba(0, 229, 255, 0.06);
     clip-path: polygon(15px 0%, 100% 0%, calc(100% - 15px) 100%, 0% 100%);
-    transition: none; /* Quitamos transición para performance */
+    transition: none; /* Quitamos transiciï¿½n para performance */
 }
 
 .stat:hover {
@@ -1554,6 +1554,10 @@ body {
     box-shadow: 0 0 20px rgba(255, 43, 214, 0.3) !important;
 }
 
+.nsfw-low-performance .nsfw-modal-content.nsfw-state--denied {
+    animation: nsfwShake 0.5s ease-in-out !important;
+}
+
 /* Solo usar backdrop-filter en dispositivos potentes */
 @media (min-width: 768px) and (min-resolution: 2dppx) {
     .nsfw-modal {
@@ -1571,22 +1575,27 @@ body {
 }
 
 .nsfw-modal-content {
-    background: linear-gradient(135deg, rgba(20, 10, 30, 0.98) 0%, rgba(15, 5, 25, 0.99) 100%);
-    border: 2px solid rgba(255, 43, 214, 0.5);
+    background:
+        linear-gradient(rgba(0, 229, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(145deg, rgba(5, 18, 28, 0.99), rgba(4, 7, 14, 0.99));
+    background-size: 22px 22px, 22px 22px, auto;
+    border: 1px solid rgba(0, 229, 255, 0.65);
     box-shadow:
-        0 0 30px rgba(255, 43, 214, 0.4),
+        0 0 28px rgba(0, 229, 255, 0.18),
+        inset 0 0 28px rgba(0, 229, 255, 0.04),
         0 15px 40px rgba(0, 0, 0, 0.8);
-    padding: clamp(1.8rem, 4vw, 2.5rem);
-    max-width: 520px;
-    width: min(520px, 92%);
+    padding: clamp(1.1rem, 3vw, 1.5rem);
+    max-width: 430px;
+    width: min(430px, 92%);
     position: relative;
     overflow: hidden;
     animation: nsfwModalIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     clip-path: polygon(
-        0 15px, 15px 0,
-        calc(100% - 15px) 0, 100% 15px,
-        100% calc(100% - 15px), calc(100% - 15px) 100%,
-        15px 100%, 0 calc(100% - 15px)
+        0 10px, 10px 0,
+        calc(100% - 10px) 0, 100% 10px,
+        100% calc(100% - 10px), calc(100% - 10px) 100%,
+        10px 100%, 0 calc(100% - 10px)
     );
     will-change: transform, opacity;
 }
@@ -1594,8 +1603,8 @@ body {
 /* Estados del modal - Optimizados */
 .nsfw-modal-content.nsfw-state--denied {
     border-color: #ff0040;
-    box-shadow: 0 0 40px rgba(255, 0, 64, 0.5);
-    animation: nsfwShake 0.3s ease-in-out;
+    box-shadow: 0 0 28px rgba(255, 0, 64, 0.55), inset 0 0 18px rgba(255, 0, 64, 0.08);
+    animation: nsfwShake 0.5s ease-in-out;
 }
 
 .nsfw-modal-content.nsfw-state--granted {
@@ -1604,9 +1613,11 @@ body {
 }
 
 @keyframes nsfwShake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+    0%, 100% { transform: translateX(0) rotate(0); }
+    18% { transform: translateX(-7px) rotate(-0.4deg); }
+    36% { transform: translateX(6px) rotate(0.35deg); }
+    54% { transform: translateX(-4px) rotate(-0.2deg); }
+    72% { transform: translateX(3px) rotate(0.15deg); }
 }
 
 @keyframes nsfwModalIn {
@@ -1673,16 +1684,16 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 28px;
-    background: linear-gradient(90deg, rgba(0, 229, 255, 0.1), rgba(255, 43, 214, 0.1));
+    height: 24px;
+    background: linear-gradient(90deg, rgba(0, 229, 255, 0.14), rgba(0, 255, 122, 0.06));
     border-bottom: 1px solid rgba(0, 229, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1rem;
+    padding: 0 0.75rem;
     font-family: var(--font-secondary);
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
+    font-size: 0.55rem;
+    letter-spacing: 0.11em;
     z-index: 3;
 }
 
@@ -1721,16 +1732,16 @@ body {
 
 .nsfw-close-btn {
     position: absolute;
-    top: 35px;
-    right: 1rem;
-    width: 44px;
-    height: 44px;
+    top: 30px;
+    right: 0.7rem;
+    width: 30px;
+    height: 30px;
     display: grid;
     place-items: center;
     border: 1px solid rgba(255, 43, 214, 0.5);
     background: rgba(9, 14, 24, 0.9);
     color: var(--text-light);
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     cursor: pointer;
     transition: all 0.3s ease;
     z-index: 10;
@@ -1748,19 +1759,19 @@ body {
     position: relative;
     z-index: 5;
     display: flex;
-    gap: 0.6rem;
+    gap: 0.35rem;
     flex-wrap: wrap;
-    margin: 1.5rem 0 1rem;
+    margin: 1.1rem 0 0.7rem;
 }
 
 .nsfw-badge {
     display: inline-flex;
     align-items: center;
-    min-height: 32px;
-    padding: 0.3rem 0.75rem;
+    min-height: 25px;
+    padding: 0.2rem 0.5rem;
     border: 1px solid;
     font-family: var(--font-secondary);
-    font-size: 0.7rem;
+    font-size: 0.58rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1786,22 +1797,22 @@ body {
     border-color: rgba(0, 255, 122, 0.3);
 }
 
-/* Eliminado - animación innecesaria para rendimiento */
+/* Eliminado - animaciï¿½n innecesaria para rendimiento */
 
 .nsfw-title {
     position: relative;
     z-index: 5;
-    margin: 1rem 0 0.5rem;
-    padding-right: 3rem;
+    margin: 0.7rem 0 0.35rem;
+    padding-right: 2.2rem;
     font-family: var(--font-primary);
-    font-size: clamp(1.5rem, 5vw, 2.2rem);
-    letter-spacing: 0.1em;
+    font-size: clamp(1.15rem, 4vw, 1.45rem);
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-light);
     text-shadow: 0 0 25px rgba(255, 0, 64, 0.6);
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .nsfw-title-lock {
@@ -1824,41 +1835,41 @@ body {
 .nsfw-subtitle {
     position: relative;
     z-index: 5;
-    margin: 0 0 1.5rem;
+    margin: 0 0 0.9rem;
     max-width: 44ch;
     color: rgba(255, 255, 255, 0.7);
-    line-height: 1.7;
-    font-size: 0.95rem;
+    line-height: 1.45;
+    font-size: 0.78rem;
 }
 
 .nsfw-warning-panel {
     position: relative;
     z-index: 5;
     display: grid;
-    grid-template-columns: 56px 1fr;
-    gap: 1rem;
+    grid-template-columns: 40px 1fr;
+    gap: 0.65rem;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding: 1.2rem;
-    border: 1px solid rgba(255, 0, 64, 0.4);
-    background: linear-gradient(135deg, rgba(255, 0, 64, 0.15), rgba(255, 43, 214, 0.1));
+    margin-bottom: 0.9rem;
+    padding: 0.7rem;
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    background: rgba(0, 229, 255, 0.045);
     clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
 }
 
 .nsfw-warning-icon {
-    width: 56px;
-    height: 56px;
+    width: 40px;
+    height: 40px;
     display: grid;
     place-items: center;
-    border: 2px solid rgba(255, 0, 64, 0.6);
-    background: rgba(255, 0, 64, 0.15);
+    border: 1px solid rgba(255, 193, 7, 0.7);
+    background: rgba(255, 193, 7, 0.1);
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 
 .nsfw-icon-inner {
-    color: #ff0040;
+    color: #ffc107;
     font-family: var(--font-primary);
-    font-size: 1.6rem;
+    font-size: 1.15rem;
     font-weight: 900;
 }
 
@@ -1876,10 +1887,10 @@ body {
 
 .nsfw-warning-copy strong {
     display: block;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.2rem;
     color: var(--text-light);
     font-family: var(--font-primary);
-    font-size: 0.9rem;
+    font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -1887,8 +1898,8 @@ body {
 .nsfw-warning-copy p {
     margin: 0;
     color: rgba(255, 255, 255, 0.6);
-    line-height: 1.6;
-    font-size: 0.9rem;
+    line-height: 1.4;
+    font-size: 0.72rem;
 }
 
 .nsfw-input-shell {
@@ -1900,12 +1911,12 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    margin-bottom: 0.6rem;
-    color: #ff2bd6;
+    margin-bottom: 0.4rem;
+    color: var(--primary-cyan);
     font-family: var(--font-secondary);
-    font-size: 0.8rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
 }
 
@@ -1915,20 +1926,20 @@ body {
 
 .nsfw-input-container {
     display: grid;
-    grid-template-columns: 1fr 52px;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    grid-template-columns: 1fr 40px;
+    gap: 0.35rem;
+    margin-bottom: 0.65rem;
 }
 
 .nsfw-password-input {
-    min-height: 52px;
-    padding: 0 1.2rem;
-    border: 2px solid rgba(255, 43, 214, 0.3);
+    min-height: 42px;
+    padding: 0 0.8rem;
+    border: 1px solid rgba(0, 229, 255, 0.35);
     background: rgba(10, 5, 15, 0.95);
     color: var(--text-light);
     font-family: var(--font-primary);
-    font-size: 1rem;
-    letter-spacing: 0.15em;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
@@ -1940,8 +1951,8 @@ body {
 }
 
 .nsfw-password-input:focus {
-    border-color: #ff2bd6;
-    box-shadow: 0 0 15px rgba(255, 43, 214, 0.3);
+    border-color: var(--primary-cyan);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
 }
 
 .nsfw-password-input.nsfw-input--error {
@@ -1962,11 +1973,11 @@ body {
 }
 
 .nsfw-toggle-password-btn {
-    min-height: 52px;
-    border: 2px solid rgba(255, 43, 214, 0.3);
+    min-height: 42px;
+    border: 1px solid rgba(0, 229, 255, 0.35);
     background: rgba(10, 5, 15, 0.95);
     color: var(--text-light);
-    font-size: 1.2rem;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: border-color 0.2s ease, background 0.2s ease;
     display: grid;
@@ -1981,14 +1992,14 @@ body {
 
 .nsfw-submit-btn {
     width: 100%;
-    min-height: 56px;
-    border: 2px solid #ff0040;
-    background: linear-gradient(135deg, rgba(255, 0, 64, 0.3), rgba(255, 43, 214, 0.2));
+    min-height: 42px;
+    border: 1px solid rgba(0, 255, 122, 0.65);
+    background: linear-gradient(135deg, rgba(0, 255, 122, 0.14), rgba(0, 229, 255, 0.08));
     color: var(--text-light);
     font-family: var(--font-primary);
-    font-size: 1rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -2025,12 +2036,12 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 1rem;
-    padding: 0.75rem;
+    margin-top: 0.65rem;
+    padding: 0.5rem;
     border-radius: 4px;
     font-family: var(--font-secondary);
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
     transition: all 0.3s ease;
 }
 
@@ -2092,7 +2103,7 @@ body {
     text-shadow: 0 0 8px rgba(255, 0, 64, 0.6);
 }
 
-/* Overlay de éxito */
+/* Overlay de ï¿½xito */
 .nsfw-success-overlay {
     position: absolute;
     inset: 0;
@@ -4529,61 +4540,62 @@ body {
 
     .nsfw-modal-content {
         width: 100%;
-        max-height: min(88vh, 720px);
-        padding: 1rem 0.95rem 1.1rem;
+        max-height: min(84vh, 620px);
+        padding: 0.9rem 0.8rem 0.95rem;
         margin: 0;
         overflow-y: auto;
         clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
     }
 
     .nsfw-close-btn {
-        top: 0.75rem;
-        right: 0.75rem;
-        width: 36px;
-        height: 36px;
-        font-size: 1.2rem;
+        top: 0.65rem;
+        right: 0.65rem;
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
     }
 
     .nsfw-badge-row {
-        gap: 0.5rem;
-        margin-bottom: 0.8rem;
-        padding-right: 2.6rem;
+        gap: 0.3rem;
+        margin: 0.9rem 0 0.55rem;
+        padding-right: 2.2rem;
     }
 
     .nsfw-badge {
-        min-height: 30px;
-        padding: 0.3rem 0.65rem;
-        font-size: 0.68rem;
-        letter-spacing: 0.12em;
+        min-height: 24px;
+        padding: 0.18rem 0.45rem;
+        font-size: 0.56rem;
+        letter-spacing: 0.1em;
     }
 
     .nsfw-title {
-        padding-right: 2.6rem;
-        margin-bottom: 0.45rem;
-        font-size: 1.25rem;
-        letter-spacing: 0.08em;
-        line-height: 1.15;
+        padding-right: 2.2rem;
+        margin: 0.55rem 0 0.3rem;
+        font-size: 1.08rem;
+        letter-spacing: 0.06em;
+        line-height: 1.1;
     }
 
     .nsfw-subtitle {
-        margin-bottom: 1rem;
-        font-size: 0.88rem;
-        line-height: 1.55;
+        margin-bottom: 0.7rem;
+        font-size: 0.74rem;
+        line-height: 1.4;
     }
 
     .nsfw-warning-panel {
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-        padding: 0.8rem;
+        grid-template-columns: 36px 1fr;
+        gap: 0.55rem;
+        margin-bottom: 0.7rem;
+        padding: 0.6rem;
     }
 
     .nsfw-warning-copy strong {
-        font-size: 0.8rem;
+        font-size: 0.68rem;
     }
 
     .nsfw-warning-copy p {
-        font-size: 0.84rem;
-        line-height: 1.5;
+        font-size: 0.7rem;
+        line-height: 1.35;
     }
 
     .nsfw-input-label {
@@ -4592,30 +4604,30 @@ body {
     }
 
     .nsfw-input-container {
-        gap: 0.5rem;
-        grid-template-columns: 1fr 48px;
-        margin-bottom: 0.75rem;
+        gap: 0.3rem;
+        grid-template-columns: 1fr 38px;
+        margin-bottom: 0.55rem;
     }
 
     .nsfw-password-input,
     .nsfw-toggle-password-btn,
     .nsfw-submit-btn {
-        min-height: 50px;
+        min-height: 40px;
     }
 
     .nsfw-password-input {
-        padding: 0 0.8rem;
-        font-size: 0.82rem;
-        letter-spacing: 0.08em;
+        padding: 0 0.65rem;
+        font-size: 0.74rem;
+        letter-spacing: 0.07em;
     }
 
     .nsfw-toggle-password-btn {
-        font-size: 1rem;
+        font-size: 0.88rem;
     }
 
     .nsfw-submit-btn {
-        font-size: 0.82rem;
-        letter-spacing: 0.14em;
+        font-size: 0.74rem;
+        letter-spacing: 0.12em;
     }
 
     .nsfw-error-message {
@@ -7763,4 +7775,296 @@ body {
 
 @media (max-width: 600px) {
     .portal-hud { font-size: 0.55rem; }
+}
+
+/* Skills command deck */
+.skills-command-deck {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.skills-stack-header,
+.skill-demos-header,
+.skill-demo-top,
+.skill-domain-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.skills-stack-header {
+    padding: 1.25rem 1.4rem;
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    background: linear-gradient(110deg, rgba(0, 229, 255, 0.08), rgba(0, 255, 122, 0.035) 45%, rgba(255, 43, 214, 0.06));
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+
+.skills-kicker,
+.skill-demo-index,
+.skill-domain-code {
+    color: var(--primary-cyan);
+    font-family: var(--font-primary);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.skills-deck-title {
+    margin: 0.35rem 0;
+    color: var(--text-light);
+    font-family: var(--font-primary);
+    font-size: clamp(1.1rem, 2.5vw, 1.65rem);
+    letter-spacing: 0.08em;
+}
+
+.skills-deck-copy {
+    max-width: 58ch;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.9rem;
+}
+
+.skills-signal,
+.skill-demo-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-shrink: 0;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid rgba(0, 255, 122, 0.4);
+    color: var(--primary-cyan);
+    font-family: var(--font-primary);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+}
+
+.skills-signal-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary-cyan);
+    box-shadow: 0 0 10px var(--primary-cyan);
+    animation: skillsSignalPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes skillsSignalPulse {
+    50% { opacity: 0.4; transform: scale(0.75); }
+}
+
+.tech-stack-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.tech-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+    padding: 0.75rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(3, 7, 15, 0.84);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tech-chip:hover {
+    transform: translateY(-3px);
+    border-color: var(--tech-color, var(--primary-cyan));
+    box-shadow: 0 0 18px color-mix(in srgb, var(--tech-color, var(--primary-cyan)) 24%, transparent);
+}
+
+.tech-chip-mark {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    flex: 0 0 2.1rem;
+    border: 1px solid var(--tech-color, var(--primary-cyan));
+    color: var(--tech-color, var(--primary-cyan));
+    font-family: var(--font-primary);
+    font-size: 0.7rem;
+    font-weight: 900;
+}
+
+.tech-chip strong,
+.tech-chip small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tech-chip strong {
+    color: var(--text-light);
+    font-family: var(--font-primary);
+    font-size: 0.68rem;
+}
+
+.tech-chip small {
+    margin-top: 0.2rem;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+}
+
+.tech-chip--html { --tech-color: #ff7043; }
+.tech-chip--js { --tech-color: #fcee0a; }
+.tech-chip--react { --tech-color: #61dafb; }
+.tech-chip--python { --tech-color: #4ec9b0; }
+.tech-chip--php { --tech-color: #b8a9df; }
+.tech-chip--docker { --tech-color: #2496ed; }
+
+.skills-metrics-grid,
+.skill-demos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.skill-domain-panel {
+    padding: 1.1rem;
+}
+
+.skill-domain-head {
+    align-items: flex-start;
+    margin-bottom: 0.45rem;
+}
+
+.skill-domain-head .panel-title {
+    margin-bottom: 0;
+    font-size: 0.75rem;
+}
+
+.skill-domain-code {
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 0.52rem;
+}
+
+.skill-domain-panel .skill {
+    margin-top: 0.75rem;
+}
+
+.skill-domain-panel .skill-top {
+    margin-bottom: 0.3rem;
+    font-size: 0.8rem;
+}
+
+.skill-domain-panel .meter {
+    height: 5px;
+}
+
+.skill-demos-header {
+    margin-top: 0.5rem;
+}
+
+.skill-demos-line {
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, rgba(0, 229, 255, 0.55), transparent);
+}
+
+.skill-demos-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.skill-demo-card {
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    background: rgba(2, 5, 12, 0.92);
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+    box-shadow: inset 0 0 24px rgba(0, 229, 255, 0.035);
+}
+
+.skill-demo-top {
+    align-items: flex-start;
+    margin-bottom: 0.65rem;
+}
+
+.skill-demo-top h3 {
+    margin-top: 0.25rem;
+    color: var(--text-light);
+    font-family: var(--font-primary);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+}
+
+.skill-demo-status--cyan {
+    border-color: rgba(0, 229, 255, 0.5);
+    color: var(--secondary-green);
+}
+
+.skill-demo-frame {
+    height: 260px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 229, 255, 0.25);
+    background: #020205;
+}
+
+.skill-demo-frame iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.skill-demo-card > p {
+    margin-top: 0.65rem;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+    .tech-stack-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .skills-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .skills-stack-header,
+    .skill-demos-header,
+    .skill-demo-top {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .skills-stack-header {
+        padding: 1rem;
+    }
+
+    .skills-signal {
+        align-self: stretch;
+        justify-content: center;
+    }
+
+    .tech-stack-grid,
+    .skill-demos-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .skill-demos-line {
+        width: 100%;
+        flex: none;
+    }
+
+    .skill-demo-frame {
+        height: 220px;
+    }
+}
+
+@media (max-width: 380px) {
+    .tech-stack-grid,
+    .skill-demos-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tech-chip {
+        padding: 0.65rem;
+    }
 }
