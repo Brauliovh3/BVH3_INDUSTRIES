@@ -7777,6 +7777,33 @@ body {
     .portal-hud { font-size: 0.55rem; }
 }
 
+/* Full Hatsune Miku Cyber Radio deck inside Depool */
+.depool-miku-radio-frame {
+    display: block;
+    width: 100%;
+    height: min(680px, 72vh);
+    min-height: 540px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.content-display:has(.depool-miku-radio-frame),
+.music-display:has(.depool-miku-radio-frame),
+.music-display:has(.depool-miku-radio-frame) .section-content {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+@media (max-width: 700px) {
+    .depool-miku-radio-frame {
+        height: 750px;
+        min-height: 750px;
+    }
+}
+
 /* Skills command deck */
 .skills-command-deck {
     display: grid;

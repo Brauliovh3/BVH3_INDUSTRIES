@@ -3939,60 +3939,13 @@
                     
                     <!-- Content Display -->
                     <div class="content-display">
-                        <!-- Music Section -->
-                        <div class="section-display music-display">
-                            <div class="section-header">
-                                <h3 class="section-title">MUSICA</h3>
-                                <div class="section-status">ACTIVE</div>
-                            </div>
-                            <div class="section-content">
-                                <audio id="musicPlayer" preload="auto"></audio>
-
-                                <!-- Media Player estilo Win95 -->
-                                <div class="win95-card win95-player">
-                                    <div class="card-titlebar">
-                                        <span class="card-title-text">Media Player</span>
-                                        <div class="card-controls">
-                                            <button type="button" class="card-btn card-btn-min" aria-label="Minimizar"></button>
-                                            <button type="button" class="card-btn card-btn-max" aria-label="Maximizar"></button>
-                                            <button type="button" class="card-btn card-btn-close win95-close" aria-label="Cerrar"></button>
-                                        </div>
-                                    </div>
-                                    <div class="card-menubar">
-                                        <span class="menu-item">File</span>
-                                        <span class="menu-item">Play</span>
-                                        <span class="menu-item">Options</span>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="player-display">
-                                            <span class="track-name win95-track" id="currentTrackName">Cyberpunk: Edgerunners</span>
-                                            <span class="track-time" id="timeDisplay">0:00 / 0:00</span>
-                                        </div>
-                                        <div class="player-progress">
-                                            <div class="progress-fill win95-fill" id="progressFill"></div>
-                                            <div class="progress-thumb win95-thumb"></div>
-                                        </div>
-                                        <div class="player-controls">
-                                            <button type="button" class="ctrl-btn ctrl-prev" aria-label="Anterior" onclick="playPrevDiscordTrack()"></button>
-                                            <button type="button" class="ctrl-btn ctrl-play" aria-label="Reproducir" onclick="playCurrentDiscordTrackGlobal()"></button>
-                                            <button type="button" class="ctrl-btn ctrl-stop" aria-label="Detener" onclick="pauseDiscordTrackGlobal()"></button>
-                                            <button type="button" class="ctrl-btn ctrl-next" aria-label="Siguiente" onclick="playNextDiscordTrackGlobal()"></button>
-                                        </div>
-                                        <div class="player-volume">
-                                            <button type="button" class="ctrl-btn ctrl-vol-down" aria-label="Bajar volumen" onclick="changeDiscordVolume(-10)">-</button>
-                                            <span class="vol-rail"><span class="vol-fill" id="volumeFill"></span></span>
-                                            <button type="button" class="ctrl-btn ctrl-vol-up" aria-label="Subir volumen" onclick="changeDiscordVolume(10)">+</button>
-                                        </div>
-                                    </div>
-                                    <div class="card-statusbar">
-                                        <span class="status-text win95-status" id="playerStatus">Listo</span>
-                                        <span class="status-vol" id="volumeDisplay">Vol: 100%</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <iframe
+                            class="depool-miku-radio-frame"
+                            src="src/skills/hatsune_miku_cyber_radio_deck.html"
+                            title="Hatsune Miku Cyber Radio de Depool"
+                            loading="lazy">
+                        </iframe>
                         </div>
-                        
-                    </div>
                     
                     <!-- Neural Activity -->
                     <div class="neural-activity">
