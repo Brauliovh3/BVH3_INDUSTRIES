@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HAT SUNE MIKU 01 // CYBER DECK RADIO</title>
+    <script>
+        if (new URLSearchParams(window.location.search).get('compact') === '1') {
+            document.documentElement.classList.add('depool-compact');
+        }
+    </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -92,6 +97,180 @@
             text-shadow: 0 0 10px rgba(255, 0, 127, 0.9), 0 0 20px rgba(255, 0, 127, 0.5);
         }
 
+        html.depool-compact .scanlines,
+        html.depool-compact .depool-visualizer {
+            display: none !important;
+        }
+
+        /* ---- Modo compacto (embed en la seccion DEPOOL): rejilla 2 x 3 ---- */
+        html.depool-compact body {
+            padding: 8px !important;
+            min-height: 100vh !important;
+            align-items: stretch !important;
+            justify-content: center !important;
+        }
+
+        html.depool-compact .depool-deck {
+            width: 100% !important;
+            max-width: 260px !important;
+            margin: 0 auto;
+            padding: 0 !important;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            grid-auto-rows: minmax(0, 1fr);
+            gap: 6px !important;
+            align-content: stretch;
+        }
+
+        /* El elemento de audio no debe ocupar celda en la rejilla */
+        html.depool-compact audio {
+            display: none !important;
+        }
+
+        /* Se aplanan los contenedores para que sus hijos sean celdas */
+        html.depool-compact .depool-tuner,
+        html.depool-compact .depool-controls {
+            display: contents !important;
+        }
+
+        /* Zonas decorativas fuera del modo compacto */
+        html.depool-compact .depool-deck-head,
+        html.depool-compact .depool-signal,
+        html.depool-compact .depool-seek-row,
+        html.depool-compact .depool-mid,
+        html.depool-compact .depool-footer,
+        html.depool-compact .depool-tuner-head,
+        html.depool-compact .depool-ribbon,
+        html.depool-compact .depool-glitch,
+        html.depool-compact .depool-audio-label,
+        html.depool-compact #tune-status {
+            display: none !important;
+        }
+
+        /* Celda base de la rejilla */
+        html.depool-compact .depool-cell {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            margin: 0 !important;
+            justify-content: center;
+            gap: 3px;
+            padding: 5px !important;
+            background: rgba(2, 6, 12, 0.9) !important;
+            border: 1px solid rgba(57, 197, 187, 0.35) !important;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        /* Fila 1: frecuencia | reproduccion */
+        html.depool-compact .depool-freq-cell {
+            grid-column: 1;
+            grid-row: 1;
+            flex-direction: row;
+            align-items: baseline;
+            justify-content: space-between;
+        }
+
+        html.depool-compact .depool-play-cell {
+            grid-column: 2;
+            grid-row: 1;
+            flex-direction: row;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        /* Fila 2: sintonia | volumen */
+        html.depool-compact .depool-slider-cell {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        html.depool-compact .depool-volume {
+            grid-column: 2;
+            grid-row: 2;
+            flex-direction: row;
+            align-items: center;
+            min-width: 0 !important;
+            max-width: none !important;
+        }
+
+        /* Fila 3: pistas (una por linea) | cargar mp3 */
+        html.depool-compact .depool-tracks-cell {
+            grid-column: 1;
+            grid-row: 3;
+            gap: 3px;
+        }
+
+        html.depool-compact .depool-tracks-cell button {
+            width: 100%;
+            text-align: left;
+            padding: 2px 4px !important;
+            font-size: 9px !important;
+        }
+
+        html.depool-compact .depool-actions-cell {
+            grid-column: 2;
+            grid-row: 3;
+            justify-content: center;
+        }
+
+        html.depool-compact .depool-actions-cell label {
+            width: 100%;
+            justify-content: center;
+            padding: 4px !important;
+            font-size: 9px !important;
+        }
+
+        /* Escala de controles */
+        html.depool-compact #freq-display {
+            font-size: 18px !important;
+        }
+
+        html.depool-compact #station-name {
+            font-size: 10px !important;
+            max-width: 100% !important;
+        }
+
+        html.depool-compact .depool-freq-cell > div {
+            min-width: 0;
+        }
+
+        html.depool-compact .depool-mhz {
+            font-size: 10px !important;
+        }
+
+        html.depool-compact #play-btn {
+            width: 34px !important;
+            height: 34px !important;
+            font-size: 14px !important;
+        }
+
+        html.depool-compact .depool-step-btn {
+            width: 26px !important;
+            height: 26px !important;
+            font-size: 10px !important;
+        }
+
+        html.depool-compact input[type=range] {
+            height: 6px;
+        }
+
+        html.depool-compact *,
+        html.depool-compact *::before,
+        html.depool-compact *::after {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        html.depool-compact .glow-miku,
+        html.depool-compact .glow-pink,
+        html.depool-compact .shadow-miku-cyan,
+        html.depool-compact .shadow-miku-pink {
+            text-shadow: none !important;
+            box-shadow: none !important;
+        }
+
         /* Custom Miku Range Slider */
         input[type=range] {
             -webkit-appearance: none;
@@ -156,10 +335,10 @@
     <div class="scanlines"></div>
 
     <!-- MAIN MIKU DECK CONTAINER -->
-    <div class="w-full max-w-lg p-1 sm:p-2 relative z-10 flex flex-col gap-3">
+    <div class="depool-deck w-full max-w-lg p-1 sm:p-2 relative z-10 flex flex-col gap-3">
 
         <!-- DECK TOP BAR HUD WITH 01 VOCALOID BADGE -->
-        <header class="flex items-center justify-between border-b border-miku-cyan/30 pb-3">
+        <header class="depool-deck-head flex items-center justify-between border-b border-miku-cyan/30 pb-3">
             <div class="flex items-center gap-3">
                 <!-- Iconic 01 Tattoo Badge -->
                 <div class="w-10 h-10 rounded bg-black/90 border-2 border-miku-pink flex flex-col items-center justify-center shadow-miku-pink relative overflow-hidden group">
@@ -176,7 +355,7 @@
             </div>
 
             <!-- Signal & Vocaloid Sync Meter -->
-            <div class="flex flex-col items-end gap-1 font-tech text-[10px]">
+            <div class="depool-signal flex flex-col items-end gap-1 font-tech text-[10px]">
                 <div class="flex items-center gap-1">
                     <span class="text-slate-400">DIVA SYNC:</span>
                     <span id="signal-text" class="text-miku-cyan font-bold glow-miku">100% PERFECT</span>
@@ -192,11 +371,11 @@
         </header>
 
         <!-- FREQUENCY TUNER OLED DISPLAY -->
-        <div class="bg-black/90 border border-miku-cyan/50 p-3.5 miku-corner-sm flex flex-col gap-2 relative overflow-hidden shadow-inner">
+        <div class="depool-tuner bg-black/90 border border-miku-cyan/50 p-3.5 miku-corner-sm flex flex-col gap-2 relative overflow-hidden shadow-inner">
             <!-- Miku Ribbon Glass Accent -->
-            <div class="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-miku-cyan/15 via-miku-pink/10 to-transparent pointer-events-none"></div>
+            <div class="depool-ribbon absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-miku-cyan/15 via-miku-pink/10 to-transparent pointer-events-none"></div>
 
-            <div class="flex items-center justify-between text-xs font-tech">
+            <div class="depool-tuner-head flex items-center justify-between text-xs font-tech">
                 <span class="text-miku-cyan flex items-center gap-1.5">
                     <i class="fa-solid fa-music text-miku-pink animate-pulse"></i> FREQUENCY TUNER
                 </span>
@@ -206,12 +385,12 @@
             </div>
 
             <!-- FREQUENCY BIG DISPLAY & STATUS -->
-            <div class="flex items-baseline justify-between my-1">
+            <div class="depool-cell depool-freq-cell flex items-baseline justify-between my-1">
                 <div class="flex items-baseline gap-2">
                     <span id="freq-display" class="font-orbitron font-black text-3xl sm:text-4xl text-white tracking-widest glow-miku">
                         39.39
                     </span>
-                    <span class="font-tech text-sm text-miku-cyan font-bold">MHz FM</span>
+                    <span class="depool-mhz font-tech text-sm text-miku-cyan font-bold">MHz FM</span>
                 </div>
                 <div class="text-right">
                     <span id="station-name" class="font-orbitron font-bold text-sm text-miku-brightpink block glow-pink truncate max-w-[200px]">
@@ -224,11 +403,11 @@
             </div>
 
             <!-- FREQUENCY SLIDER & SEEK BUTTONS -->
-            <div class="space-y-1.5">
+            <div class="depool-cell depool-slider-cell space-y-1.5">
                 <input type="range" id="freq-slider" min="30.0" max="108.0" step="0.01" value="39.39" 
                        class="w-full accent-miku-cyan cursor-pointer" oninput="onFrequencyChange(this.value)">
 
-                <div class="flex items-center justify-between font-tech text-[10px] text-slate-400 pt-0.5">
+                <div class="depool-seek-row flex items-center justify-between font-tech text-[10px] text-slate-400 pt-0.5">
                     <span>30.0 MHz</span>
                     <div class="flex gap-2">
                         <button onclick="autoScan(-3.0)" class="bg-slate-900 border border-slate-700 hover:border-miku-cyan text-miku-cyan px-2 py-0.5 rounded transition hover:shadow-miku-cyan">
@@ -247,10 +426,10 @@
         </div>
 
         <!-- MIDDLE SECTION: TWIN-TAIL CASSETTE REELS & MIKU CANVAS VISUALIZER -->
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+        <div class="depool-mid grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
 
             <!-- Miku Twin-Tail Cassette Deck (5 Cols) -->
-            <div class="sm:col-span-5 bg-miku-card/90 border border-slate-800 p-3 miku-corner-sm flex flex-col items-center justify-center relative min-h-[140px]">
+            <div class="depool-cassette sm:col-span-5 bg-miku-card/90 border border-slate-800 p-3 miku-corner-sm flex flex-col items-center justify-center relative min-h-[140px]">
                 <div class="text-[10px] font-tech text-slate-400 w-full flex justify-between mb-2">
                     <span class="text-miku-cyan font-bold">DECK 01 // TWIN-TAILS</span>
                     <span id="tape-status" class="text-miku-brightpink">STANDBY</span>
@@ -288,7 +467,7 @@
             </div>
 
             <!-- Spectrum Analyzer Canvas (7 Cols) -->
-            <div class="sm:col-span-7 bg-black/95 border border-miku-cyan/40 p-2 miku-corner-sm relative flex flex-col justify-between h-[140px] shadow-miku-cyan">
+            <div class="depool-visualizer sm:col-span-7 bg-black/95 border border-miku-cyan/40 p-2 miku-corner-sm relative flex flex-col justify-between h-[140px] shadow-miku-cyan">
                 <!-- Visualizer modes -->
                 <div class="flex items-center justify-between text-[10px] font-tech border-b border-slate-800 pb-1 z-10">
                     <span class="text-miku-cyan font-bold"><i class="fa-solid fa-sliders"></i> MIKU SPECTRUM</span>
@@ -306,11 +485,11 @@
         </div>
 
         <!-- LOWER DECK: CONTROLS & UTILITIES -->
-        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-miku-cyan/30 pt-3">
+        <div class="depool-controls flex flex-wrap items-center justify-between gap-3 border-t border-miku-cyan/30 pt-3">
             
             <!-- Playback Controls -->
-            <div class="flex items-center gap-2">
-                <button onclick="prevStation()" class="w-9 h-9 rounded bg-slate-900 border border-miku-cyan/50 hover:border-miku-cyan text-miku-cyan hover:shadow-miku-cyan transition flex items-center justify-center text-sm">
+            <div class="depool-cell depool-play-cell flex items-center gap-2">
+                <button onclick="prevStation()" class="depool-step-btn w-9 h-9 rounded bg-slate-900 border border-miku-cyan/50 hover:border-miku-cyan text-miku-cyan hover:shadow-miku-cyan transition flex items-center justify-center text-sm">
                     <i class="fa-solid fa-backward-step"></i>
                 </button>
 
@@ -320,13 +499,13 @@
                     <i id="play-icon" class="fa-solid fa-play ml-0.5"></i>
                 </button>
 
-                <button onclick="nextStation()" class="w-9 h-9 rounded bg-slate-900 border border-miku-cyan/50 hover:border-miku-cyan text-miku-cyan hover:shadow-miku-cyan transition flex items-center justify-center text-sm">
+                <button onclick="nextStation()" class="depool-step-btn w-9 h-9 rounded bg-slate-900 border border-miku-cyan/50 hover:border-miku-cyan text-miku-cyan hover:shadow-miku-cyan transition flex items-center justify-center text-sm">
                     <i class="fa-solid fa-forward-step"></i>
                 </button>
             </div>
 
             <!-- Volume Slider -->
-            <div class="flex items-center gap-2 bg-black/70 border border-slate-800 px-3 py-1.5 rounded-lg flex-1 min-w-[140px] max-w-[200px]">
+            <div class="depool-cell depool-volume flex items-center gap-2 bg-black/70 border border-slate-800 px-3 py-1.5 rounded-lg flex-1 min-w-[140px] max-w-[200px]">
                 <i id="vol-icon" class="fa-solid fa-volume-high text-miku-cyan text-xs"></i>
                 <input type="range" id="vol-slider" min="0" max="100" value="80" 
                        class="w-full accent-miku-cyan cursor-pointer" oninput="setVolume(this.value)">
@@ -334,8 +513,8 @@
             </div>
 
             <!-- Miku Actions & MP3 File Upload -->
-            <div class="flex items-center gap-2">
-                <button onclick="triggerGlitch()" class="bg-slate-900 border border-miku-pink/60 hover:border-miku-pink text-miku-brightpink px-2.5 py-1.5 rounded text-xs font-tech transition flex items-center gap-1 hover:shadow-miku-pink">
+            <div class="depool-cell depool-actions-cell flex items-center gap-2">
+                <button onclick="triggerGlitch()" class="depool-glitch bg-slate-900 border border-miku-pink/60 hover:border-miku-pink text-miku-brightpink px-2.5 py-1.5 rounded text-xs font-tech transition flex items-center gap-1 hover:shadow-miku-pink">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> 39 EFFECT
                 </button>
 
@@ -347,15 +526,15 @@
 
         </div>
 
-        <div class="flex flex-wrap items-center gap-1.5 border-t border-miku-cyan/20 pt-2">
-            <span class="font-tech text-[10px] text-miku-cyan mr-1">LOCAL AUDIO:</span>
+        <div class="depool-cell depool-tracks-cell flex flex-wrap items-center gap-1.5 border-t border-miku-cyan/20 pt-2">
+            <span class="depool-audio-label font-tech text-[10px] text-miku-cyan mr-1">LOCAL AUDIO:</span>
             <button onclick="loadLocalTrack(0)" class="bg-slate-900 border border-miku-cyan/50 hover:border-miku-cyan text-miku-cyan px-2 py-1 rounded text-[10px] font-tech transition">CYBERPUNK</button>
             <button onclick="loadLocalTrack(1)" class="bg-slate-900 border border-miku-pink/50 hover:border-miku-pink text-miku-brightpink px-2 py-1 rounded text-[10px] font-tech transition">DARE</button>
             <button onclick="loadLocalTrack(2)" class="bg-slate-900 border border-miku-cyan/50 hover:border-miku-cyan text-miku-cyan px-2 py-1 rounded text-[10px] font-tech transition">LET IT HAPPEN</button>
         </div>
 
         <!-- FOOTER HUD BADGE -->
-        <footer class="flex items-center justify-between text-[10px] font-tech text-slate-400 pt-1 border-t border-slate-800">
+        <footer class="depool-footer flex items-center justify-between text-[10px] font-tech text-slate-400 pt-1 border-t border-slate-800">
             <span class="text-miku-cyan/80">VOCALOID ENGINE // HATSUNE MIKU 01</span>
             <span class="text-miku-brightpink font-bold">STATUS: READY // 39.39 FM</span>
         </footer>
@@ -390,6 +569,7 @@
         let activeStation = STATIONS[1];
         let tuneAccuracy = 1.0;
         let vizMode = 'bars'; // 'bars', 'wave', 'diva'
+        const depoolCompactMode = document.documentElement.classList.contains('depool-compact');
 
         // Web Audio API
         let audioCtx = null;
@@ -674,6 +854,14 @@
             }
         }
 
+        function setNowPlaying(label) {
+            const title = document.getElementById('now-playing-title');
+            if (title) title.innerText = label;
+            // El nombre de estacion es el indicador visible en modo compacto
+            const station = document.getElementById('station-name');
+            if (station) station.innerText = label;
+        }
+
         function loadLocalTrack(index, autoplay = true) {
             const track = LOCAL_TRACKS[index];
             if (!track) return;
@@ -683,7 +871,7 @@
             audioElement.src = new URL(track.file, document.baseURI).href;
             audioElement.load();
             isCustomAudio = true;
-            document.getElementById('now-playing-title').innerText = 'TRACK: ' + track.title;
+            setNowPlaying('TRACK: ' + track.title);
             stopProceduralSynthwave();
             if (staticGain) staticGain.gain.value = 0;
 
@@ -715,7 +903,7 @@
             audioElement.src = objectUrl;
             
             isCustomAudio = true;
-            document.getElementById('now-playing-title').innerText = "MP3: " + file.name.toUpperCase();
+            setNowPlaying("MP3: " + file.name.toUpperCase());
             
             stopProceduralSynthwave();
             if (staticGain) staticGain.gain.value = 0;
@@ -739,12 +927,13 @@
         }
 
         function triggerGlitch() {
+            if (depoolCompactMode) return;
             document.body.classList.add('glitch-anim');
             setTimeout(() => document.body.classList.remove('glitch-anim'), 250);
         }
 
         function renderVisualizer() {
-            if (!isPlaying) return;
+            if (!isPlaying || depoolCompactMode) return;
 
             requestAnimationFrame(renderVisualizer);
 

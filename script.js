@@ -3853,11 +3853,11 @@
                     <div class="content-display">
                         <iframe
                             class="depool-miku-radio-frame"
-                            src="src/skills/hatsune_miku_cyber_radio_deck.html"
+                            src="src/skills/hatsune_miku_cyber_radio_deck.html?compact=1"
                             title="Hatsune Miku Cyber Radio de Depool"
                             loading="lazy">
                         </iframe>
-                        </div>
+                    </div>
                     
                     <!-- Neural Activity -->
                     <div class="neural-activity">
