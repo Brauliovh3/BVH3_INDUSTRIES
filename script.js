@@ -162,6 +162,9 @@
             if (e.key === 'Escape' && this.forbiddenContentModal?.style.display === 'flex') {
                 this.hideForbiddenContentModal();
             }
+            if (e.key === 'Escape' && this.mediaViewer?.style.display === 'flex') {
+                this.hideMediaViewer();
+            }
         });
 
        
@@ -483,10 +486,20 @@
         if (section === 'memories') {
             const memoryCards = contentElement.querySelectorAll('.memory-card');
             memoryCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    const type = card.getAttribute('data-type');
-                    const src = card.getAttribute('data-src');
-                    this.showMediaViewer(type, src);
+                const type = card.getAttribute('data-type');
+                const src = card.getAttribute('data-src');
+                const title = card.querySelector('.card-title')?.textContent?.trim() || 'Recuerdo';
+                card.tabIndex = 0;
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-label', `${title}: ${type === 'video' ? 'abrir video' : 'abrir imagen'}`);
+
+                const openViewer = () => this.showMediaViewer(type, src, card);
+                card.addEventListener('click', openViewer);
+                card.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openViewer();
+                    }
                 });
                 
                 // Implement lazy loading for video thumbnails
@@ -1134,108 +1147,77 @@
     }
 
 
-    showMediaViewer(type, src) {
+    showMediaViewer(type, src, triggerElement = null) {
         if (!this.mediaViewer || !this.mediaViewerContent) return;
 
-        // Check device performance and adjust quality
-        const isLowEndDevice = this.detectLowEndDevice();
-        
+        this.mediaViewerTrigger = triggerElement || document.activeElement;
+        this.mediaViewerContent.innerHTML = '';
+        this.mediaViewer.style.display = 'flex';
+        this.mediaViewer.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        this.mediaViewerCloseBtn?.focus({ preventScroll: true });
+
         if (type === 'image') {
-            this.mediaViewerContent.innerHTML = `<img src="${src}" alt="Memory Image" loading="lazy">`;
-        } else if (type === 'video') {
-            // Show loading indicator
-            this.mediaViewerContent.innerHTML = `
-                <div class="video-loading">
-                    <div class="loading-spinner"></div>
-                    <p>CARGANDO VIDEO...</p>
-                </div>
-            `;
-            
-            // Create video element with optimized attributes for low-end devices
-            const videoElement = document.createElement('video');
-            
-            // Adjust video source based on device capabilities
-            const optimizedSrc = isLowEndDevice ? this.getOptimizedVideoSrc(src) : src;
-            videoElement.src = optimizedSrc;
-            
-            // Performance optimizations
-            videoElement.controls = true;
-            videoElement.autoplay = !isLowEndDevice; // Disable autoplay on low-end devices
-            videoElement.loop = true;
-            videoElement.playsInline = true; // Important for iOS/Android
-            videoElement.muted = true; // Allow autoplay on most platforms
-            videoElement.preload = 'none'; // Don't preload until user interaction
-            videoElement.setAttribute('data-optimized', isLowEndDevice ? 'true' : 'false');
-            
-            // Set video dimensions for better performance
-            videoElement.style.maxWidth = '100%';
-            videoElement.style.maxHeight = '100%';
-            videoElement.style.objectFit = 'contain';
-            
-            // Set medium size constraints
-            videoElement.style.width = 'min(800px, 90vw)';
-            videoElement.style.aspectRatio = '16 / 9';
-            
-            // Add performance monitoring
-            this.addVideoPerformanceMonitoring(videoElement);
-            
-            // Handle video load events with performance optimizations
-            videoElement.addEventListener('loadeddata', () => {
-                // Remove loading indicator
-                const loadingIndicator = this.mediaViewerContent.querySelector('.video-loading');
-                if (loadingIndicator) {
-                    loadingIndicator.remove();
-                }
-                
-                // Try to play the video with fallback for low-end devices
-                if (!isLowEndDevice) {
-                    videoElement.play().catch(error => {
-                        console.log('Autoplay prevented:', error);
-                        videoElement.controls = true;
-                    });
-                } else {
-                    // For low-end devices, show a play button overlay
-                    this.addPlayButtonOverlay(videoElement);
-                }
-            });
-            
-            videoElement.addEventListener('error', (e) => {
-                console.error('Video error:', e);
-                this.mediaViewerContent.innerHTML = `<div style="color: #ff2bd6; text-align: center; padding: 2rem;">
-                    <p>Error loading video</p>
-                    <p style="font-size: 0.9rem; opacity: 0.7;">The video file may be corrupted or not supported</p>
-                    <button class="cta-btn cta-btn--ghost" onclick="this.parentElement.parentElement.parentElement.showMediaViewer('video', '${src}')">REINTENTAR</button>
-                </div>`;
-            });
-            
-            // Clear loading indicator and add video
-            setTimeout(() => {
-                this.mediaViewerContent.innerHTML = '';
-                this.mediaViewerContent.appendChild(videoElement);
-                
-                // Start loading the video after a small delay to improve perceived performance
-                if (videoElement.preload === 'none') {
-                    videoElement.load();
-                }
-            }, isLowEndDevice ? 100 : 50);
+            const image = document.createElement('img');
+            image.src = src;
+            image.alt = 'Imagen de recuerdo';
+            image.loading = 'eager';
+            image.decoding = 'async';
+            this.mediaViewerContent.appendChild(image);
+            return;
         }
 
-        this.mediaViewer.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        if (type !== 'video') return;
+
+        const video = document.createElement('video');
+        const saveData = this.isLowEndDevice || navigator.connection?.saveData === true;
+        video.controls = true;
+        video.autoplay = false;
+        video.loop = false;
+        video.muted = false;
+        video.playsInline = true;
+        video.preload = saveData ? 'none' : 'metadata';
+        video.setAttribute('playsinline', '');
+        video.src = src;
+        video.addEventListener('error', () => {
+            if (this.mediaViewerContent.querySelector('.media-viewer-error')) return;
+
+            const errorPanel = document.createElement('div');
+            errorPanel.className = 'media-viewer-error';
+            const errorTitle = document.createElement('strong');
+            errorTitle.textContent = 'No se pudo reproducir este video';
+            const errorMessage = document.createElement('p');
+            errorMessage.textContent = 'Comprueba la conexión o intenta cargarlo de nuevo.';
+            const retryButton = document.createElement('button');
+            retryButton.type = 'button';
+            retryButton.className = 'media-viewer-retry-btn';
+            retryButton.textContent = 'REINTENTAR';
+            retryButton.addEventListener('click', () => {
+                errorPanel.remove();
+                video.load();
+            });
+            errorPanel.append(errorTitle, errorMessage, retryButton);
+            this.mediaViewerContent.appendChild(errorPanel);
+        });
+        this.mediaViewerContent.appendChild(video);
     }
 
     hideMediaViewer() {
         if (!this.mediaViewer || !this.mediaViewerContent) return;
-        this.mediaViewer.style.display = 'none';
-        this.mediaViewerContent.innerHTML = '';
-        document.body.style.overflow = ''; // Restore body scrolling
-        
-        // Stop any playing videos
+
         const videos = this.mediaViewerContent.querySelectorAll('video');
         videos.forEach(video => {
             video.pause();
-            video.currentTime = 0;
+            video.removeAttribute('src');
+            video.load();
         });
+
+        this.mediaViewer.style.display = 'none';
+        this.mediaViewer.setAttribute('aria-hidden', 'true');
+        this.mediaViewerContent.innerHTML = '';
+        document.body.style.overflow = '';
+        this.mediaViewerTrigger?.focus({ preventScroll: true });
+        this.mediaViewerTrigger = null;
     }
 
     detectLowEndDevice() {
@@ -1264,92 +1246,6 @@
         return lowEndCount >= 3 || checks.slowConnection || (checks.isMobile && checks.lowMemory);
     }
 
-    getOptimizedVideoSrc(originalSrc) {
-        // For demo purposes, we'll add a quality parameter
-        // In a real implementation, you would have different video files
-        const separator = originalSrc.includes('?') ? '&' : '?';
-        return `${originalSrc}${separator}quality=low&optimize=true`;
-    }
-
-    addVideoPerformanceMonitoring(videoElement) {
-        let startTime = performance.now();
-        let frameCount = 0;
-        let lastFrameTime = startTime;
-        
-        // Monitor video performance
-        const monitorFrame = () => {
-            frameCount++;
-            const currentTime = performance.now();
-            const deltaTime = currentTime - lastFrameTime;
-            
-            // Check if video is struggling (low FPS)
-            if (deltaTime > 100) { // More than 100ms per frame = less than 10 FPS
-                console.warn('Video performance issue detected, reducing quality');
-                this.reduceVideoQuality(videoElement);
-            }
-            
-            lastFrameTime = currentTime;
-            
-            if (videoElement.readyState >= 2 && !videoElement.paused) {
-                requestAnimationFrame(monitorFrame);
-            }
-        };
-        
-        videoElement.addEventListener('play', () => {
-            startTime = performance.now();
-            frameCount = 0;
-            requestAnimationFrame(monitorFrame);
-        });
-        
-        // Log loading performance
-        videoElement.addEventListener('loadeddata', () => {
-            const loadTime = performance.now() - startTime;
-            console.log(`Video loaded in ${loadTime.toFixed(2)}ms`);
-        });
-    }
-
-    addPlayButtonOverlay(videoElement) {
-        const playButton = document.createElement('div');
-        playButton.className = 'video-play-overlay';
-        playButton.innerHTML = `
-            <div class="play-button-large">
-                <span>PLAY</span>
-            </div>
-            <p class="play-hint">Click to play (optimized for your device)</p>
-        `;
-        
-        playButton.addEventListener('click', () => {
-            videoElement.play().then(() => {
-                playButton.style.display = 'none';
-            }).catch(error => {
-                console.error('Play failed:', error);
-            });
-        });
-        
-        videoElement.parentElement.appendChild(playButton);
-    }
-
-    reduceVideoQuality(videoElement) {
-        // Reduce video quality dynamically
-        if (videoElement.dataset.optimized === 'false') {
-            console.log('Reducing video quality for better performance');
-            const currentSrc = videoElement.src;
-            const optimizedSrc = this.getOptimizedVideoSrc(currentSrc);
-            const currentTime = videoElement.currentTime;
-            const wasPlaying = !videoElement.paused;
-            
-            videoElement.src = optimizedSrc;
-            videoElement.dataset.optimized = 'true';
-            
-            videoElement.addEventListener('loadeddata', () => {
-                videoElement.currentTime = currentTime;
-                if (wasPlaying) {
-                    videoElement.play();
-                }
-            }, { once: true });
-        }
-    }
-
     setupLazyVideoThumbnail(card) {
         const type = card.getAttribute('data-type');
         if (type !== 'video') return;
@@ -1357,10 +1253,13 @@
         const thumbnail = card.querySelector('.memory-thumbnail video');
         if (!thumbnail) return;
 
-        // Add loading state
         card.classList.add('loading');
 
-        // Create intersection observer for lazy loading
+        if (!('IntersectionObserver' in window)) {
+            this.loadVideoThumbnail(thumbnail, card);
+            return;
+        }
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -1369,7 +1268,7 @@
                 }
             });
         }, {
-            rootMargin: '50px', // Start loading 50px before visible
+            rootMargin: '100px 0px',
             threshold: 0.1
         });
 
@@ -1377,75 +1276,69 @@
     }
 
     loadVideoThumbnail(thumbnail, card) {
-        const isLowEndDevice = this.detectLowEndDevice();
-        const src = thumbnail.src || thumbnail.getAttribute('src');
-        
-        if (!src) return;
-
-        // For low-end devices, use poster image instead of video thumbnail
-        if (isLowEndDevice) {
+        const saveData = this.isLowEndDevice || navigator.connection?.saveData === true;
+        const src = thumbnail.getAttribute('src');
+        if (!src) {
             this.createVideoPoster(thumbnail, card);
             return;
         }
 
-        // Load video thumbnail with performance optimization
+        if (saveData) {
+            this.createVideoPoster(thumbnail, card);
+            return;
+        }
+
         thumbnail.preload = 'metadata';
         thumbnail.muted = true;
         thumbnail.playsInline = true;
 
         thumbnail.addEventListener('loadeddata', () => {
-            // Seek to a frame that shows good preview
-            thumbnail.currentTime = 0.5;
-            
-            thumbnail.addEventListener('seeked', () => {
-                card.classList.remove('loading');
-                card.classList.add('loaded');
-                
-                // Pause after loading the preview frame
-                thumbnail.pause();
-            }, { once: true });
-        });
+            if (Number.isFinite(thumbnail.duration) && thumbnail.duration > 0.5) {
+                thumbnail.currentTime = 0.5;
+            }
+            thumbnail.pause();
+            card.classList.remove('loading');
+            card.classList.add('loaded');
+        }, { once: true });
 
         thumbnail.addEventListener('error', () => {
             console.warn('Video thumbnail failed to load, using fallback');
             this.createVideoPoster(thumbnail, card);
-        });
+        }, { once: true });
 
-        // Start loading
         thumbnail.load();
     }
 
     createVideoPoster(thumbnail, card) {
-        // Create a poster image for low-end devices or fallback
-        const poster = document.createElement('img');
-        poster.src = 'https://via.placeholder.com/400x225.png/ff2bd6/000000?text=VIDEO';
-        poster.alt = 'Video thumbnail';
-        poster.className = 'video-poster-fallback';
-        poster.style.cssText = `
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-        `;
+        if (card.querySelector('.video-poster-fallback')) return;
 
-        thumbnail.style.display = 'none';
+        const title = card.querySelector('.card-title')?.textContent?.trim() || 'Video';
+        const poster = document.createElement('div');
+        poster.className = 'video-poster-fallback';
+        poster.setAttribute('role', 'img');
+        poster.setAttribute('aria-label', `Vista previa: ${title}`);
+
+        const label = document.createElement('span');
+        label.className = 'video-poster-label';
+        label.textContent = 'VIDEO';
+        const caption = document.createElement('span');
+        caption.className = 'video-poster-title';
+        caption.textContent = title;
+        poster.append(label, caption);
+
+        thumbnail.pause();
+        thumbnail.removeAttribute('src');
+        thumbnail.load();
+        thumbnail.hidden = true;
         thumbnail.parentElement.appendChild(poster);
-        
         card.classList.remove('loading');
         card.classList.add('loaded');
     }
 
     optimizeMemoryUsage() {
-        // Clean up unused video elements to free memory
         const videos = document.querySelectorAll('.memory-thumbnail video');
         videos.forEach(video => {
-            const card = video.closest('.memory-card');
-            if (!card || !card.classList.contains('loaded')) {
-                video.src = '';
-                video.load();
-            }
+            if (!video.paused) video.pause();
         });
     }
 
@@ -3663,22 +3556,43 @@
 
             'memories': `
                 <div class="card-grid">
-                    <article class="card card--edgerunner memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/00e5ff/000000?text=Cyberpunk+City">
+                    <article class="card card--edgerunner memory-card" data-type="image" data-src="src/images/osccorima_durmiendo.jpg">
                         <div class="card-top">
-                            <h3 class="card-title">CIUDAD NEON</h3>
+                            <h3 class="card-title">OSCCORIMA DURMIENDO</h3>
                             <span class="badge badge--cyan">IMAGEN</span>
                         </div>
-                        <img src="https://via.placeholder.com/400x225.png/00e5ff/000000?text=Cyberpunk+City" alt="Ciudad Cyberpunk" class="memory-thumbnail">
-                        <p class="card-text">Vistas nocturnas de una metrópolis futurista.</p>
+                        <img src="src/images/osccorima_durmiendo.jpg" alt="Osccorima durmiendo" class="memory-thumbnail" loading="lazy" decoding="async">
+                        <p class="card-text">Osccorima descansa en un instante tranquilo.</p>
                     </article>
 
-                    <article class="card card--edgerunner memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/ff2bd6/000000?text=Hacker+Lair">
+                    <article class="card card--edgerunner memory-card" data-type="image" data-src="src/images/especimen.jpg">
                         <div class="card-top">
-                            <h3 class="card-title">GUARIDA DEL HACKER</h3>
+                            <h3 class="card-title">ESPECIMEN</h3>
                             <span class="badge badge--cyan">IMAGEN</span>
                         </div>
-                        <img src="https://via.placeholder.com/400x225.png/ff2bd6/000000?text=Hacker+Lair" alt="Guarida del Hacker" class="memory-thumbnail">
-                        <p class="card-text">El lugar de nacimiento de la rebelión digital.</p>
+                        <img src="src/images/especimen.jpg" alt="Especimen" class="memory-thumbnail" loading="lazy" decoding="async">
+                        <p class="card-text">Un espécimen retratado para esta colección.</p>
+                    </article>
+
+                    <article class="card card--edgerunner memory-card" data-type="image" data-src="src/images/c_inge.jpg">
+                        <div class="card-top">
+                            <h3 class="card-title">C. INGE</h3>
+                            <span class="badge badge--cyan">IMAGEN</span>
+                        </div>
+                        <img src="src/images/c_inge.jpg" alt="C Inge" class="memory-thumbnail" loading="lazy" decoding="async">
+                        <p class="card-text">C. Inge aparece en este recuerdo visual.</p>
+                    </article>
+
+                    <article class="card card--edgerunner memory-card" data-type="video" data-src="src/images/especial.mp4">
+                        <div class="card-top">
+                            <h3 class="card-title">ESPECIAL</h3>
+                            <span class="badge badge--pink">VIDEO</span>
+                        </div>
+                        <div class="memory-thumbnail memory-thumbnail--video">
+                            <video src="src/images/especial.mp4#t=0.5" preload="none" muted playsinline></video>
+                            <div class="play-icon">▶</div>
+                        </div>
+                        <p class="card-text">Un especial audiovisual guardado en la colección.</p>
                     </article>
 
                     <article class="card card--edgerunner memory-card" data-type="video" data-src="https://www.w3schools.com/html/mov_bbb.mp4">
@@ -3686,11 +3600,11 @@
                             <h3 class="card-title">TRANSMISIÓN PIRATA</h3>
                             <span class="badge badge--pink">VIDEO</span>
                         </div>
-                        <div class="memory-thumbnail">
-                            <video src="https://www.w3schools.com/html/mov_bbb.mp4#t=0.5" preload="metadata"></video>
+                        <div class="memory-thumbnail memory-thumbnail--video">
+                            <video src="https://www.w3schools.com/html/mov_bbb.mp4#t=0.5" preload="none" muted playsinline></video>
                             <div class="play-icon">▶</div>
                         </div>
-                        <p class="card-text">Un mensaje codificado para los despiertos.</p>
+                        <p class="card-text">Una transmisión clandestina recuperada de la red.</p>
                     </article>
 
                     <article class="card card--edgerunner memory-card" data-type="video" data-src="https://files.catbox.moe/utqyjf.mp4">
@@ -3698,20 +3612,11 @@
                             <h3 class="card-title">ARTE NO COMPRENDIDO</h3>
                             <span class="badge badge--pink">VIDEO</span>
                         </div>
-                        <div class="memory-thumbnail">
-                            <video src="https://files.catbox.moe/utqyjf.mp4#t=0.5" preload="metadata"></video>
+                        <div class="memory-thumbnail memory-thumbnail--video">
+                            <video src="https://files.catbox.moe/utqyjf.mp4#t=0.5" preload="none" muted playsinline></video>
                             <div class="play-icon">▶</div>
                         </div>
-                        <p class="card-text">Una pieza de arte digital.</p>
-                    </article>
-                    
-                    <article class="card card--edgerunner memory-card" data-type="image" data-src="https://via.placeholder.com/1280x720.png/8b5cf6/000000?text=Android+Dream">
-                        <div class="card-top">
-                            <h3 class="card-title">SUEÑO DE ANDROIDE</h3>
-                            <span class="badge badge--cyan">IMAGEN</span>
-                        </div>
-                        <img src="https://via.placeholder.com/400x225.png/8b5cf6/000000?text=Android+Dream" alt="Sueño de Androide" class="memory-thumbnail">
-                        <p class="card-text">Reflexiones sobre la conciencia artificial.</p>
+                        <p class="card-text">Una pieza artística que desafía la interpretación.</p>
                     </article>
                 </div>
             `,
@@ -3895,6 +3800,13 @@
 
             depool: `
                 <div class="depool-interface">
+                    <figure class="depool-cover">
+                        <img src="src/images/fondo.png" alt="Imagen de fondo de Depool" class="depool-cover-image" fetchpriority="high">
+                        <figcaption class="depool-cover-caption">
+                            <span>DEPOOL // VISUAL FEED</span>
+                            <span class="depool-cover-index">ASSET 01</span>
+                        </figcaption>
+                    </figure>
                     <div class="android-bay miku-bay">
                         <div class="android-stage" id="androidStage">
                             <div class="android-status-strip" aria-label="Estado del holograma">
@@ -3975,20 +3887,13 @@
                         <p class="muted">Elige un canal. Respuesta rápida por WhatsApp.</p>
 
                         <div class="contact-cards">
-                            <a class="contact-card" href="mailto:velasquezhuillcab@gmail.com">
-                                <span class="contact-icon" aria-hidden="true">✉</span>
-                                <span class="contact-main">
-                                    <span class="contact-label">Email</span>
-                                    <span class="contact-value">velasquezhuillcab@gmail.com</span>
-                                </span>
-                            </a>
-                            <a class="contact-card" href="https://wa.me/51988514570" target="_blank" rel="noopener">
+                            <div class="contact-card">
                                 <span class="contact-icon" aria-hidden="true">☎</span>
                                 <span class="contact-main">
                                     <span class="contact-label">WhatsApp</span>
-                                    <span class="contact-value">+51 988 514 570</span>
+                                    <span class="contact-value">926 017929</span>
                                 </span>
-                            </a>
+                            </div>
                             <a class="contact-card" href="https://github.com/Brauliovh3" target="_blank" rel="noopener">
                                 <span class="contact-icon" aria-hidden="true">⌂</span>
                                 <span class="contact-main">
@@ -4035,10 +3940,16 @@
                                 <textarea id="message" name="message" rows="5" required placeholder="Cuéntame qué necesitas…"></textarea>
                             </div>
 
-                            <button type="submit" class="submit-btn">
+                            <div class="contact-submit-options">
+                                <button type="submit" class="submit-btn submit-btn--whatsapp" data-channel="whatsapp">
                                 <span>ENVIAR A WHATSAPP</span>
                                 <div class="btn-glitch"></div>
-                            </button>
+                                </button>
+                                <button type="submit" class="submit-btn submit-btn--gmail" data-channel="gmail">
+                                    <span>ENVIAR POR GMAIL</span>
+                                    <div class="btn-glitch"></div>
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -4144,50 +4055,48 @@
     handleFormSubmission(e) {
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
-        
-        
-        const whatsappMessage = `
-🚀 *NUEVO CONTACTO - BVH3 INDUSTRIES*
+        const channel = e.submitter?.dataset.channel || 'whatsapp';
+        const message = [
+            'BVH3 INDUSTRIES | NUEVO CONTACTO',
+            '--------------------------------',
+            `Nombre: ${data.name}`,
+            `Correo: ${data.email}`,
+            `Proyecto: ${data.subject}`,
+            '',
+            'Mensaje:',
+            data.message,
+            '',
+            '--------------------------------',
+            'Enviado desde el formulario de contacto.'
+        ].join('\n');
+        const mailSubject = `Nuevo contacto: ${data.subject}`;
+        const recipient = 'velasquezhuillcab@gmail.com';
+        const destination = channel === 'gmail'
+            ? `https://mail.google.com/mail/?${new URLSearchParams({
+                view: 'cm',
+                fs: '1',
+                to: recipient,
+                su: mailSubject,
+                body: message
+            })}`
+            : `https://wa.me/51926017929?text=${encodeURIComponent(message)}`;
 
-👤 *Nombre:* ${data.name}
-📧 *Email:* ${data.email}
-📋 *Tipo de Proyecto:* ${data.subject}
+        const submitButtons = [...e.target.querySelectorAll('.submit-btn')];
+        const submitButton = e.submitter || submitButtons[0];
+        const buttonLabel = submitButton.querySelector('span');
+        const originalLabel = buttonLabel.textContent;
+        submitButtons.forEach((button) => { button.disabled = true; });
+        buttonLabel.textContent = channel === 'gmail' ? 'ABRIENDO GMAIL...' : 'ABRIENDO WHATSAPP...';
 
-💬 *Mensaje:*
-${data.message}
+        window.open(destination, '_blank', 'noopener,noreferrer');
 
----
-_Enviado desde el portafolio BVH3 Industries_
-        `.trim();
-        
-        
-        const encodedMessage = encodeURIComponent(whatsappMessage);
-        const whatsappURL = `https://wa.me/51904676991?text=${encodedMessage}`;
-        
-       
-        const submitBtn = e.target.querySelector('.submit-btn');
-        const originalText = submitBtn.innerHTML;
-        
-        submitBtn.innerHTML = '<span>CONECTANDO...</span>';
-        submitBtn.disabled = true;
-        
         setTimeout(() => {
-            submitBtn.innerHTML = '<span>REDIRIGIENDO A WHATSAPP...</span>';
-            setTimeout(() => {
-               
-                window.open(whatsappURL, '_blank');
-                
-                
-                submitBtn.innerHTML = '<span>✅ ENVIADO A WHATSAPP</span>';
-                setTimeout(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                    e.target.reset();
-                }, 2000);
-            }, 1000);
-        }, 1500);
-        
-        console.log('Form data prepared for WhatsApp:', data);
+            buttonLabel.textContent = originalLabel;
+            submitButtons.forEach((button) => { button.disabled = false; });
+            e.target.reset();
+        }, 1800);
+
+        console.log('Contact form opened via:', channel);
     }
 }
 
