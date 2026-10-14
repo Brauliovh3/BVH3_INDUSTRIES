@@ -518,8 +518,6 @@
 
         if (section === 'depool') {
             this.initDepoolAndroid(contentElement);
-            this.initDepoolPortal(contentElement);
-            this.initDiscordMusicPlayer();
             this.initDepoolSecretCmd(contentElement);
         }
 
@@ -3945,35 +3943,7 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Content Display -->
-                    <div class="content-display">
-                        <iframe
-                            class="depool-miku-radio-frame"
-                            src="src/skills/hatsune_miku_cyber_radio_deck.html?compact=1"
-                            title="Hatsune Miku Cyber Radio de Depool"
-                            loading="lazy">
-                        </iframe>
-                    </div>
-                    
-                    <!-- Neural Activity -->
-                    <div class="neural-activity">
-                        <div class="activity-pulse pulse-1"></div>
-                        <div class="activity-pulse pulse-2"></div>
-                        <div class="activity-pulse pulse-3"></div>
-                        <div class="activity-pulse pulse-4"></div>
-                        <div class="activity-pulse pulse-5"></div>
-                        <div class="activity-pulse pulse-6"></div>
-                        <div class="activity-pulse pulse-7"></div>
-                        <div class="activity-pulse pulse-8"></div>
-                    </div>
-                    
-                    <!-- Background Effects -->
-                    <div class="brain-background">
-                        <div class="circuit-lines"></div>
-                        <div class="data-particles"></div>
-                        <div class="glitch-effect"></div>
-                    </div>
+
                     <!-- DEPOOL secret CMD: desbloquea ZONA PROHIBIDA con unlock_zone -->
                     <div class="depool-secret-cmd" id="depoolSecretCmd">
                         <div class="depool-secret-cmd-head">

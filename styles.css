@@ -2449,13 +2449,16 @@ body {
 .depool-interface {
     position: relative;
     display: grid;
-    gap: 2rem;
+    gap: 1rem;
+    max-width: 860px;
+    margin: 0 auto;
+    overflow: hidden;
 }
 
 .depool-cover {
     position: relative;
     isolation: isolate;
-    height: clamp(220px, 34vw, 420px);
+    height: clamp(140px, 20vw, 220px);
     margin: 0;
     overflow: hidden;
     border: 1px solid rgba(0, 229, 255, 0.42);
@@ -2565,10 +2568,10 @@ body {
 .android-stage {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(320px, 1.1fr) minmax(260px, 0.75fr);
+    grid-template-columns: minmax(280px, 1fr) minmax(240px, 0.7fr);
     align-items: center;
-    gap: clamp(1.25rem, 3vw, 2.5rem);
-    min-height: 560px;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    min-height: auto;
 }
 
 .android-status-strip {
@@ -2603,9 +2606,9 @@ body {
     --android-shift-x: 0px;
     --android-shift-y: 0px;
     position: relative;
-    width: min(100%, 430px);
-    height: 540px;
-    margin: 2.75rem auto 0;
+    width: min(100%, 360px);
+    height: 420px;
+    margin: 2rem auto 0;
     transform-style: preserve-3d;
     transform:
         perspective(1200px)
@@ -7044,7 +7047,7 @@ img.memory-thumbnail {
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-height: 480px;
+    max-height: 380px;
     overflow: hidden;
 }
 
@@ -7052,7 +7055,7 @@ img.memory-thumbnail {
     display: block;
     max-width: 100%;
     height: auto;
-    max-height: 550px; /* limita la altura vertical de la imagen */
+    max-height: 380px; /* limita la altura vertical de la imagen */
     object-fit: contain;
     filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.7)) drop-shadow(0 0 25px rgba(57, 197, 187, 0.4));
     animation: mikuFloat 4s ease-in-out infinite, mikuHoloFlicker 8s ease-in-out infinite;
@@ -8088,17 +8091,10 @@ img.memory-thumbnail {
     .portal-hud { font-size: 0.55rem; }
 }
 
-/* Hatsune Miku Cyber Radio de Depool: panel cuadrado en rejilla 2x3 */
-.depool-miku-radio-frame {
-    display: block;
-    width: 100%;
-    max-width: 260px;
-    height: 260px;
-    min-height: 0;
-    margin: 0 auto;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
+/* Hatsune Miku Cyber Radio de Depool: quitado para optimizar (evitaba que la sección se ampliara) */
+.depool-miku-radio-frame,
+.content-display:has(.depool-miku-radio-frame) {
+    display: none !important;
 }
 
 .content-display:has(.depool-miku-radio-frame),
