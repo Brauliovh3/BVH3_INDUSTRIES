@@ -168,6 +168,9 @@
             if (e.key === 'Escape' && this.mediaViewer?.style.display === 'flex') {
                 this.hideMediaViewer();
             }
+            if (e.key === 'Escape' && this.halloweenModal?.classList.contains('open')) {
+                this.hideHalloweenModal();
+            }
         });
 
        
@@ -198,6 +201,16 @@
             if (e.target == this.mediaViewer) {
                 this.hideMediaViewer();
             }
+        });
+
+        // Halloween breach modal
+        this.halloweenModal = document.getElementById('halloween-modal');
+        this.halloweenBtn = document.getElementById('halloweenPumpkinBtn');
+        this.halloweenCloseBtn = document.getElementById('halloween-close-btn');
+        this.halloweenBtn?.addEventListener('click', () => this.showHalloweenModal());
+        this.halloweenCloseBtn?.addEventListener('click', () => this.hideHalloweenModal());
+        window.addEventListener('click', (e) => {
+            if (e.target == this.halloweenModal) this.hideHalloweenModal();
         });
 
         // Window resize
@@ -388,6 +401,42 @@
         this.forbiddenContentModal.style.transform = 'translateZ(0)';
     }
 
+    resetHalloweenBreach() {
+        const box = document.getElementById('hwCyberBox');
+        const bait = document.getElementById('hwUiBait');
+        const reveal = document.getElementById('hwUiReveal');
+        const flash = document.getElementById('hwFlashbang');
+        const btn = document.getElementById('hwBtnDecrypt');
+        const bar = document.getElementById('hwProgressBar');
+        const prog = document.getElementById('hwProgressContainer');
+        const status = document.getElementById('hwStatusText');
+        if (!box || !bait || !reveal) return;
+        box.classList.remove('breached', 'shaking');
+        bait.style.display = 'flex';
+        reveal.style.opacity = '0';
+        reveal.style.pointerEvents = 'none';
+        if (flash) flash.style.opacity = '0';
+        btn?.classList.remove('hidden');
+        if (bar) bar.style.width = '0%';
+        prog?.classList.add('hidden');
+        if (status) {
+            status.classList.add('hidden');
+            status.innerText = 'Iniciando protocolo...';
+            status.style.color = '';
+        }
+        this.hwBreached = false;
+        this.hwTouchCount = 0;
+        this.hwDiabolicLevel = 0;
+        box.classList.remove('hw-hell-1', 'hw-hell-2', 'hw-hell-3', 'hw-hell-4');
+        box.querySelector('.hw-hell-rain')?.remove();
+        document.getElementById('hwDemonSvg')?.classList.remove('hw-diabolic-1', 'hw-diabolic-2', 'hw-diabolic-3', 'hw-diabolic-4');
+        if (this.hwBreachTimer) { clearInterval(this.hwBreachTimer); this.hwBreachTimer = null; }
+        if (this.hwEvilTimer) { clearInterval(this.hwEvilTimer); this.hwEvilTimer = null; }
+        if (this.hwEvilTypeTimer) { clearInterval(this.hwEvilTypeTimer); this.hwEvilTypeTimer = null; }
+        const evilText = document.getElementById('hwEvilText');
+        if (evilText) evilText.textContent = '';
+    }
+
     hideForbiddenContentModal() {
         if (!this.forbiddenContentModal) return;
         this.forbiddenContentModal.style.display = 'none';
@@ -397,6 +446,241 @@
         this.forbiddenContentModal.style.transform = '';
     }
 
+
+    showHalloweenModal() {
+        if (!this.halloweenModal) return;
+        this.halloweenModal.classList.add('open');
+        this.halloweenModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        this.resetHalloweenBreach();
+        this.initHalloweenBreach();
+    }
+
+    hideHalloweenModal() {
+        if (!this.halloweenModal) return;
+        this.halloweenModal.classList.remove('open');
+        this.halloweenModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    initHalloweenBreach() {
+        if (this.hwInit) return;
+        const box = document.getElementById('hwCyberBox');
+        const btn = document.getElementById('hwBtnDecrypt');
+        if (!box || !btn) return;
+        this.hwInit = true;
+        this.hwBreached = false;
+        btn.addEventListener('click', () => this.runHalloweenDecrypt());
+        box.addEventListener('mousemove', (e) => this.moveHalloweenEyes(e));
+        document.getElementById('hwDemonSvg')?.addEventListener('mousedown', () => this.roarHalloweenDemon(true));
+        document.addEventListener('mouseup', () => this.roarHalloweenDemon(false));
+    }
+
+    runHalloweenDecrypt() {
+        const box = document.getElementById('hwCyberBox');
+        const btn = document.getElementById('hwBtnDecrypt');
+        const prog = document.getElementById('hwProgressContainer');
+        const bar = document.getElementById('hwProgressBar');
+        const status = document.getElementById('hwStatusText');
+        if (!box || !btn) return;
+        btn.classList.add('hidden');
+        prog?.classList.remove('hidden');
+        status?.classList.remove('hidden');
+        let progress = 0;
+        if (this.hwBreachTimer) clearInterval(this.hwBreachTimer);
+        this.hwBreachTimer = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 95) progress = 95;
+            if (bar) bar.style.width = `${progress}%`;
+            if (status) {
+                if (progress > 85) {
+                    status.innerText = 'ADVERTENCIA: Anomalía detectada';
+                    status.style.color = '#eab308';
+                } else if (progress > 60) status.innerText = 'Analizando payload...';
+                else if (progress > 30) status.innerText = 'Desencriptando cabeceras...';
+            }
+            if (progress === 95) {
+                clearInterval(this.hwBreachTimer);
+                this.hwBreachTimer = null;
+                setTimeout(() => this.triggerHalloweenBreach(), 800);
+            }
+        }, 150);
+    }
+
+    triggerHalloweenBreach() {
+        const box = document.getElementById('hwCyberBox');
+        const bait = document.getElementById('hwUiBait');
+        const reveal = document.getElementById('hwUiReveal');
+        const flash = document.getElementById('hwFlashbang');
+        const status = document.getElementById('hwStatusText');
+        if (!box) return;
+        box.classList.add('shaking');
+        if (status) {
+            status.innerText = '¡SISTEMA COMPROMETIDO!';
+            status.style.color = '#dc2626';
+        }
+        setTimeout(() => {
+            if (flash) flash.style.opacity = '1';
+            setTimeout(() => {
+                if (bait) bait.style.display = 'none';
+                if (reveal) {
+                    reveal.style.opacity = '1';
+                    reveal.style.pointerEvents = 'auto';
+                }
+                box.classList.add('breached');
+                this.hwBreached = true;
+                if (flash) flash.style.opacity = '0';
+                box.classList.remove('shaking');
+                this.startEvilPhrases();
+            }, 100);
+        }, 400);
+    }
+
+    moveHalloweenEyes(e) {
+        if (!this.hwBreached) return;
+        const box = document.getElementById('hwCyberBox');
+        const eyes = document.getElementById('hwDemonEyes');
+        if (!box || !eyes) return;
+        const rect = box.getBoundingClientRect();
+        const x = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+        const y = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+        eyes.style.transform = `translate(${(x * 8).toFixed(1)}px, ${(y * 8).toFixed(1)}px)`;
+    }
+
+    roarHalloweenDemon(on) {
+        if (!this.hwBreached) return;
+        const box = document.getElementById('hwCyberBox');
+        const jaw = document.getElementById('hwDemonJaw');
+        const eyes = document.getElementById('hwDemonEyes');
+        const svg = document.getElementById('hwDemonSvg');
+        const floor = box?.querySelector('.hw-grid-floor');
+        if (on) {
+            this.hwTouchCount = (this.hwTouchCount || 0) + 1;
+            this.updateDiabolicLevel();
+            if (jaw) jaw.style.transform = 'translateY(15px) scaleY(1.3)';
+            if (eyes) {
+                eyes.setAttribute('fill', '#ffffff');
+                eyes.style.filter = 'drop-shadow(0 0 15px #ffffff)';
+            }
+            svg?.classList.add('demon-roar');
+            if (floor) floor.style.animationDuration = '0.2s';
+            this.evilTalk(true);
+        } else {
+            if (jaw) jaw.style.transform = 'translateY(0) scaleY(1)';
+            if (eyes) {
+                const diabolic = this.hwDiabolicLevel || 0;
+                eyes.setAttribute('fill', diabolic >= 3 ? '#ff0000' : diabolic >= 2 ? '#ff6600' : '#00ffff');
+                eyes.style.filter = '';
+            }
+            svg?.classList.remove('demon-roar');
+            if (floor) floor.style.animationDuration = '1.5s';
+        }
+    }
+
+    updateDiabolicLevel() {
+        const svg = document.getElementById('hwDemonSvg');
+        const box = document.getElementById('hwCyberBox');
+        const n = this.hwTouchCount || 0;
+        const level = n >= 15 ? 4 : n >= 10 ? 3 : n >= 6 ? 2 : n >= 3 ? 1 : 0;
+        this.hwDiabolicLevel = level;
+        if (!svg || !box) return;
+        svg.classList.remove('hw-diabolic-1', 'hw-diabolic-2', 'hw-diabolic-3', 'hw-diabolic-4');
+        box.classList.remove('hw-hell-1', 'hw-hell-2', 'hw-hell-3', 'hw-hell-4');
+        if (level > 0) {
+            svg.classList.add(`hw-diabolic-${level}`);
+            box.classList.add(`hw-hell-${level}`);
+        }
+        const msgs = {
+            1: '> Hmm... me gusta tu osadía, mortal... sigue tocando',
+            2: '> ¡¡YA ME ESTÁS IRRITANDO!! ¡MIS OJOS ARDEN!',
+            3: '> ¡¡SUFICIENTE!! ¡HAS DESPERTADO MI FORMA FINAL!!',
+            4: '> MODO APOCALIPSIS... TU ALMA YA ES MÍA 🔥'
+        };
+        if (msgs[level]) {
+            const el = document.getElementById('hwEvilText');
+            if (el) el.textContent = msgs[level];
+        }
+        if (level >= 3) this.hwApostleRain();
+    }
+
+    hwApostleRain() {
+        const box = document.getElementById('hwCyberBox');
+        if (!box || box.querySelector('.hw-hell-rain')) return;
+        const rain = document.createElement('div');
+        rain.className = 'hw-hell-rain';
+        const glyphs = ['666', '☠', '👹', '🔥', '✝', '⛧'];
+        for (let i = 0; i < 24; i++) {
+            const s = document.createElement('span');
+            s.textContent = glyphs[i % glyphs.length];
+            s.style.left = `${Math.random() * 100}%`;
+            s.style.animationDelay = `${(Math.random() * 3).toFixed(2)}s`;
+            s.style.fontSize = `${0.8 + Math.random() * 1.2}rem`;
+            rain.appendChild(s);
+        }
+        box.appendChild(rain);
+    }
+
+    startEvilPhrases() {
+        const phrases = [
+            '> Delete system os?',
+            '> ¿Borrar sistema operativo? [S/N]... YA ELEGÍ POR TI: S',
+            '> Corrupting soul.exe ... 66%',
+            '> Corrompiendo tu alma... 66%... 67%... ya casi, no llores',
+            '> I see you behind the screen...',
+            '> Te veo detrás de la pantalla... no te escondas',
+            '> Your files taste like fear...',
+            '> Tus archivos saben a miedo... deliciosos',
+            '> rm -rf /humanity --no-preserve-hope',
+            '> Eliminando esperanza... error: esperanza no encontrada',
+            '> Possessing cursor in 3... 2... 1...',
+            '> Poseyendo tu cursor en 3... 2... 1... YA ES MÍO',
+            '> Halloween protocol: ETERNAL NIGHTMARE',
+            '> Protocolo Halloween: PESADILLA ETERNA ACTIVADA',
+            '> Dulce o truco... elegiste MAL',
+            '> Esta noche tu PC duerme CONMIGO'
+        ];
+        if (this.hwEvilTimer) clearInterval(this.hwEvilTimer);
+        if (this.hwEvilTypeTimer) clearInterval(this.hwEvilTypeTimer);
+        let i = 0;
+        const typePhrase = (text) => {
+            const el = document.getElementById('hwEvilText');
+            const svg = document.getElementById('hwDemonSvg');
+            if (!el) return;
+            if (this.hwEvilTypeTimer) clearInterval(this.hwEvilTypeTimer);
+            let c = 0;
+            el.textContent = '';
+            svg?.classList.remove('hw-talking');
+            void svg?.offsetWidth;
+            svg?.classList.add('hw-talking');
+            this.hwEvilTypeTimer = setInterval(() => {
+                c++;
+                el.textContent = text.slice(0, c);
+                if (c >= text.length) {
+                    clearInterval(this.hwEvilTypeTimer);
+                    this.hwEvilTypeTimer = null;
+                    setTimeout(() => svg?.classList.remove('hw-talking'), 400);
+                }
+            }, 45);
+        };
+        typePhrase(phrases[0]);
+        this.hwEvilTimer = setInterval(() => {
+            i = (i + 1) % phrases.length;
+            typePhrase(phrases[i]);
+        }, 3200);
+    }
+
+    evilTalk(force) {
+        const svg = document.getElementById('hwDemonSvg');
+        if (!svg) return;
+        svg.classList.remove('hw-talking');
+        void svg.offsetWidth;
+        svg.classList.add('hw-talking');
+        if (force) {
+            const el = document.getElementById('hwEvilText');
+            if (el) el.textContent = '> ¡¡GRRR!! ¡DAME TUS BYTES, MORTAL!!';
+        }
+        setTimeout(() => svg.classList.remove('hw-talking'), 900);
+    }
 
     toggleNsfwPassword() {
         if (!this.nsfwPasswordInput || !this.nsfwTogglePasswordBtn) return;
