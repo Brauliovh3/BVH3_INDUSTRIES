@@ -608,7 +608,7 @@
         if (!box || box.querySelector('.hw-hell-rain')) return;
         const rain = document.createElement('div');
         rain.className = 'hw-hell-rain';
-        const glyphs = ['666', '☠', '👹', '🔥', '✝', '⛧'];
+        const glyphs = ['666', '☠', '🔥', '✝', '⛧'];
         for (let i = 0; i < 24; i++) {
             const s = document.createElement('span');
             s.textContent = glyphs[i % glyphs.length];
