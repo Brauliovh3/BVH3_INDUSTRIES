@@ -3645,7 +3645,7 @@
                         </div>
 
                         <div class="app-tile-footer">
-                            <a class="app-download-btn app-download-btn--sm" href="https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/bvh3.apk" download>DESCARGAR</a>
+                            <a class="app-download-btn app-download-btn--sm" href="https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3_PLAYER.apk" download>DESCARGAR</a>
                             <span class="app-note-inline">Si Android bloquea: Seguridad → Apps desconocidas</span>
                         </div>
                     </article>
