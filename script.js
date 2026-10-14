@@ -10,6 +10,7 @@
         this.startParticles();
         this.loadContent();
         this.setupIntersectionObserver();
+        this.applyForbiddenZoneLock();
 
         
         window.scrapeHGames = () => {
@@ -28,6 +29,8 @@
     init() {
         this.activeSection = 'home';
         this.isPlaying = false;
+        this.forbiddenUnlocked = sessionStorage.getItem('bvh3_forbidden_unlocked') === '1';
+        this.forbiddenSecretCmd = 'unlock_zone';
         this.currentDiscordTrack = 0;
         this.discordTracks = [
             {
@@ -209,6 +212,12 @@
 
     handleNavigation(section) {
         if (!section) return;
+
+        if (section === 'forbidden-zone' && !this.forbiddenUnlocked) {
+            this.handleNavigation('depool');
+            this.flashDepoolSecretCmd('Acceso oculto. Ve a DEPOOL y ejecuta el comando secreto.');
+            return;
+        }
 
         if (section === 'forbidden-zone') {
             this.showNsfwModal();
@@ -511,6 +520,7 @@
             this.initDepoolAndroid(contentElement);
             this.initDepoolPortal(contentElement);
             this.initDiscordMusicPlayer();
+            this.initDepoolSecretCmd(contentElement);
         }
 
         const anchors = contentElement.querySelectorAll('a[href^="#"]');
@@ -524,6 +534,93 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
+    }
+
+    initDepoolSecretCmd(contentElement) {
+        const root = contentElement || document;
+        const form = root.querySelector?.('#depoolSecretForm') || document.getElementById('depoolSecretForm');
+        const input = root.querySelector?.('#depoolSecretInput') || document.getElementById('depoolSecretInput');
+        const log = root.querySelector?.('#depoolSecretLog') || document.getElementById('depoolSecretLog');
+        const box = root.querySelector?.('#depoolSecretCmd') || document.getElementById('depoolSecretCmd');
+        if (!form || !input || !log || form.dataset.secretInit === 'true') return;
+        form.dataset.secretInit = 'true';
+
+        const print = (html, cls = '') => {
+            const line = document.createElement('div');
+            line.className = `depool-secret-line ${cls}`.trim();
+            line.innerHTML = html;
+            log.appendChild(line);
+            log.scrollTop = log.scrollHeight;
+            while (log.children.length > 30) log.removeChild(log.firstChild);
+        };
+
+        if (this.forbiddenUnlocked) {
+            print(`<span class="prompt">depool&gt;</span> <span class="ok">enlace seguro activo. ZONA PROHIBIDA visible.</span>`, 'is-ok');
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const raw = (input.value || '').trim();
+            if (!raw) return;
+            print(`<span class="prompt">depool&gt;</span> ${raw.replace(/</g, '&lt;')}`);
+            const cmd = raw.toLowerCase();
+            input.value = '';
+
+            if (cmd === this.forbiddenSecretCmd || cmd === 'bvh32006') {
+                this.unlockForbiddenZone();
+                print(`<span class="ok">✓ ACCESO CONCEDIDO. ZONA PROHIBIDA desbloqueada en el nav.</span>`, 'is-ok');
+                setTimeout(() => this.showNsfwModal(), 650);
+            } else if (cmd === 'help' || cmd === 'ayuda') {
+                print(`comandos: <b>unlock_zone</b> · help · clear · status`);
+            } else if (cmd === 'status') {
+                print(this.forbiddenUnlocked ? `estado: <span class="ok">DESBLOQUEADO</span>` : `estado: <span class="warn">BLOQUEADO</span>`);
+            } else if (cmd === 'clear' || cmd === 'cls') {
+                log.innerHTML = '';
+            } else {
+                box?.classList.remove('shake');
+                void box?.offsetWidth;
+                box?.classList.add('shake');
+                print(`<span class="err">✕ comando desconocido: ${cmd.replace(/</g, '&lt;')}</span>`, 'is-err');
+            }
+        });
+    }
+
+    applyForbiddenZoneLock() {
+        const btn = document.getElementById('forbiddenZoneNavBtn');
+        if (!btn) return;
+        if (this.forbiddenUnlocked) {
+            btn.hidden = false;
+            btn.classList.remove('nav-btn--hidden');
+            btn.classList.add('nav-btn--revealed');
+        } else {
+            btn.hidden = true;
+            btn.classList.add('nav-btn--hidden');
+            btn.classList.remove('nav-btn--revealed');
+        }
+    }
+
+    unlockForbiddenZone() {
+        this.forbiddenUnlocked = true;
+        try { sessionStorage.setItem('bvh3_forbidden_unlocked', '1'); } catch (_) {}
+        this.applyForbiddenZoneLock();
+    }
+
+    flashDepoolSecretCmd(msg = '') {
+        setTimeout(() => {
+            const box = document.getElementById('depoolSecretCmd');
+            const log = document.getElementById('depoolSecretLog');
+            if (msg && log) {
+                const line = document.createElement('div');
+                line.className = 'depool-secret-line is-warn';
+                line.innerHTML = `<span class="prompt">depool&gt;</span> ${msg.replace(/</g, '&lt;')}`;
+                log.appendChild(line);
+                log.scrollTop = log.scrollHeight;
+            }
+            box?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            box?.classList.remove('flash');
+            void box?.offsetWidth;
+            box?.classList.add('flash');
+        }, 450);
     }
 
     initDepoolAndroid(contentElement) {
@@ -3876,6 +3973,22 @@
                         <div class="circuit-lines"></div>
                         <div class="data-particles"></div>
                         <div class="glitch-effect"></div>
+                    </div>
+                    <!-- DEPOOL secret CMD: desbloquea ZONA PROHIBIDA con unlock_zone -->
+                    <div class="depool-secret-cmd" id="depoolSecretCmd">
+                        <div class="depool-secret-cmd-head">
+                            <span class="depool-secret-dot"></span>
+                            <span>DEPOOL // SECURE CMD</span>
+                            <span class="depool-secret-id">v2.6</span>
+                        </div>
+                        <div class="depool-secret-log" id="depoolSecretLog" aria-live="polite">
+                            <div class="depool-secret-line"><span class="prompt">depool&gt;</span> canal cifrado listo. escribe un comando...</div>
+                        </div>
+                        <form class="depool-secret-row" id="depoolSecretForm" autocomplete="off">
+                            <span class="prompt">depool&gt;</span>
+                            <input type="text" id="depoolSecretInput" class="depool-secret-input" placeholder="_" aria-label="Comando secreto DEPOOL" autocomplete="off" spellcheck="false">
+                            <button type="submit" class="depool-secret-btn">RUN</button>
+                        </form>
                     </div>
                 </div>
             `,
