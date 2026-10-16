@@ -3997,6 +3997,18 @@
                         </div>
                         <p class="card-text">Una pieza artística que desafía la interpretación.</p>
                     </article>
+
+                    <article class="card card--edgerunner memory-card" data-type="video" data-src="https://file.garden/ae-9DPf0ekWVe7ex/WhatsApp%20Video%202026-10-16%20at%204.29.53%20PM.mp4">
+                        <div class="card-top">
+                            <h3 class="card-title">RECUERDO DEL 16 DE OCTUBRE</h3>
+                            <span class="badge badge--pink">VIDEO</span>
+                        </div>
+                        <div class="memory-thumbnail memory-thumbnail--video">
+                            <video src="https://file.garden/ae-9DPf0ekWVe7ex/WhatsApp%20Video%202026-10-16%20at%204.29.53%20PM.mp4#t=0.5" preload="none" muted playsinline></video>
+                            <div class="play-icon">▶</div>
+                        </div>
+                        <p class="card-text">Un momento capturado en WhatsApp, guardado para siempre.</p>
+                    </article>
                 </div>
             `,
 
