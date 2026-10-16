@@ -4000,7 +4000,7 @@
 
                     <article class="card card--edgerunner memory-card" data-type="video" data-src="https://file.garden/ae-9DPf0ekWVe7ex/WhatsApp%20Video%202026-10-16%20at%204.29.53%20PM.mp4">
                         <div class="card-top">
-                            <h3 class="card-title">RECUERDO DEL 16 DE OCTUBRE</h3>
+                            <h3 class="card-title">RECUERDO DEL 4to Semestre</h3>
                             <span class="badge badge--pink">VIDEO</span>
                         </div>
                         <div class="memory-thumbnail memory-thumbnail--video">
