@@ -4045,6 +4045,33 @@
                         <div class="card-top">
                             <div class="app-tile-head">
                                 <span class="app-tile-icon" aria-hidden="true">
+                                    <img src="src/images/logo.png" alt="" decoding="async">
+                                </span>
+                                <div>
+                                    <h3 class="card-title">BVH3 WALLPAPER STUDIO</h3>
+                                    <p class="app-tile-sub">Windows • Installer</p>
+                                </div>
+                            </div>
+                            <span class="badge badge--cyan">PC</span>
+                        </div>
+
+                        <p class="card-text">Crea y personaliza wallpapers para PC.</p>
+
+                        <div class="tag-row" aria-label="Etiquetas">
+                            <span class="tag">WINDOWS</span>
+                            <span class="tag">WALLPAPERS</span>
+                        </div>
+
+                        <div class="app-tile-footer">
+                            <a class="app-download-btn app-download-btn--sm" href="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/BVH3WallpaperStudio-Setup-0.2.0.exe" download>DESCARGAR</a>
+                            <span class="app-note-inline">Instalador para PC con Windows</span>
+                        </div>
+                    </article>
+
+                    <article class="card card--edgerunner card--rgb app-tile">
+                        <div class="card-top">
+                            <div class="app-tile-head">
+                                <span class="app-tile-icon" aria-hidden="true">
                                     <img src="src/images/logomp3.png" alt="" decoding="async">
                                 </span>
                                 <div>
