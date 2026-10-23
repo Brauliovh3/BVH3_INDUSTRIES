@@ -4063,7 +4063,7 @@
                         </div>
 
                         <div class="app-tile-footer">
-                            <a class="app-download-btn app-download-btn--sm" href="https://github.com/Brauliovh3/BVH3_INDUSTRIES/releases/download/v1.0-hgames/BVH3WallpaperStudio-Setup-0.2.0.exe" download>DESCARGAR</a>
+                            <a class="app-download-btn app-download-btn--sm" href="https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3WallpaperStudio-Setup-0.2.0.exe" download>DESCARGAR</a>
                             <span class="app-note-inline">Instalador para PC con Windows</span>
                         </div>
                     </article>
