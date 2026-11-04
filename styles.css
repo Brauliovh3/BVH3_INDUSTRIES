@@ -144,14 +144,28 @@ body {
     justify-content: space-between;
     align-items: center;
     height: 100%;
-    padding: 0 1.5rem;
+    padding: 0 1rem;
     max-width: 1400px;
     margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .logo {
+    flex-shrink: 0;
     font-family: var(--font-primary);
     font-weight: 900;
+}
+
+.nav-menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    max-width: 100%;
+    overflow-x: auto;
 }
 
 .logo-img {
@@ -190,15 +204,16 @@ body {
     background: var(--primary-yellow);
     border: none;
     color: var(--darker-bg);
-    padding: 0.6rem 1rem;
+    padding: 0.55rem 0.9rem;
     font-family: var(--font-primary);
     font-weight: 900;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
     transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background 0.15s ease, box-shadow 0.15s ease;
     margin: 2px;
     box-shadow: 4px 4px 0px var(--primary-pink);
     will-change: transform;
+    white-space: nowrap;
 }
 
 .nav-btn:hover {
@@ -229,6 +244,58 @@ body {
     color: #fff;
     box-shadow: 4px 4px 0px var(--primary-cyan);
     animation: forbiddenReveal 0.6s ease;
+}
+
+/* Responsive navigation */
+@media (max-width: 1000px) {
+    .nav-container {
+        padding: 0 0.75rem;
+    }
+    .nav-menu {
+        gap: 0.35rem;
+    }
+    .nav-btn {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.7rem;
+        margin: 1px;
+    }
+}
+
+@media (max-width: 700px) {
+    .cyber-nav {
+        height: auto;
+        padding-bottom: 0.5rem;
+    }
+    .nav-container {
+        flex-direction: column;
+        height: auto;
+        padding: 0.75rem 0.75rem 0.5rem;
+    }
+    .nav-menu {
+        justify-content: center;
+        width: 100%;
+        order: 2;
+        margin-top: 0.5rem;
+    }
+    .logo {
+        order: 1;
+    }
+    .nav-btn {
+        padding: 0.45rem 0.6rem;
+        font-size: 0.65rem;
+        margin: 1px;
+    }
+    .nav-menu {
+        gap: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-btn {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.6rem;
+        margin: 1px;
+    }
 }
 
 @keyframes forbiddenReveal {
