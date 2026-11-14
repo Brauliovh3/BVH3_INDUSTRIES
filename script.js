@@ -1090,7 +1090,7 @@
     getPortfolioProjects() {
         return [
             { id: 'wallpaper', title: 'BVH3 WALLPAPER STUDIO', category: 'DESKTOP / PERSONALIZACIÓN', status: 'DISPONIBLE', stack: ['Windows', 'Wallpapers', 'v0.2.1'], description: 'Crea y personaliza wallpapers para PC. Una propuesta de BVH3 para darle identidad a tu escritorio.', scope: ['Creación y personalización de wallpapers para PC.', 'Distribución mediante instalador para Windows.', 'Versión disponible: 0.2.1.'], note: 'Descarga el instalador de la versión 0.2.1 para Windows.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3WallpaperStudio-Setup-0.2.1.exe' },
-            { id: 'screen', title: 'BVH3 SCREEN STUDIO', category: 'CAPTURA / GRABACIÓN', status: 'SIN DESCARGA PUBLICADA', stack: ['Grabación de pantalla', 'Marcas de agua', 'Bajos recursos'], description: 'Grabación de pantalla con marcas de agua, pensada para dispositivos de bajos recursos.', scope: ['Grabación de pantalla.', 'Marcas de agua en las grabaciones.', 'Enfoque en dispositivos de bajos recursos.'], note: 'El enlace oficial de descarga y los requisitos técnicos aún no están disponibles en este portafolio.' },
+            { id: 'screen', title: 'BVH3 SCREEN STUDIO', category: 'DESKTOP / CAPTURA', status: 'DISPONIBLE', stack: ['Windows x64', 'v1.0.0', 'Grabación de pantalla'], description: 'Grabación de pantalla con marcas de agua, pensada para dispositivos de bajos recursos.', scope: ['Grabación de pantalla.', 'Marcas de agua en las grabaciones.', 'Enfoque en dispositivos de bajos recursos.'], note: 'Instalador 1.0.0 para PC con Windows x64.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3-Screen-Studio-1.0.0-Setup-x64.exe' },
             { id: 'wallpaper-android', title: 'BVH3 WALLPAPER', category: 'ANDROID / PERSONALIZACIÓN', status: 'DISPONIBLE', stack: ['Android', 'APK', 'Wallpapers'], description: 'Wallpapers cyberpunk para Android.', scope: ['Personalización con wallpapers cyberpunk en Android.', 'Distribución mediante APK desde el catálogo oficial.'], note: 'Aplicación Android del catálogo de BVH3.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3_PLAYER.apk', downloadLabel: 'DESCARGAR APK' },
             { id: 'player', title: 'BVH3 PLAYER', category: 'ANDROID / MULTIMEDIA', status: 'DISPONIBLE', stack: ['Android', 'APK', 'Multimedia'], description: 'Reproductor multimedia con estilo cyberpunk para Android.', scope: ['Reproducción multimedia en Android.', 'Distribución mediante APK desde el catálogo oficial.'], note: 'Aplicación disponible en el catálogo de BVH3.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3.INDUSTRIES.PLAYER.apk', downloadLabel: 'DESCARGAR APK' },
             { id: 'downloader', title: 'BVH3 DOWNLOADER', category: 'ANDROID / HERRAMIENTAS', status: 'DISPONIBLE', stack: ['Android', 'APK', 'Descargas'], description: 'Descargador de archivos y APKs para Android.', scope: ['Descarga de archivos y APKs en Android.', 'Distribución desde GitHub Releases.'], note: 'Aplicación disponible en el catálogo de BVH3.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3_DONWLOADER.apk', downloadLabel: 'DESCARGAR APK' },
@@ -3708,6 +3708,34 @@
                         <div class="app-tile-footer">
                             <a class="app-download-btn app-download-btn--sm" href="https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3WallpaperStudio-Setup-0.2.1.exe" download>DESCARGAR</a>
                             <span class="app-note-inline">Instalador para PC con Windows</span>
+                        </div>
+                    </article>
+
+                    <article class="card card--edgerunner card--rgb app-tile">
+                        <div class="card-top">
+                            <div class="app-tile-head">
+                                <span class="app-tile-icon" aria-hidden="true">
+                                    <img src="https://file.garden/ae-9DPf0ekWVe7ex/BVH3_INDUSTRIES.ico" alt="" loading="lazy" decoding="async">
+                                </span>
+                                <div>
+                                    <h3 class="card-title">BVH3 SCREEN STUDIO</h3>
+                                    <p class="app-tile-sub">Windows x64 • v1.0.0</p>
+                                </div>
+                            </div>
+                            <span class="badge badge--cyan">PC</span>
+                        </div>
+
+                        <p class="card-text">Graba tu pantalla con marcas de agua. Pensado para dispositivos de bajos recursos.</p>
+
+                        <div class="tag-row" aria-label="Etiquetas">
+                            <span class="tag">WINDOWS</span>
+                            <span class="tag">GRABACIÓN</span>
+                            <span class="tag">BAJOS RECURSOS</span>
+                        </div>
+
+                        <div class="app-tile-footer">
+                            <a class="app-download-btn app-download-btn--sm" href="https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3-Screen-Studio-1.0.0-Setup-x64.exe" download>DESCARGAR</a>
+                            <span class="app-note-inline">Instalador 1.0.0 para PC con Windows x64</span>
                         </div>
                     </article>
 
