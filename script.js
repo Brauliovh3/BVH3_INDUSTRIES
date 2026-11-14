@@ -473,23 +473,13 @@
             const buttons = contentElement.querySelectorAll('.project-view-btn');
             buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const title = btn.getAttribute('data-title') || 'PROYECTO';
-
-                    // Vista dedicada del HATSUNE MIKU BOT (estilo RGB/efectos Miku)
-                    if (title === 'HATSUNE MIKU BOT') {
+                    const project = this.getPortfolioProjects().find(item => item.id === btn.dataset.projectId);
+                    if (!project) return;
+                    if (project.id === 'miku') {
                         this.openMikuBotView();
                         return;
                     }
-
-                    const description = btn.getAttribute('data-description') || '';
-                    const links = [
-                        { label: 'Grupo', url: btn.getAttribute('data-group-url') || '' },
-                        { label: 'Canal', url: btn.getAttribute('data-channel-url') || '' },
-                        { label: 'Creador', url: btn.getAttribute('data-creator-url') || '' },
-                        { label: 'Bot', url: btn.getAttribute('data-bot-url') || '' }
-                    ].filter(l => l.url);
-
-                    this.openProjectView({ title, description, links });
+                    this.openProjectView(project);
                 });
             });
         }
@@ -1097,47 +1087,78 @@
         }
     }
 
+    getPortfolioProjects() {
+        return [
+            { id: 'wallpaper', title: 'BVH3 WALLPAPER STUDIO', category: 'DESKTOP / PERSONALIZACIÓN', status: 'DISPONIBLE', stack: ['Windows', 'Wallpapers', 'v0.2.1'], description: 'Crea y personaliza wallpapers para PC. Una propuesta de BVH3 para darle identidad a tu escritorio.', scope: ['Creación y personalización de wallpapers para PC.', 'Distribución mediante instalador para Windows.', 'Versión disponible: 0.2.1.'], note: 'Descarga el instalador de la versión 0.2.1 para Windows.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3WallpaperStudio-Setup-0.2.1.exe' },
+            { id: 'screen', title: 'BVH3 SCREEN STUDIO', category: 'CAPTURA / GRABACIÓN', status: 'SIN DESCARGA PUBLICADA', stack: ['Grabación de pantalla', 'Marcas de agua', 'Bajos recursos'], description: 'Grabación de pantalla con marcas de agua, pensada para dispositivos de bajos recursos.', scope: ['Grabación de pantalla.', 'Marcas de agua en las grabaciones.', 'Enfoque en dispositivos de bajos recursos.'], note: 'El enlace oficial de descarga y los requisitos técnicos aún no están disponibles en este portafolio.' },
+            { id: 'wallpaper-android', title: 'BVH3 WALLPAPER', category: 'ANDROID / PERSONALIZACIÓN', status: 'DISPONIBLE', stack: ['Android', 'APK', 'Wallpapers'], description: 'Wallpapers cyberpunk para Android.', scope: ['Personalización con wallpapers cyberpunk en Android.', 'Distribución mediante APK desde el catálogo oficial.'], note: 'Aplicación Android del catálogo de BVH3.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3_PLAYER.apk', downloadLabel: 'DESCARGAR APK' },
+            { id: 'player', title: 'BVH3 PLAYER', category: 'ANDROID / MULTIMEDIA', status: 'DISPONIBLE', stack: ['Android', 'APK', 'Multimedia'], description: 'Reproductor multimedia con estilo cyberpunk para Android.', scope: ['Reproducción multimedia en Android.', 'Distribución mediante APK desde el catálogo oficial.'], note: 'Aplicación disponible en el catálogo de BVH3.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3.INDUSTRIES.PLAYER.apk', downloadLabel: 'DESCARGAR APK' },
+            { id: 'downloader', title: 'BVH3 DOWNLOADER', category: 'ANDROID / HERRAMIENTAS', status: 'DISPONIBLE', stack: ['Android', 'APK', 'Descargas'], description: 'Descargador de archivos y APKs para Android.', scope: ['Descarga de archivos y APKs en Android.', 'Distribución desde GitHub Releases.'], note: 'Aplicación disponible en el catálogo de BVH3.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3_DONWLOADER.apk', downloadLabel: 'DESCARGAR APK' },
+            { id: 'flappy', title: 'FLAPPY FACHO', category: 'ANDROID / JUEGOS', status: 'DISPONIBLE', stack: ['Android', 'APK', 'Juego'], description: 'Juego estilo flappy con estética cyberpunk.', scope: ['Juego para Android con estética cyberpunk.', 'Instalación mediante APK.'], note: 'Juego disponible en el catálogo de BVH3.', download: 'https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/flappyfacho.apk', downloadLabel: 'DESCARGAR APK' },
+            { id: 'miku', title: 'HATSUNE MIKU BOT', category: 'AUTOMATIZACIÓN / WHATSAPP', status: 'ACTIVO', stack: ['Node.js', 'JavaScript', 'JSON'], progress: 95, description: 'Bot con comandos, descargas y juegos para WhatsApp. Automatización y respuestas rápidas.' },
+            { id: 'gore', title: 'SISTEMA DE ACTAS (GORE)', category: 'WEB / GESTIÓN', status: 'COMPLETADO', stack: ['PHP', 'MySQL', 'JS'], progress: 100, description: 'Gestión de actas con registros, importación y módulos administrativos.', scope: ['Registro y organización de actas.', 'Importación de registros.', 'Módulos administrativos para la gestión de información.'], note: 'Proyecto completado. Presentación de alcance y tecnologías del sistema.' },
+            { id: 'security', title: 'CYBERSECURITY DASHBOARD', category: 'DATOS / SEGURIDAD', status: 'EN DESARROLLO', stack: ['Angular', 'D3', 'Elastic'], progress: 67, description: 'Panel de monitoreo en tiempo real para análisis de eventos y amenazas.', scope: ['Panel orientado al monitoreo de eventos de seguridad.', 'Visualización de datos para el análisis de amenazas.', 'Integración de Angular, D3 y Elastic como base tecnológica.'], note: 'En desarrollo. El avance registrado del proyecto es del 67%.' },
+            { id: 'quantum', title: 'QUANTUM SIMULATOR', category: 'EXPERIMENTAL / SIMULACIÓN', status: 'PLANEANDO', stack: ['Qiskit', 'C++', 'CUDA'], progress: 15, description: 'Exploración de algoritmos y simulación de escenarios para pruebas experimentales.', scope: ['Exploración de algoritmos como línea de investigación.', 'Planificación de escenarios de simulación experimental.', 'Stack previsto: Qiskit, C++ y CUDA.'], note: 'En fase de planificación. El avance registrado es del 15%.' }
+        ];
+    }
+
+    renderProjects() {
+        const [featured, ...projects] = this.getPortfolioProjects();
+        return `
+            <div class="portfolio-showcase">
+                <div class="portfolio-intro"><p>SELECCIÓN / BVH3 LAB</p><span>Software, automatización y nuevas ideas.</span></div>
+                <article class="portfolio-feature">
+                    <div class="portfolio-feature-visual" aria-hidden="true"><span class="portfolio-visual-label">TU ESCRITORIO. TU IDENTIDAD.</span><img src="src/images/logo.png" alt="" width="124" height="124"><span class="portfolio-visual-footer">BVH3 / WALLPAPER STUDIO</span></div>
+                    <div class="portfolio-feature-body">
+                        <div class="portfolio-card-meta"><span>PROYECTO DESTACADO</span><span class="portfolio-status">${featured.status}</span></div>
+                        <p class="portfolio-category">${featured.category}</p>
+                        <h3>${featured.title}</h3>
+                        <p class="portfolio-description">${featured.description}</p>
+                        <ul class="portfolio-tags" aria-label="Plataforma y versión">${featured.stack.map(tag => `<li>${tag}</li>`).join('')}</ul>
+                        <div class="portfolio-actions"><a class="portfolio-button portfolio-button--primary" href="${featured.download}" download>DESCARGAR PARA WINDOWS <span aria-hidden="true">↓</span></a><button type="button" class="portfolio-button project-view-btn" data-project-id="wallpaper">VER DETALLES <span aria-hidden="true">↗</span></button></div>
+                        <p class="portfolio-download-note">Instalador .exe / Versión 0.2.1</p>
+                    </div>
+                </article>
+                <div class="portfolio-collection-heading"><h3>Más proyectos</h3><span>${String(projects.length).padStart(2, '0')} / EXPLORA EL LABORATORIO</span></div>
+                <div class="portfolio-grid">${projects.map((project, index) => `
+                    <article class="portfolio-card portfolio-card--${project.id}">
+                        <div class="portfolio-card-meta"><span class="portfolio-card-index">${String(index + 2).padStart(2, '0')}</span><span class="portfolio-status">${project.status}</span></div>
+                        <p class="portfolio-category">${project.category}</p>
+                        <h3>${project.title}</h3>
+                        <p class="portfolio-description">${project.description}</p>
+                        ${project.stack.length ? `<ul class="portfolio-tags" aria-label="Tecnologías">${project.stack.map(tag => `<li>${tag}</li>`).join('')}</ul>` : ''}
+                        ${typeof project.progress === 'number' ? `<div class="portfolio-progress"><div><span>AVANCE DEL PROYECTO</span><strong>${project.progress}%</strong></div><div class="portfolio-progress-track" role="progressbar" aria-label="Avance de ${project.title}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${project.progress}"><span style="width: ${project.progress}%"></span></div></div>` : ''}
+                        <button type="button" class="portfolio-card-action project-view-btn" data-project-id="${project.id}" aria-label="Ver proyecto ${project.title}">EXPLORAR PROYECTO <span aria-hidden="true">↗</span></button>
+                    </article>`).join('')}
+                </div>
+            </div>`;
+    }
+
     openProjectView(project) {
         const titleEl = document.getElementById('projectViewTitle');
         const subtitleEl = document.getElementById('projectViewSubtitle');
         const bodyEl = document.getElementById('projectViewBody');
-
         if (!titleEl || !subtitleEl || !bodyEl) return;
-
-        // Mostrar la seccion de vista de proyecto
         this.showSection('project-view');
-
         titleEl.textContent = project.title;
-        subtitleEl.textContent = project.description || 'Detalles y enlaces oficiales.';
-
-        const linksBlock = project.links?.length
-            ? `
-                <div class="project-links-grid" aria-label="Enlaces">
-                    ${project.links
-                        .map(
-                            l => `
-                                <a class="project-link-card" href="${l.url}" target="_blank" rel="noopener">
-                                    <span class="project-link-label">${l.label}</span>
-                                    <span class="project-link-url">${l.url}</span>
-                                </a>
-                            `
-                        )
-                        .join('')}
-                </div>
-            `
-            : '<p class="muted">No hay enlaces disponibles.</p>';
-
+        subtitleEl.textContent = project.description;
         bodyEl.innerHTML = `
-            <div class="project-view-actions">
-                <button type="button" class="cta-btn cta-btn--ghost project-back-btn">VOLVER A PROYECTOS</button>
-            </div>
-            <div class="panel panel--glass project-view-panel">
-                ${linksBlock}
-            </div>
-        `;
-
-        const backBtn = bodyEl.querySelector('.project-back-btn');
-        backBtn?.addEventListener('click', () => {
+            <div class="project-view-actions"><button type="button" class="cta-btn cta-btn--ghost project-back-btn">VOLVER A PROYECTOS</button></div>
+            <article class="portfolio-detail portfolio-card--${project.id}">
+                <div class="portfolio-detail-main">
+                    <div class="portfolio-card-meta"><span>${project.category}</span><span class="portfolio-status">${project.status}</span></div>
+                    <h3>Acerca del proyecto</h3><p class="portfolio-description">${project.description}</p>
+                    <h4>Alcance ${project.id === 'quantum' ? 'previsto' : 'del proyecto'}</h4>
+                    <ul class="portfolio-scope">${project.scope.map(item => `<li>${item}</li>`).join('')}</ul>
+                </div>
+                <aside class="portfolio-detail-aside"><p class="portfolio-category">FICHA DEL PROYECTO</p><h4>${project.id === 'wallpaper' ? 'Plataforma y versión' : 'Tecnologías'}</h4>
+                    ${project.stack.length ? `<ul class="portfolio-tags" aria-label="Tecnologías">${project.stack.map(tag => `<li>${tag}</li>`).join('')}</ul>` : '<p class="portfolio-description">Ficha técnica pendiente.</p>'}
+                    ${typeof project.progress === 'number' ? `<div class="portfolio-progress"><div><span>AVANCE REGISTRADO</span><strong>${project.progress}%</strong></div><div class="portfolio-progress-track" role="progressbar" aria-label="Avance del proyecto" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${project.progress}"><span style="width: ${project.progress}%"></span></div></div>` : ''}
+                    <p class="portfolio-detail-note">${project.note}</p>
+                    ${project.download ? `<a class="portfolio-button portfolio-button--primary" href="${project.download}" download>${project.downloadLabel || 'DESCARGAR PARA WINDOWS'} <span aria-hidden="true">↓</span></a>` : '<a class="portfolio-button" href="#contact">CONSULTAR PROYECTO <span aria-hidden="true">↗</span></a>'}
+                </aside>
+            </article>`;
+        bodyEl.querySelector('.project-back-btn')?.addEventListener('click', () => {
             this.handleNavigation('projects');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
@@ -2675,140 +2696,44 @@
     getContentForSection(section) {
         const content = {
             about: `
-                <div class="layout-grid layout-grid--2 about-grid">
-                    <div class="glitch-profile-wrapper">
-                        <div class="glitch-profile-card">
-                            <div class="card-header-visual"></div>
-
-                            <div class="profile-avatar">
-                                <svg class="octocat-svg" viewBox="0 0 16 16" aria-hidden="true">
-                                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                                </svg>
+                <div class="profile-layout">
+                    <article class="profile-identity" aria-labelledby="profileName">
+                        <div class="profile-cover" aria-hidden="true"><span>BVH3 / DIGITAL LAB</span><span>01 — PERFIL</span></div>
+                        <div class="profile-identity-body">
+                            <img class="profile-brand" src="src/images/logo.png" alt="Logo de BVH3 Industries" width="104" height="104" decoding="async">
+                            <p class="profile-eyebrow">CÓDIGO · DISEÑO · AUTOMATIZACIÓN</p>
+                            <h3 id="profileName" class="profile-person-name">Braulio J. Velasquez .H</h3>
+                            <p class="profile-heading profile-brand-name">BVH3 <span>INDUSTRIES</span></p>
+                            <p class="profile-role">Desarrollo Full-Stack<br>con visión futurista.</p>
+                            <p class="profile-intro">Transformo ideas en aplicaciones, conecto sistemas y diseño interfaces que combinan personalidad, rendimiento y una experiencia clara.</p>
+                            <div class="profile-stack" aria-label="Especialidades">
+                                <span>JavaScript</span><span>Frontend</span><span>Backend</span><span>Cloud</span>
                             </div>
-
-                            <div class="card-body profile-body">
-                                <div class="profile-info">
-                                    <h3 class="profile-name" data-text="BVH3 INDUSTRIES">BVH3 INDUSTRIES</h3>
-                                    <p class="profile-title">Full-Stack • Automatización • UI/UX Futurista</p>
-                                </div>
-
-                                <div class="pill-row" aria-label="Especialidades">
-                                    <span class="pill pill--cyan">JAVASCRIPT</span>
-                                    <span class="pill pill--pink">FRONTEND</span>
-                                    <span class="pill pill--green">BACKEND</span>
-                                    <span class="pill pill--purple">CLOUD</span>
-                                </div>
-
-                                <div class="profile-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">AÑOS</span>
-                                        <span class="stat-value" data-text="5+">5+</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">PROYECTOS</span>
-                                        <span class="stat-value" data-text="150+">150+</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">SOPORTE</span>
-                                        <span class="stat-value" data-text="24/7">24/7</span>
-                                    </div>
-                                </div>
-
-                                <a href="#projects" class="glitch-btn">
-                                    <span class="btn-text">VER PROYECTOS</span>
-                                </a>
-                            </div>
+                            <dl class="profile-metrics" aria-label="Experiencia y soporte">
+                                <div><dt>Experiencia</dt><dd>5+ <small>años</small></dd></div>
+                                <div><dt>Proyectos</dt><dd>150+</dd></div>
+                                <div><dt>Soporte</dt><dd>24/7</dd></div>
+                            </dl>
+                            <a href="#projects" class="profile-project-link">EXPLORAR PROYECTOS <span aria-hidden="true">↗</span></a>
                         </div>
-                    </div>
-
-                    <div class="panel panel--scan panel--yellow-border">
-                        <h4 class="panel-title">Líneas de trabajo</h4>
-                        <ul class="scan-list">
-                            <li><span class="scan-dot" aria-hidden="true"></span>Web Apps: SPA / dashboards / landing premium</li>
-                            <li><span class="scan-dot" aria-hidden="true"></span>APIs: integración, auth, pagos, automatización</li>
-                            <li><span class="scan-dot" aria-hidden="true"></span>Optimización: Core Web Vitals y UX</li>
-                            <li><span class="scan-dot" aria-hidden="true"></span>Deploy: dominios, SSL, CI/CD</li>
-                        </ul>
-
-                        <div class="divider"></div>
-
-                        <h4 class="panel-title">Objetivo</h4>
-                        <p class="muted">Entregar productos con estética futurista, consistencia visual y código mantenible.</p>
+                    </article>
+                    <div class="profile-details">
+                        <header class="profile-details-header">
+                            <p class="profile-eyebrow">DE LA IDEA AL PRODUCTO</p>
+                            <h3>Ingeniería con identidad.</h3>
+                            <p>Desarrollo integral para crear, conectar y llevar cada proyecto a producción.</p>
+                        </header>
+                        <div class="profile-services" aria-label="Líneas de trabajo">
+                            <article class="profile-service"><span class="profile-service-number" aria-hidden="true">01</span><div><h4>Interfaces &amp; experiencias</h4><p>Aplicaciones web, SPA, dashboards y landing pages con una estética cuidada y navegación intuitiva.</p><span class="profile-service-meta">FRONTEND / UI · UX</span></div></article>
+                            <article class="profile-service"><span class="profile-service-number" aria-hidden="true">02</span><div><h4>Sistemas que conectan</h4><p>APIs, autenticación, pagos e integraciones que automatizan procesos y conectan herramientas.</p><span class="profile-service-meta">BACKEND / AUTOMATIZACIÓN</span></div></article>
+                            <article class="profile-service"><span class="profile-service-number" aria-hidden="true">03</span><div><h4>Rendimiento &amp; despliegue</h4><p>Optimización de Core Web Vitals y UX. Configuración de dominios, SSL y flujos de CI/CD.</p><span class="profile-service-meta">OPTIMIZACIÓN / CLOUD</span></div></article>
+                        </div>
+                        <aside class="profile-principle"><span class="profile-eyebrow">MI ENFOQUE</span><p>Estética futurista.<br><strong>Código que se puede mantener.</strong></p><span class="profile-principle-note">Consistencia visual y atención al detalle, de principio a fin.</span></aside>
                     </div>
                 </div>
             `,
 
-            projects: `
-                <div class="card-grid">
-                    <article class="card card--edgerunner">
-                        <div class="card-top">
-                            <h3 class="card-title">HATSUNE MIKU BOT</h3>
-                            <span class="badge badge--green">ACTIVO</span>
-                        </div>
-                        <p class="card-text">Bot con comandos, descargas y juegos para WhatsApp. Automatización y respuestas rápidas.</p>
-                        <div class="tag-row" aria-label="Stack">
-                            <span class="tag">Node.js</span>
-                            <span class="tag">JavaScript</span>
-                            <span class="tag">JSON</span>
-                        </div>
-                        <button
-                            type="button"
-                            class="card-action project-view-btn"
-                            data-title="HATSUNE MIKU BOT"
-                            data-description="Accesos rápidos al grupo, canal, creador y número del bot."
-                            data-group-url="https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE?mode=gi_t"
-                            data-channel-url="https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o"
-                            data-creator-url="https://wa.me/51988514570"
-                            data-bot-url="https://wa.me/51926017929"
-                        >
-                            VER
-                        </button>
-                        <div class="meter" aria-label="Progreso 95%"><span class="meter-fill" style="width:95%"></span></div>
-                    </article>
-
-                    <article class="card card--edgerunner">
-                        <div class="card-top">
-                            <h3 class="card-title">SISTEMA DE ACTAS (GORE)</h3>
-                            <span class="badge badge--cyan">COMPLETADO</span>
-                        </div>
-                        <p class="card-text">Gestión de actas con registros, importación y módulos administrativos.</p>
-                        <div class="tag-row" aria-label="Stack">
-                            <span class="tag">PHP</span>
-                            <span class="tag">MySQL</span>
-                            <span class="tag">JS</span>
-                        </div>
-                        <div class="meter" aria-label="Progreso 100%"><span class="meter-fill" style="width:100%"></span></div>
-                    </article>
-
-                    <article class="card card--edgerunner">
-                        <div class="card-top">
-                            <h3 class="card-title">CYBERSECURITY DASHBOARD</h3>
-                            <span class="badge badge--pink">EN DESARROLLO</span>
-                        </div>
-                        <p class="card-text">Panel de monitoreo en tiempo real para análisis de eventos y amenazas.</p>
-                        <div class="tag-row" aria-label="Stack">
-                            <span class="tag">Angular</span>
-                            <span class="tag">D3</span>
-                            <span class="tag">Elastic</span>
-                        </div>
-                        <div class="meter" aria-label="Progreso 67%"><span class="meter-fill" style="width:67%"></span></div>
-                    </article>
-
-                    <article class="card card--edgerunner">
-                        <div class="card-top">
-                            <h3 class="card-title">QUANTUM SIMULATOR</h3>
-                            <span class="badge badge--purple">PLANEANDO</span>
-                        </div>
-                        <p class="card-text">Exploración de algoritmos y simulación de escenarios para pruebas experimentales.</p>
-                        <div class="tag-row" aria-label="Stack">
-                            <span class="tag">Qiskit</span>
-                            <span class="tag">C++</span>
-                            <span class="tag">CUDA</span>
-                        </div>
-                        <div class="meter" aria-label="Progreso 15%"><span class="meter-fill" style="width:15%"></span></div>
-                    </article>
-                </div>
-            `,
+            projects: this.renderProjects(),
 
             'forbidden-zone': `
                 <div class="forbidden-zone-grid">
@@ -3781,7 +3706,7 @@
                         </div>
 
                         <div class="app-tile-footer">
-                            <a class="app-download-btn app-download-btn--sm" href="https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3WallpaperStudio-Setup-0.2.0.exe" download>DESCARGAR</a>
+                            <a class="app-download-btn app-download-btn--sm" href="https://github.com/Brauliovh3/HATSUNE-MIKU/releases/download/Juegosv1/BVH3WallpaperStudio-Setup-0.2.1.exe" download>DESCARGAR</a>
                             <span class="app-note-inline">Instalador para PC con Windows</span>
                         </div>
                     </article>
