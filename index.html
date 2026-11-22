@@ -18,24 +18,26 @@
     <meta name="description" content="Donde el código se convierte en conciencia — sistemas que piensan, interfaces que viven.">
     <meta name="keywords" content="cyberpunk, portfolio, desarrollador, full-stack, web developer, BVH3, Industries">
     <meta name="author" content="BVH3 Industries">
-    <link rel="canonical" href="https://bvh3-industries.vercel.app/">
+    <link rel="canonical" href="https://www.bvh3-industries.com/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="BVH3 INDUSTRIES">
     <meta property="og:title" content="BVH3 INDUSTRIES">
     <meta property="og:description" content="Donde el código se convierte en conciencia — sistemas que piensan, interfaces que viven.">
-    <meta property="og:url" content="https://bvh3-industries.vercel.app/">
-    <meta property="og:image" content="https://bvh3-industries.vercel.app/src/images/logo.png">
+    <meta property="og:url" content="https://www.bvh3-industries.com/">
+    <meta property="og:image" content="https://www.bvh3-industries.com/src/images/logo.png">
     <meta property="og:image:alt" content="Logo de BVH3 INDUSTRIES">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="BVH3 INDUSTRIES">
     <meta name="twitter:description" content="Donde el código se convierte en conciencia — sistemas que piensan, interfaces que viven.">
-    <meta name="twitter:image" content="https://bvh3-industries.vercel.app/src/images/logo.png">
+    <meta name="twitter:image" content="https://www.bvh3-industries.com/src/images/logo.png">
     <meta name="twitter:image:alt" content="Logo de BVH3 INDUSTRIES">
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="future-core.css">
+    <link rel="stylesheet" href="edgerunners-intro.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="bvh3-future-core bvh3-edgerunners">
     <!-- Matrix Background -->
     <div id="matrix-bg"></div>
     
@@ -49,7 +51,7 @@
                 <img src="src/images/logo.png" alt="BVH3 INDUSTRIES" class="logo-img" decoding="async">
             </div>
             
-            <div class="nav-menu">
+            <div class="nav-menu" id="mainNavMenu">
                 <button class="nav-btn" data-section="home">
                     <span class="btn-text">INICIO</span>
                     <div class="btn-glitch"></div>
@@ -89,7 +91,7 @@
                 </button>
             </div>
 
-            <div class="nav-toggle" id="navToggle">
+            <div class="nav-toggle" id="navToggle" role="button" tabindex="0" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="mainNavMenu">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -114,6 +116,10 @@
                     <p class="hero-description">
                         Desarrollador Full-Stack especializado en tecnologías de vanguardia
                     </p>
+                    <div class="bvh3-hero-actions" aria-label="Explorar BVH3 Industries">
+                        <button type="button" class="bvh3-action bvh3-action--primary" data-bvh3-target="projects">EXPLORAR PROYECTOS <span aria-hidden="true">↗</span></button>
+                        <button type="button" class="bvh3-action bvh3-action--secondary" data-bvh3-target="apps">VER APLICACIONES <span aria-hidden="true">→</span></button>
+                    </div>
                     <div class="hero-stats">
                         <div class="stat">
                             <span class="stat-number">50+</span>
@@ -461,5 +467,6 @@
 
     <!-- Scripts -->
     <script src="script.js"></script>
+    <script src="future-core.js"></script>
 </body>
 </html>

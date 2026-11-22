@@ -4063,7 +4063,9 @@
         return content[section] || '<p>Contenido no disponible</p>';
     }
     startParticles() {
-        if (this.prefersReducedMotion) return;
+        // Background particles are decorative. Skip the animation loop on
+        // small screens and data-saving connections to protect Android battery.
+        if (this.prefersReducedMotion || window.matchMedia('(max-width: 700px)').matches || navigator.connection?.saveData) return;
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');
         
