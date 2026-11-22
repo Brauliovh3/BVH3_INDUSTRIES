@@ -1576,7 +1576,11 @@
                     }
                 }
                 const k = 1 - Math.exp(-delta * 7);
-                const tg = vrmPoseTargets(currentPose, t);
+                // Empezar el ciclo de pasos desde el mismo segundo cero
+                // de la entrada evita que las piernas salten de fase al cargar.
+                const poseTime = currentPose === 'walk' && entranceWalk.active
+                    ? entranceWalk.elapsed : t;
+                const tg = vrmPoseTargets(currentPose, poseTime);
                 // La caminata requiere la misma corrección de contacto
                 // que la pose idle: sin esto, Miku "camina" en el aire.
                 const grounded = currentPose !== 'zerog' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
