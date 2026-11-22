@@ -1290,6 +1290,7 @@
                 posesSection.classList.toggle('opacity-50', !poseable);
                 posesSection.classList.toggle('pointer-events-none', !poseable);
                 document.getElementById('expr-section').classList.toggle('hidden', !poseable);
+                if (poseable) configureAvailableExpressions(customCharacterEntry.vrm);
             } else {
                 const entry = characters[index];
                 const built = buildStylizedAnimeCharacter(entry.config);
@@ -1346,9 +1347,53 @@
         });
         let lookAtCursor = true;
         let exprTarget = 'neutral';
-        window.setExpression = function(name) {
+        let manualExpression = false;
+        let activeExpressionManager = null;
+        // El archivo VRM 0.x original utiliza Joy, Fun, Sorrow y Surprised
+        // además de los presets habituales. Resolver aliases en tiempo real.
+        const expressionAliases = {
+            neutral: ['neutral'],
+            happy: ['happy', 'joy', 'Joy'],
+            surprised: ['surprised', 'Surprised'],
+            angry: ['angry', 'Angry'],
+            sad: ['sad', 'sorrow', 'Sorrow'],
+            relaxed: ['relaxed', 'fun', 'Fun']
+        };
+        const resolveExpressionKey = (manager, intent) => {
+            const keys = Object.keys(manager?.expressionMap || {});
+            const options = expressionAliases[intent] || [intent];
+            for (const candidate of options) {
+                const match = keys.find(key => key.toLowerCase() === candidate.toLowerCase());
+                if (match) return match;
+            }
+            return null;
+        };
+        function configureAvailableExpressions(vrm) {
+            activeExpressionManager = vrm?.expressionManager || null;
+            manualExpression = false;
+            document.querySelectorAll('.expr-btn').forEach(button => {
+                const intent = button.dataset.expr;
+                const available = intent === 'neutral' || !!resolveExpressionKey(activeExpressionManager, intent);
+                button.disabled = !available;
+                button.setAttribute('aria-disabled', String(!available));
+                button.title = available ? 'Expresión: ' + intent : 'Esta expresión no existe en el modelo VRM';
+                button.classList.toggle('opacity-40', !available);
+                button.classList.toggle('cursor-not-allowed', !available);
+            });
+            window.setExpression('neutral', false);
+        }
+        window.setExpression = function(name, manual = true) {
+            if (name !== 'neutral' && !resolveExpressionKey(activeExpressionManager, name)) {
+                showToast('Expresión no disponible en este VRM', true);
+                return;
+            }
             exprTarget = name;
-            document.querySelectorAll('.expr-btn').forEach((b) => b.classList.toggle('active', b.dataset.expr === name));
+            if (manual) manualExpression = true;
+            document.querySelectorAll('.expr-btn').forEach((button) => {
+                const isSelected = button.dataset.expr === name;
+                button.classList.toggle('active', isSelected);
+                button.setAttribute('aria-pressed', String(isSelected));
+            });
         };
         window.toggleLookAt = function() {
             lookAtCursor = !lookAtCursor;
@@ -1427,6 +1472,20 @@
             const hipsRestY = nodes.hips ? nodes.hips.position.y : 0;
             const tq = new THREE.Quaternion(), te = new THREE.Euler();
             const EXPR = ['happy', 'angry', 'sad', 'surprised', 'relaxed'];
+            const em = vrm.expressionManager;
+            const availableKeys = Object.keys(em?.expressionMap || {});
+            const findExpression = names => {
+                for (const n of names) {
+                    const found = availableKeys.find(key => key.toLowerCase() === n.toLowerCase());
+                    if (found) return found;
+                }
+                return null;
+            };
+            const emotionKeys = Object.fromEntries(EXPR.map(intent => [
+                intent, resolveExpressionKey(em, intent)
+            ]));
+            const mouthKey = findExpression(['aa', 'a']);
+            const blinkKey = findExpression(['blink']);
             const cur = { happy: 0, angry: 0, sad: 0, surprised: 0, relaxed: 0, aa: 0, blink: 0 };
             const lookTarget = new THREE.Object3D(); scene.add(lookTarget);
             if (vrm.lookAt) vrm.lookAt.target = lookTarget;
@@ -1442,7 +1501,13 @@
 
             return (t, delta) => {
                 delta = Math.min(delta || 0.016, 0.05);
-                if (currentPose !== lastPose) { lastPose = currentPose; setExpression(poseExpression[currentPose] || 'neutral'); }
+                if (currentPose !== lastPose) {
+                    lastPose = currentPose;
+                    if (!manualExpression) {
+                        const suggestion = poseExpression[currentPose] || 'neutral';
+                        window.setExpression(resolveExpressionKey(em, suggestion) ? suggestion : 'neutral', false);
+                    }
+                }
                 const k = 1 - Math.exp(-delta * 7);
                 const tg = vrmPoseTargets(currentPose, t);
                 const grounded = currentPose !== 'zerog' && currentPose !== 'walk' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
@@ -1473,17 +1538,26 @@
                 // Mirada: hacia el cursor o hacia la cámara
                 lookTarget.position.set(lookAtCursor ? pointer.x * 1.2 : 0, 1.4 + (lookAtCursor ? pointer.y * 0.6 : 0), 3);
 
-                const em = vrm.expressionManager;
                 if (em) {
-                    EXPR.forEach((n) => { cur[n] += ((exprTarget === n ? 1 : 0) - cur[n]) * k; em.setValue(n, cur[n]); });
+                    EXPR.forEach((intent) => {
+                        const key = emotionKeys[intent];
+                        if (!key) return;
+                        cur[intent] += ((exprTarget === intent ? 1 : 0) - cur[intent]) * k;
+                        em.setValue(key, cur[intent]);
+                    });
                     const singing = currentPose === 'concert' || currentPose === 'dance';
-                    cur.aa += ((singing ? Math.max(0, Math.sin(t * 9)) * 0.55 : 0) - cur.aa) * 0.4; em.setValue('aa', cur.aa);
-                    if (blinkStart < 0 && t > nextBlink) blinkStart = t;
-                    if (blinkStart >= 0) {
-                        const x = (t - blinkStart) / 0.18;
-                        cur.blink = x >= 1 ? 0 : Math.sin(x * Math.PI);
-                        if (x >= 1) { blinkStart = -1; nextBlink = t + 2 + Math.random() * 3; }
-                        em.setValue('blink', cur.blink);
+                    if (mouthKey) {
+                        cur.aa += ((singing ? Math.max(0, Math.sin(t * 9)) * 0.5 : 0) - cur.aa) * k;
+                        em.setValue(mouthKey, cur.aa);
+                    }
+                    if (blinkKey) {
+                        if (blinkStart < 0 && t > nextBlink) blinkStart = t;
+                        if (blinkStart >= 0) {
+                            const x = (t - blinkStart) / 0.18;
+                            cur.blink = x >= 1 ? 0 : Math.sin(x * Math.PI);
+                            if (x >= 1) { blinkStart = -1; nextBlink = t + 2 + Math.random() * 3; }
+                        }
+                        em.setValue(blinkKey, cur.blink);
                     }
                 }
                 vrm.update(delta);
