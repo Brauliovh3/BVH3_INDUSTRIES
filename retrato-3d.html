@@ -736,16 +736,29 @@
         scene.add(characterPivot);
 
         let currentPose = 'idle';
-        const entranceWalk = { active: false, elapsed: 0, duration: 3.1 };
+        const entranceWalk = { active: false, elapsed: 0, duration: 3.1, resumeOrbit: false };
+        function syncOrbitUI() {
+            const btn = document.getElementById('toggle-rotate');
+            const status = document.getElementById('status-rotate');
+            if (btn) btn.classList.toggle('active', controls.autoRotate);
+            if (status) {
+                status.textContent = controls.autoRotate ? 'ON' : 'OFF';
+                status.className = controls.autoRotate
+                    ? 'text-[10px] font-mono text-[#00f0ff]'
+                    : 'text-[10px] font-mono text-zinc-500';
+            }
+        }
         function startEntranceWalk(vrm) {
             if (!vrm || !currentCharacterObject) return;
             entranceWalk.active = true;
             entranceWalk.elapsed = 0;
+            entranceWalk.resumeOrbit = controls.autoRotate;
             currentPose = 'walk';
             currentCharacterObject.position.set(0, 0, -2.4);
             currentCharacterObject.rotation.y = 0;
             document.getElementById('anim-status-tag').textContent = 'ENTRANDO';
             controls.autoRotate = false;
+            syncOrbitUI();
             document.querySelectorAll('.pose-btn').forEach(btn => btn.classList.remove('active'));
         }
         function updateEntranceWalk(delta) {
@@ -758,6 +771,8 @@
             if (q >= 1) {
                 entranceWalk.active = false;
                 currentCharacterObject.position.set(0, 0, 0);
+                controls.autoRotate = entranceWalk.resumeOrbit;
+                syncOrbitUI();
                 setCharacterPose('idle');
                 document.getElementById('anim-status-tag').textContent = 'ACTIVA';
             }
@@ -1266,7 +1281,11 @@
         }
 
         window.selectCharacter = function(index) {
-            entranceWalk.active = false;
+            if (entranceWalk.active) {
+                entranceWalk.active = false;
+                controls.autoRotate = entranceWalk.resumeOrbit;
+                syncOrbitUI();
+            }
             // Limpiar personaje previo
             while (characterPivot.children.length > 0) {
                 characterPivot.remove(characterPivot.children[0]);
@@ -1758,6 +1777,8 @@
             if (entranceWalk.active) {
                 entranceWalk.active = false;
                 if (currentCharacterObject) currentCharacterObject.position.set(0, 0, 0);
+                controls.autoRotate = entranceWalk.resumeOrbit;
+                syncOrbitUI();
                 document.getElementById('anim-status-tag').textContent = 'ACTIVA';
             }
             currentPose = pose;
@@ -1869,11 +1890,8 @@
 
         window.toggleAutoRotate = function() {
             controls.autoRotate = !controls.autoRotate;
-            const btn = document.getElementById('toggle-rotate');
-            const st = document.getElementById('status-rotate');
-            btn.classList.toggle('active', controls.autoRotate);
-            st.textContent = controls.autoRotate ? 'ON' : 'OFF';
-            st.className = controls.autoRotate ? 'text-[10px] font-mono text-[#00f0ff]' : 'text-[10px] font-mono text-zinc-500';
+            if (entranceWalk.active) entranceWalk.resumeOrbit = controls.autoRotate;
+            syncOrbitUI();
         };
 
         let stageActive = true;
