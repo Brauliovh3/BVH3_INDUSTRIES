@@ -1584,7 +1584,9 @@
                 p.leftLowerArm = [0, -0.4, 0]; p.rightLowerArm = [0, 0.4, 0];
                 p.leftUpperLeg = [0.25, 0, 0.1]; p.rightUpperLeg = [0.1, 0, -0.1];
                 p.leftLowerLeg = [0.7 + s(t) * 0.12, 0, 0]; p.rightLowerLeg = [0.9 + s(t + 1) * 0.12, 0, 0];
-                p.leftFoot = [0.5, 0, 0]; p.rightFoot = [0.5, 0, 0];
+                // Un leve movimiento de puntas es suficiente al flotar.
+                // La orientación final la estabiliza el tobillo en el mundo.
+                p.leftFoot = [0.08, 0, 0]; p.rightFoot = [0.10, 0, 0];
             } else if (pose === 'bow') {
                 const k = (s(t * 0.9) + 1) / 2;
                 p.spine = [0.45 * k, 0, 0]; p.chest = [0.25 * k, 0, 0]; p.head = [0.2 * k, 0, 0];
@@ -1592,12 +1594,15 @@
                 p.leftLowerArm = [0, -0.5 * k, 0]; p.rightLowerArm = [0, 0.5 * k, 0];
             } else if (pose === 'dance') {
                 const h = s(b / 2);
-                p.lift = Math.abs(s(b)) * 0.03; p.hips = [0, h * 0.25, h * 0.06];
+                p.lift = Math.abs(s(b)) * 0.012; p.hips = [0, h * 0.18, h * 0.05];
                 p.chest = [0, -h * 0.2, -h * 0.1]; p.head = [s(b) * 0.06, -h * 0.15, -h * 0.1];
                 p.leftUpperArm = [0, 0, 0.3 + h * 0.9]; p.rightUpperArm = [0, 0, -0.3 + h * 0.9];
                 p.leftLowerArm = [0, -0.6, 0]; p.rightLowerArm = [0, 0.6, 0];
-                p.leftUpperLeg = [-0.1 + s(b / 2 + 1.57) * 0.15, 0, 0.12]; p.rightUpperLeg = [-0.1 - s(b / 2 + 1.57) * 0.15, 0, -0.12];
-                p.leftLowerLeg = [Math.max(0, h) * 0.5 + 0.1, 0, 0]; p.rightLowerLeg = [Math.max(0, -h) * 0.5 + 0.1, 0, 0];
+                // Rodillas algo flexionadas, sin voltearse hacia atrás.
+                p.leftUpperLeg = [-0.06 + s(b / 2 + 1.57) * 0.12, 0, 0.09];
+                p.rightUpperLeg = [-0.06 - s(b / 2 + 1.57) * 0.12, 0, -0.09];
+                p.leftLowerLeg = [0.10 + Math.max(0, h) * 0.20, 0, 0];
+                p.rightLowerLeg = [0.10 + Math.max(0, -h) * 0.20, 0, 0];
             }
             return p;
         }
@@ -1641,6 +1646,48 @@
             if (vrm.lookAt) vrm.lookAt.target = lookTarget;
             let lastPose = null, nextBlink = 2.5, blinkStart = -1;
             const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), vs = new THREE.Vector3();
+
+            // Orientación de referencia REAL de los pies del VRM (no asumir
+            // que los ejes locales de tobillo coinciden con los de la pierna).
+            // Al conservar la orientación mundial original, los zapatos nunca
+            // quedan mirando hacia atrás por flexionar rodillas o caderas.
+            const footAxisX = new THREE.Vector3(1, 0, 0);
+            const footFlexQ = new THREE.Quaternion();
+            const footWorldQ = new THREE.Quaternion();
+            const footLocks = ['leftFoot', 'rightFoot'].map(name => {
+                const bone = nodes[name];
+                if (!bone || !bone.parent) return null;
+                bone.updateWorldMatrix(true, false);
+                return {
+                    name,
+                    bone,
+                    parent: bone.parent,
+                    restWorld: bone.getWorldQuaternion(new THREE.Quaternion()).clone(),
+                    parentWorld: new THREE.Quaternion(),
+                    targetLocal: new THREE.Quaternion()
+                };
+            }).filter(Boolean);
+            function stabilizeFeet(poseName, poseTime, blend) {
+                const stride = Math.sin(poseTime * 8);
+                for (const lock of footLocks) {
+                    let flex = 0;
+                    if (poseName === 'zerog') {
+                        // Pies relajados: un pequeño gesto, no una vuelta.
+                        flex = .12 + Math.sin(poseTime * 1.5 + (lock.name === 'leftFoot' ? 0 : 1)) * .035;
+                    } else if (poseName === 'dance') {
+                        flex = Math.sin(poseTime * 4 + (lock.name === 'leftFoot' ? 0 : Math.PI)) * .075;
+                    } else if (poseName === 'walk') {
+                        flex = stride * (lock.name === 'leftFoot' ? .055 : -.055);
+                    }
+                    flex = THREE.MathUtils.clamp(flex, -.20, .20);
+                    lock.parent.updateWorldMatrix(true, false);
+                    lock.parent.getWorldQuaternion(lock.parentWorld);
+                    footFlexQ.setFromAxisAngle(footAxisX, flex);
+                    footWorldQ.copy(lock.restWorld).multiply(footFlexQ);
+                    lock.targetLocal.copy(lock.parentWorld).invert().multiply(footWorldQ);
+                    lock.bone.quaternion.slerp(lock.targetLocal, blend);
+                }
+            }
             let ankleRest = null;
             const ankleY = () => {
                 vrm.scene.updateMatrixWorld(true);
@@ -1683,10 +1730,10 @@
                 const grounded = currentPose !== 'zerog' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
                 if (grounded && ankleRest === null) ankleRest = ankleY();
                 if (grounded) {
-                    // piernas sin giro heredado de la cadera y pies siempre planos
-                    tg.leftUpperLeg[1] -= tg.hips[1]; tg.rightUpperLeg[1] -= tg.hips[1];
-                    tg.leftFoot[0] = -(tg.leftUpperLeg[0] + tg.leftLowerLeg[0]);
-                    tg.rightFoot[0] = -(tg.rightUpperLeg[0] + tg.rightLowerLeg[0]);
+                    // Se desacoplan las piernas de la torsión de cadera, pero
+                    // el tobillo ya no suma ángulos de rodilla + muslo.
+                    tg.leftUpperLeg[1] -= tg.hips[1];
+                    tg.rightUpperLeg[1] -= tg.hips[1];
                 }
                 if (lookAtCursor) { tg.head[1] += pointer.x * 0.35; tg.head[0] -= pointer.y * 0.2; tg.neck[1] += pointer.x * 0.15; }
                 BONES.forEach((n) => {
@@ -1694,6 +1741,9 @@
                     te.set(tg[n][0], tg[n][1], tg[n][2]); tq.setFromEuler(te);
                     node.quaternion.slerp(tq, k);
                 });
+                // Recalcular los tobillos respecto al sistema WORLD tras
+                // rotar muslos y rodillas. También se aplica en Zero-G.
+                stabilizeFeet(currentPose, poseTime, k);
                 if (grounded) {
                     // anclaje al suelo: el pie más bajo toca la plataforma (más el salto del baile)
                     const sc = vrm.scene.scale.y || 1;
