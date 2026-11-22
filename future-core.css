@@ -77,7 +77,7 @@ body.bvh3-future-core {
 .bvh3-future-core .section-subtitle {font-size:clamp(1rem,1.55vw,1.25rem);letter-spacing:.02em;color:#acc3cd;text-align:left;line-height:1.5;}
 
 /* Hero · one clear message and a quieter technical visual. */
-.bvh3-future-core #home {display:flex;align-items:center;padding:clamp(1.2rem,3vw,3.5rem) 0;}
+.bvh3-future-core #home.active {display:flex;align-items:center;padding:clamp(1.2rem,3vw,3.5rem) 0;}
 .bvh3-future-core #home .hero-content {
   position:relative;display:grid;align-content:center;align-items:center;
   grid-template-columns:minmax(0,1.14fr) minmax(0,.86fr);
