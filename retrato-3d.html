@@ -1967,7 +1967,7 @@
             updateEntranceWalk(delta);
 
             // Animación reactiva del escenario y ecualizador circular
-            if (stageActive) {
+            if (stageActive && stageMode === 'hologram') {
                 holoRing1.rotation.z = elapsed * 0.4;
                 holoRing2.rotation.z = -elapsed * 0.25;
 
@@ -2011,14 +2011,14 @@
             // Si el propietario publica el asset VRM en /models, se carga de forma automática.
             // Si no está disponible, mantenemos el escenario original y permitimos importarlo.
             try {
-                const response = await fetch(remoteModelPath, {cache: 'force-cache'});
+                const response = await fetch(remoteModelPath, {cache: 'no-cache'});
                 if (!response.ok) throw new Error('VRM no alojado (' + response.status + ')');
                 const blob = await response.blob();
                 const file = new File([blob], 'Hatsune Miku - RemiX3.vrm', {type:'model/gltf-binary'});
                 handleCharacterFile(file);
                 hint?.classList.add('hidden');
             } catch (error) {
-                console.info('BVH3 Retrato 3D: modelo exacto disponible mediante importación local', error.message);
+                console.info('BVH3 Retrato 3D: coloca el archivo en /models/8665009645295209918.vrm para carga automática', error.message);
                 hint?.classList.remove('hidden');
             }
         }
