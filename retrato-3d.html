@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BVH3 INDUSTRIES // Retrato 3D Miku</title>
+    <meta name="theme-color" content="#10131b">
+    <meta name="description" content="Retrato 3D interactivo con avatar VRM Miku, poses, expresiones y escena holográfica de BVH3 INDUSTRIES.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Import Map para Three.js r160 y Loaders (GLTF/VRM, OBJ, FBX) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+                "@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3/lib/three-vrm.module.js"
+            }
+        }
+    </script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        stage: {
+                            950: '#08080c',
+                            900: '#0f1018',
+                            cyan: '#00f0ff',
+                            magenta: '#ff2a85',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #08080c;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #canvas-container {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            outline: none;
+        }
+
+        /* Glassmorphism holográfico */
+        .glass-panel {
+            background: rgba(12, 13, 22, 0.68);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.85), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .glass-pill {
+            background: rgba(20, 22, 34, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-pill:hover {
+            background: rgba(32, 35, 54, 0.85);
+            border-color: rgba(0, 240, 255, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .glass-pill.active {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.16), rgba(255, 42, 133, 0.12));
+            border-color: rgba(0, 240, 255, 0.65);
+            color: #ffffff;
+            box-shadow: 0 0 18px -4px rgba(0, 240, 255, 0.35);
+        }
+
+        .glass-pill.active-magenta {
+            background: linear-gradient(135deg, rgba(255, 42, 133, 0.2), rgba(0, 240, 255, 0.1));
+            border-color: rgba(255, 42, 133, 0.65);
+            color: #ffffff;
+            box-shadow: 0 0 18px -4px rgba(255, 42, 133, 0.35);
+        }
+
+        /* Scrollbars ocultos o ultra sutiles */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, 0.25);
+            border-radius: 9999px;
+        }
+
+        /* Transiciones UI Modo Inmersivo */
+        .ui-layer {
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .immersive-hidden {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: translateY(14px);
+        }
+        .immersive-hidden-top {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: translateY(-14px);
+        }
+    </style>
+</head>
+<body class="text-zinc-100 antialiased selection:bg-[#00f0ff]/25 selection:text-[#00f0ff]">
+
+    <!-- Archivo VRM original: RemiX3 (VRoid Hub); condiciones: atribución obligatoria, no comercial, no modificar. -->
+    <div id="model-file-prompt" class="hidden fixed left-3 right-3 bottom-28 sm:left-auto sm:right-5 sm:bottom-28 z-30 max-w-sm glass-panel rounded-xl p-3 text-sm text-white border border-[#fcee0a]/60" role="status">
+      <p class="font-semibold text-[#fcee0a]">MIKU ORIGINAL // MODELO VRM</p>
+      <p class="text-xs text-zinc-300 mt-1">Para ver el avatar exacto, importa el archivo 8665009645295209918.vrm. Se abre solo en tu dispositivo y no se envía al servidor.</p>
+      <div class="flex flex-wrap gap-2 mt-2">
+        <button id="quick-model-upload" class="px-3 py-2 text-xs rounded-md font-bold bg-[#00f0ff] text-[#070c14]">CARGAR MI VRM</button>
+        <a href="https://hub.vroid.com/characters/3414801470945035921/models/4457759225556181866" rel="noopener noreferrer" target="_blank" class="px-3 py-2 text-xs rounded-md border border-[#fcee0a] text-[#fcee0a]">Autor: RemiX3 ↗</a>
+      </div>
+    </div>
+
+    <!-- Contenedor Principal del Canvas 3D -->
+    <div id="canvas-container"></div>
+
+    <!-- Overlay Drag & Drop para Personajes 3D -->
+    <div id="drop-zone" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#08080c]/85 backdrop-blur-md transition-opacity duration-300">
+        <div class="glass-panel rounded-3xl p-10 text-center max-w-md mx-4 border-dashed border-2 border-[#00f0ff]/60 shadow-[0_0_50px_rgba(0,240,255,0.2)]">
+            <div class="w-16 h-16 rounded-2xl bg-[#00f0ff]/10 text-[#00f0ff] flex items-center justify-center mx-auto mb-5 border border-[#00f0ff]/30">
+                <i data-lucide="sparkles" class="w-8 h-8"></i>
+            </div>
+            <h3 class="font-display text-2xl font-bold text-white mb-2 tracking-wide">PROYECTAR AVATAR 3D</h3>
+            <p class="text-sm text-zinc-300 leading-relaxed">
+                Suelta tu modelo de personaje en formato <span class="text-[#00f0ff] font-semibold">.vrm</span>, <span class="text-[#00f0ff] font-semibold">.glb</span>, <span class="text-[#00f0ff] font-semibold">.gltf</span>, <span class="text-[#ff2a85] font-semibold">.fbx</span> o <span class="text-[#ff2a85] font-semibold">.obj</span> para invocarlo en el escenario holográfico.
+            </p>
+        </div>
+    </div>
+
+    <!-- Toast Notificaciones -->
+    <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-40 pointer-events-none opacity-0 transition-all duration-300 translate-y-[-8px]">
+        <div class="glass-panel px-4 py-2.5 rounded-full flex items-center gap-2.5 text-xs font-medium text-zinc-100 border-[#00f0ff]/30">
+            <span id="toast-dot" class="w-2 h-2 rounded-full bg-[#00f0ff] shadow-[0_0_8px_#00f0ff]"></span>
+            <span id="toast-message">Sistema listo</span>
+        </div>
+    </div>
+
+    <!-- Botón flotante para salir del Modo Inmersivo -->
+    <button id="exit-immersive-btn" onclick="toggleImmersiveMode()" 
+            class="fixed top-5 right-5 z-30 glass-pill px-4 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase text-white flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300">
+        <i data-lucide="eye" class="w-4 h-4 text-[#00f0ff]"></i>
+        <span>Mostrar HUD</span>
+    </button>
+
+    <!-- BARRA SUPERIOR: Identidad + Acciones + Importar Avatar -->
+    <header id="ui-header" class="ui-layer fixed top-0 left-0 right-0 z-20 p-4 sm:p-5 flex items-center justify-between pointer-events-none">
+        <!-- Marca -->
+        <div class="glass-panel px-4 py-2.5 rounded-2xl pointer-events-auto flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00f0ff]/25 to-[#ff2a85]/25 border border-[#00f0ff]/40 flex items-center justify-center text-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.25)]">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-display text-base sm:text-lg tracking-wider font-bold text-white leading-none">
+                        VOCAL<span class="text-[#00f0ff]">//</span>STAGE
+                    </h1>
+                    <span class="hidden sm:inline-block text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#ff2a85]/15 text-[#ff2a85] border border-[#ff2a85]/30">
+                        3D IDOL LAB
+                    </span>
+                </div>
+                <p class="text-[11px] text-zinc-400 tracking-wide mt-0.5 hidden sm:block">Proyección de Personajes Estilizados & Avatares VRM</p>
+            </div>
+        </div>
+
+        <!-- Controles Superiores -->
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <input type="file" id="file-input" accept=".vrm,.glb,.gltf,.fbx,.obj" class="hidden" />
+            
+            <button onclick="document.getElementById('file-input').click()" 
+                    class="glass-pill active px-3.5 py-2.5 sm:px-4 rounded-xl text-xs font-semibold text-white flex items-center gap-2 cursor-pointer"
+                    title="Subir personaje 3D (.vrm, .glb, .gltf, .fbx, .obj)">
+                <i data-lucide="upload-cloud" class="w-4 h-4 text-[#00f0ff]"></i>
+                <span class="hidden sm:inline">Cargar Personaje (.VRM / .GLB)</span>
+                <span class="sm:hidden">Subir 3D</span>
+            </button>
+
+            <button onclick="toggleCuratorDrawer()"
+                    class="glass-pill p-2.5 rounded-xl text-zinc-200 hover:text-white cursor-pointer lg:hidden"
+                    title="Controles de cámara e iluminación">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#00f0ff]"></i>
+            </button>
+
+            <button onclick="toggleImmersiveMode()" 
+                    class="glass-pill px-3 py-2.5 rounded-xl text-xs font-medium text-zinc-300 hover:text-white flex items-center gap-1.5 cursor-pointer"
+                    title="Modo Inmersivo (Ocultar UI)">
+                <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                <span class="hidden md:inline">Inmersivo</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- PANEL IZQUIERDO: Ficha del Personaje & Selector de Poses / Expresiones -->
+    <aside id="ui-character-card" class="ui-layer fixed left-4 sm:left-5 bottom-24 sm:bottom-28 lg:top-24 lg:bottom-auto z-20 w-[calc(100%-2rem)] sm:w-80 pointer-events-none">
+        <div class="glass-panel rounded-3xl p-5 pointer-events-auto space-y-4">
+            <!-- Encabezado Ficha -->
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <span id="char-code" class="text-[10px] font-mono uppercase tracking-[0.2em] text-[#00f0ff]">UNIT 01 // VIRTUAL DIVA</span>
+                    <span id="char-style-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-zinc-300 border border-white/10">CEL + PBR</span>
+                </div>
+                <h2 id="char-title" class="font-display text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+                    MIKU // CYBER DIVA 01
+                </h2>
+                <p id="char-subtitle" class="text-xs text-[#ff2a85] font-medium mt-0.5">
+                    Synthesizer Vocaloid · Edición Holográfica
+                </p>
+            </div>
+
+            <p id="char-description" class="text-xs text-zinc-300/90 leading-relaxed hidden sm:block">
+                Idol virtual futurista con coletas gemelas articuladas con simulación dinámica, auriculares acústicos neón y vestimenta cibernética reactiva al escenario.
+            </p>
+
+            <!-- Selector de Poses / Animaciones en Tiempo Real -->
+            <div id="poses-section" class="pt-3 border-t border-white/10">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 flex items-center gap-1.5">
+                        <i data-lucide="activity" class="w-3.5 h-3.5 text-[#ff2a85]"></i>
+                        Pose & Coreografía
+                    </span>
+                    <span id="anim-status-tag" class="text-[10px] font-mono text-[#00f0ff]">ACTIVA</span>
+                </div>
+                <div class="grid grid-cols-2 gap-1.5" id="pose-buttons-grid">
+                    <button onclick="setCharacterPose('idle')" data-pose="idle" class="pose-btn glass-pill active rounded-xl px-2.5 py-2 text-[11px] font-medium text-left flex items-center gap-1.5 cursor-pointer">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#00f0ff]"></span>
+                        <span>Idle Escenario</span>
+                    </button>
+                    <button onclick="setCharacterPose('wave')" data-pose="wave" class="pose-btn glass-pill rounded-xl px-2.5 py-2 text-[11px] font-medium text-left flex items-center gap-1.5 cursor-pointer">
+                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                        <span>Saludo Idol</span>
+                    </button>
+                    <button onclick="setCharacterPose('concert')" data-pose="concert" class="pose-btn glass-pill rounded-xl px-2.5 py-2 text-[11px] font-medium text-left flex items-center gap-1.5 cursor-pointer">
+                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                        <span>Pose Concierto</span>
+                    </button>
+                    <button onclick="setCharacterPose('zerog')" data-pose="zerog" class="pose-btn glass-pill rounded-xl px-2.5 py-2 text-[11px] font-medium text-left flex items-center gap-1.5 cursor-pointer">
+                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                        <span>Flotación Zero-G</span>
+                    </button>
+                    <button onclick="setCharacterPose('bow')" data-pose="bow" class="pose-btn glass-pill rounded-xl px-2.5 py-2 text-[11px] font-medium text-left flex items-center gap-1.5 cursor-pointer">
+                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                        <span>Reverencia</span>
+                    </button>
+                    <button onclick="setCharacterPose('dance')" data-pose="dance" class="pose-btn glass-pill rounded-xl px-2.5 py-2 text-[11px] font-medium text-left flex items-center gap-1.5 cursor-pointer">
+                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
+                        <span>Baile Idol</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Expresiones faciales VRM -->
+            <div id="expr-section" class="pt-3 border-t border-white/10 hidden">
+                <span class="text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 block mb-2">Expresión & Mirada (VRM)</span>
+                <div class="grid grid-cols-6 gap-1"><button onclick="setExpression('neutral')" data-expr="neutral" title="neutral" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😐</button><button onclick="setExpression('happy')" data-expr="happy" title="happy" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😊</button><button onclick="setExpression('surprised')" data-expr="surprised" title="surprised" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😮</button><button onclick="setExpression('angry')" data-expr="angry" title="angry" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😠</button><button onclick="setExpression('sad')" data-expr="sad" title="sad" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😢</button><button onclick="setExpression('relaxed')" data-expr="relaxed" title="relaxed" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😌</button></div>
+                <button id="look-btn" onclick="toggleLookAt()" class="glass-pill active mt-2 w-full rounded-xl px-2.5 py-2 text-[11px] font-medium cursor-pointer">👁 Seguir cursor: ON</button>
+            </div>
+
+            <!-- Metadatos Técnicos -->
+            <div class="pt-3 border-t border-white/10 grid grid-cols-2 gap-2 text-[11px]">
+                <div class="bg-white/[0.03] rounded-xl px-3 py-1.5 border border-white/5">
+                    <span class="block text-zinc-500 text-[9px] uppercase tracking-wider">Polígonos</span>
+                    <span id="char-polygons" class="font-mono text-zinc-200 font-medium">18,420 tris</span>
+                </div>
+                <div class="bg-white/[0.03] rounded-xl px-3 py-1.5 border border-white/5">
+                    <span class="block text-zinc-500 text-[9px] uppercase tracking-wider">Rig / Física</span>
+                    <span id="char-rig-info" class="text-[#00f0ff] font-medium truncate block">Articulado + Hair</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- PANEL DERECHO: Encuadres de Cámara, Iluminación & Shaders -->
+    <aside id="ui-curator-panel" class="ui-layer fixed right-4 sm:right-5 top-20 sm:top-24 z-20 w-[calc(100%-2rem)] sm:w-72 pointer-events-none hidden lg:block">
+        <div class="glass-panel rounded-3xl p-5 pointer-events-auto space-y-4">
+            
+            <!-- Encuadres de Cámara Rápidos -->
+            <div>
+                <span class="block text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 mb-2.5 flex items-center gap-1.5">
+                    <i data-lucide="camera" class="w-3.5 h-3.5 text-[#00f0ff]"></i>
+                    Encuadre de Cámara
+                </span>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button onclick="setCameraFraming('full')" data-frame="full" class="frame-btn glass-pill active rounded-xl py-2 px-2 text-[11px] font-medium text-center cursor-pointer">
+                        Cuerpo
+                    </button>
+                    <button onclick="setCameraFraming('bust')" data-frame="bust" class="frame-btn glass-pill rounded-xl py-2 px-2 text-[11px] font-medium text-center cursor-pointer">
+                        Retrato
+                    </button>
+                    <button onclick="setCameraFraming('low')" data-frame="low" class="frame-btn glass-pill rounded-xl py-2 px-2 text-[11px] font-medium text-center cursor-pointer">
+                        Heroico
+                    </button>
+                </div>
+            </div>
+
+            <!-- Presets de Iluminación -->
+            <div class="pt-3.5 border-t border-white/10">
+                <span class="block text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 mb-2.5 flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#ff2a85]"></i>
+                    Iluminación Escenario
+                </span>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <button onclick="setLightingPreset('concert')" data-preset="concert" class="lighting-btn glass-pill active rounded-xl px-2.5 py-2 text-left flex items-center gap-2 cursor-pointer">
+                        <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-[#00f0ff] to-[#ff2a85]"></span>
+                        <span class="text-[11px] font-medium">Cian / Magenta</span>
+                    </button>
+                    <button onclick="setLightingPreset('studio')" data-preset="studio" class="lighting-btn glass-pill rounded-xl px-2.5 py-2 text-left flex items-center gap-2 cursor-pointer">
+                        <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+                        <span class="text-[11px] font-medium">Estudio Foto</span>
+                    </button>
+                    <button onclick="setLightingPreset('sunset')" data-preset="sunset" class="lighting-btn glass-pill rounded-xl px-2.5 py-2 text-left flex items-center gap-2 cursor-pointer">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                        <span class="text-[11px] font-medium">Atardecer Neón</span>
+                    </button>
+                    <button onclick="setLightingPreset('rim')" data-preset="rim" class="lighting-btn glass-pill rounded-xl px-2.5 py-2 text-left flex items-center gap-2 cursor-pointer">
+                        <span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span>
+                        <span class="text-[11px] font-medium">Silueta Rim</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Toggles de Renderizado Anime & Escenario -->
+            <div class="pt-3.5 border-t border-white/10 space-y-2">
+                <span class="block text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 mb-1.5">
+                    Shader & Escenario
+                </span>
+
+                <button onclick="toggleToonOutline()" id="toggle-outline" class="w-full glass-pill active rounded-xl px-3 py-2 flex items-center justify-between text-xs cursor-pointer">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="pen-tool" class="w-3.5 h-3.5 text-[#00f0ff]"></i>
+                        Contorno Anime (Outline)
+                    </span>
+                    <span id="status-outline" class="text-[10px] font-mono text-[#00f0ff]">ON</span>
+                </button>
+
+                <button onclick="toggleAutoRotate()" id="toggle-rotate" class="w-full glass-pill active rounded-xl px-3 py-2 flex items-center justify-between text-xs cursor-pointer">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-[#00f0ff]"></i>
+                        Órbita Automática
+                    </span>
+                    <span id="status-rotate" class="text-[10px] font-mono text-[#00f0ff]">ON</span>
+                </button>
+
+                <button onclick="toggleStage()" id="toggle-stage" class="w-full glass-pill active rounded-xl px-3 py-2 flex items-center justify-between text-xs cursor-pointer">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="disc" class="w-3.5 h-3.5 text-[#ff2a85]"></i>
+                        Escenario & Ecualizador
+                    </span>
+                    <span id="status-stage" class="text-[10px] font-mono text-[#00f0ff]">ON</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- DOCK INFERIOR: Selector de Personajes -->
+    <nav id="ui-dock" class="ui-layer fixed bottom-4 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-2rem)] max-w-2xl pointer-events-none">
+        <div class="glass-panel rounded-2xl sm:rounded-3xl p-2 pointer-events-auto flex items-center gap-2 overflow-x-auto">
+            <button onclick="selectCharacter(0)" data-char="0" class="char-selector-btn glass-pill active flex-1 min-w-[145px] rounded-xl sm:rounded-2xl px-3.5 py-2 text-left cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono text-[#00f0ff]">01 // IDOL</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#00f0ff]"></span>
+                </div>
+                <div class="text-xs font-display font-bold text-white truncate mt-0.5">MIKU // CYBER DIVA</div>
+            </button>
+
+            <button onclick="selectCharacter(1)" data-char="1" class="char-selector-btn glass-pill flex-1 min-w-[145px] rounded-xl sm:rounded-2xl px-3.5 py-2 text-left cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono text-[#ff2a85]">02 // MECHA</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#ff2a85]"></span>
+                </div>
+                <div class="text-xs font-display font-bold text-white truncate mt-0.5">UNIT-02 // CRIMSON</div>
+            </button>
+
+            <button onclick="selectCharacter(2)" data-char="2" class="char-selector-btn glass-pill flex-1 min-w-[145px] rounded-xl sm:rounded-2xl px-3.5 py-2 text-left cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono text-violet-400">03 // ETHEREAL</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>
+                </div>
+                <div class="text-xs font-display font-bold text-white truncate mt-0.5">AETHER // PHANTOM</div>
+            </button>
+
+            <button id="custom-char-tab" onclick="selectCharacter(3)" data-char="3" class="char-selector-btn glass-pill hidden flex-1 min-w-[145px] rounded-xl sm:rounded-2xl px-3.5 py-2 text-left cursor-pointer border-[#00f0ff]/50">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono text-[#00f0ff]">04 // IMPORTADO</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#00f0ff] animate-ping"></span>
+                </div>
+                <div id="custom-char-tab-title" class="text-xs font-display font-bold text-white truncate mt-0.5">Avatar Local</div>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Script Principal Three.js -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+        import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+
+        lucide.createIcons();
+
+        // =========================================================================
+        // 1. MOTOR 3D & ESCENARIO HOLOGRÁFICO
+        // =========================================================================
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x08080c);
+        scene.fog = new THREE.FogExp2(0x08080c, 0.045);
+
+        const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 100);
+        const cameraTarget = new THREE.Vector3(0, 1.18, 0);
+        const desiredCameraPos = new THREE.Vector3(0, 1.35, 3.65);
+        const desiredTargetPos = new THREE.Vector3(0, 1.18, 0);
+        camera.position.copy(desiredCameraPos);
+
+        const mobileStage = window.matchMedia('(max-width: 767px)').matches;
+        const reducedStageMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const renderer = new THREE.WebGLRenderer({ antialias: !mobileStage, powerPreference: mobileStage ? 'low-power' : 'high-performance' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobileStage ? 1.15 : 1.6));
+        renderer.shadowMap.enabled = !mobileStage;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.15;
+        container.appendChild(renderer.domElement);
+
+        // Iluminación ambiental PBR suave
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+        scene.environmentIntensity = 0.45;
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.copy(cameraTarget);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.06;
+        controls.minDistance = 1.1;
+        controls.maxDistance = 8.5;
+        controls.maxPolarAngle = Math.PI / 2 - 0.02;
+        controls.autoRotate = !reducedStageMotion;
+        controls.autoRotateSpeed = 0.7;
+
+        let isUserInteracting = false;
+        controls.addEventListener('start', () => { isUserInteracting = true; });
+
+        // =========================================================================
+        // 2. ILUMINACIÓN DE CONCIERTO / ESTUDIO ANIME
+        // =========================================================================
+        const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x1e1b4b, 0.75);
+        scene.add(hemiLight);
+
+        const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+        keyLight.position.set(2.5, 4.5, 3.5);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = mobileStage ? 512 : 1024;
+        keyLight.shadow.mapSize.height = mobileStage ? 512 : 1024;
+        keyLight.shadow.camera.near = 0.5;
+        keyLight.shadow.camera.far = 15;
+        keyLight.shadow.bias = -0.0005;
+        scene.add(keyLight);
+
+        // Luces de contorno neón (Rim Lights para silueta estilo anime)
+        const rimLightLeft = new THREE.PointLight(0x00f0ff, 12, 10);
+        rimLightLeft.position.set(-2.4, 2.1, -1.8);
+        scene.add(rimLightLeft);
+
+        const rimLightRight = new THREE.PointLight(0xff2a85, 12, 10);
+        rimLightRight.position.set(2.4, 1.9, -1.8);
+        scene.add(rimLightRight);
+
+        const underGlowLight = new THREE.PointLight(0x00f0ff, 4, 5);
+        underGlowLight.position.set(0, 0.25, 0.8);
+        scene.add(underGlowLight);
+
+        // =========================================================================
+        // 3. ESCENARIO REACTIVO CON ECUALIZADOR Y PARTÍCULAS
+        // =========================================================================
+        const stageGroup = new THREE.Group();
+        scene.add(stageGroup);
+
+        // Suelo reflectante oscuro
+        const floor = new THREE.Mesh(
+            new THREE.CircleGeometry(24, 64),
+            new THREE.MeshStandardMaterial({ color: 0x07070b, roughness: 0.22, metalness: 0.8 })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        stageGroup.add(floor);
+
+        // Plataforma central
+        const platformBase = new THREE.Mesh(
+            new THREE.CylinderGeometry(1.15, 1.25, 0.12, 64),
+            new THREE.MeshStandardMaterial({ color: 0x10121c, roughness: 0.25, metalness: 0.85 })
+        );
+        platformBase.position.y = 0.06;
+        platformBase.receiveShadow = true;
+        stageGroup.add(platformBase);
+
+        // Anillos holográficos giratorios en el escenario
+        const holoRing1Mat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+        const holoRing1 = new THREE.Mesh(new THREE.RingGeometry(1.16, 1.20, 64), holoRing1Mat);
+        holoRing1.rotation.x = -Math.PI / 2;
+        holoRing1.position.y = 0.125;
+        stageGroup.add(holoRing1);
+
+        const holoRing2Mat = new THREE.MeshBasicMaterial({ color: 0xff2a85, side: THREE.DoubleSide, transparent: true, opacity: 0.55 });
+        const holoRing2 = new THREE.Mesh(new THREE.RingGeometry(1.42, 1.44, 64), holoRing2Mat);
+        holoRing2.rotation.x = -Math.PI / 2;
+        holoRing2.position.y = 0.01;
+        stageGroup.add(holoRing2);
+
+        // Ecualizador circular alrededor de la base
+        const eqBars = [];
+        const eqCount = 48;
+        const eqRadius = 1.30;
+        const eqGeo = new THREE.BoxGeometry(0.025, 1, 0.025);
+        for (let i = 0; i < eqCount; i++) {
+            const angle = (i / eqCount) * Math.PI * 2;
+            const mat = new THREE.MeshBasicMaterial({
+                color: i % 2 === 0 ? 0x00f0ff : 0xff2a85,
+                transparent: true,
+                opacity: 0.75
+            });
+            const bar = new THREE.Mesh(eqGeo, mat);
+            bar.position.set(Math.cos(angle) * eqRadius, 0.06, Math.sin(angle) * eqRadius);
+            bar.rotation.y = -angle;
+            stageGroup.add(bar);
+            eqBars.push({ mesh: bar, phase: i * 0.35 });
+        }
+
+        // Partículas holográficas flotantes
+        const particleCount = mobileStage ? 36 : 100;
+        const particlePositions = new Float32Array(particleCount * 3);
+        const particleSpeeds = [];
+        for (let i = 0; i < particleCount; i++) {
+            const r = 0.6 + Math.random() * 2.4;
+            const theta = Math.random() * Math.PI * 2;
+            particlePositions[i * 3] = Math.cos(theta) * r;
+            particlePositions[i * 3 + 1] = Math.random() * 3.0;
+            particlePositions[i * 3 + 2] = Math.sin(theta) * r;
+            particleSpeeds.push(0.15 + Math.random() * 0.35);
+        }
+        const particleGeo = new THREE.BufferGeometry();
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        const particleMat = new THREE.PointsMaterial({
+            color: 0x00f0ff,
+            size: 0.032,
+            transparent: true,
+            opacity: 0.75,
+            blending: THREE.AdditiveBlending
+        });
+        const particles = new THREE.Points(particleGeo, particleMat);
+        stageGroup.add(particles);
+
+        // =========================================================================
+        // 4. SISTEMA DE MATERIALES CEL-SHADING / ANIME + CONTORNO (OUTLINE)
+        // =========================================================================
+        // Mapa de gradiente Toon de 3 bandas nítidas para sombreado estilo anime
+        function createToonGradientTexture() {
+            const data = new Uint8Array([
+                125, 130, 150, 255, // Sombra suave fría
+                215, 220, 230, 255, // Tono medio
+                255, 255, 255, 255  // Luz directa
+            ]);
+            const tex = new THREE.DataTexture(data, 3, 1, THREE.RGBAFormat);
+            tex.minFilter = THREE.NearestFilter;
+            tex.magFilter = THREE.NearestFilter;
+            tex.needsUpdate = true;
+            return tex;
+        }
+        const toonGradient = createToonGradientTexture();
+
+        function createAnimeMaterial(hexColor, options = {}) {
+            if (options.emissive) {
+                return new THREE.MeshStandardMaterial({
+                    color: hexColor,
+                    emissive: options.emissiveColor || hexColor,
+                    emissiveIntensity: options.emissiveIntensity || 1.6,
+                    roughness: 0.2
+                });
+            }
+            if (options.metallic) {
+                return new THREE.MeshStandardMaterial({
+                    color: hexColor,
+                    metalness: 0.85,
+                    roughness: 0.2
+                });
+            }
+            if (options.glass) {
+                return new THREE.MeshPhysicalMaterial({
+                    color: hexColor,
+                    transparent: true,
+                    opacity: 0.55,
+                    roughness: 0.08,
+                    transmission: 0.6,
+                    ior: 1.4
+                });
+            }
+            return new THREE.MeshToonMaterial({
+                color: hexColor,
+                gradientMap: toonGradient
+            });
+        }
+
+        // Agrega contorno estilo anime (Inverted Hull Outline) a las mallas seleccionadas
+        let toonOutlineEnabled = true;
+        const outlineMeshes = [];
+
+        function attachAnimeOutline(mesh, thickness = 0.012, color = 0x090a12) {
+            const outlineMat = new THREE.MeshBasicMaterial({
+                color: color,
+                side: THREE.BackSide
+            });
+            const outline = new THREE.Mesh(mesh.geometry, outlineMat);
+            outline.scale.setScalar(1 + thickness);
+            outline.userData.isOutline = true;
+            outline.visible = toonOutlineEnabled;
+            mesh.add(outline);
+            outlineMeshes.push(outline);
+        }
+
+        // =========================================================================
+        // 5. CONSTRUCCIÓN DE PERSONAJES ESTILIZADOS ARTICULADOS
+        // =========================================================================
+        const characterPivot = new THREE.Group();
+        characterPivot.position.set(0, 0.12, 0); // Sobre la plataforma
+        scene.add(characterPivot);
+
+        let currentPose = 'idle';
+        let currentCharacterAnimator = null;
+        let currentCharacterObject = null;
+        let customMixer = null; // Para animaciones de archivos .GLB / .FBX / .VRM
+
+        // Constructor base de cuerpo estilizado anime con articulaciones y ojos expresivos
+        function buildStylizedAnimeCharacter(config) {
+            const root = new THREE.Group();
+            const rig = {};
+
+            const skinMat = createAnimeMaterial(config.skinColor || 0xffe6dc);
+            const hairMat = createAnimeMaterial(config.hairColor);
+            const hairHighlightMat = createAnimeMaterial(config.hairHighlight || config.hairColor, { emissive: true, emissiveIntensity: 0.25 });
+            const primaryClothMat = createAnimeMaterial(config.primaryCloth);
+            const secondaryClothMat = createAnimeMaterial(config.secondaryCloth);
+            const accentNeonMat = createAnimeMaterial(config.accentNeon, { emissive: true, emissiveIntensity: 1.8 });
+            const metalMat = createAnimeMaterial(0x1f2230, { metallic: true });
+
+            // --- PELVIS / CADERA ---
+            rig.hips = new THREE.Group();
+            rig.hips.position.y = 0.96;
+            root.add(rig.hips);
+
+            const pelvisMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.135, 0.14, 24), secondaryClothMat);
+            attachAnimeOutline(pelvisMesh, 0.018);
+            rig.hips.add(pelvisMesh);
+
+            // Falda plisada estilizada con ribete neón
+            const skirtGroup = new THREE.Group();
+            skirtGroup.position.y = -0.04;
+            const skirtCone = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.27, 0.28, 32, 1, true), secondaryClothMat);
+            skirtCone.material.side = THREE.DoubleSide;
+            skirtCone.position.y = -0.10;
+            skirtCone.castShadow = true;
+            skirtGroup.add(skirtCone);
+
+            const skirtTrim = new THREE.Mesh(new THREE.TorusGeometry(0.268, 0.008, 12, 48), accentNeonMat);
+            skirtTrim.rotation.x = Math.PI / 2;
+            skirtTrim.position.y = -0.238;
+            skirtGroup.add(skirtTrim);
+            rig.hips.add(skirtGroup);
+
+            // --- TORSO & PECHO ---
+            rig.chest = new THREE.Group();
+            rig.chest.position.y = 0.08;
+            rig.hips.add(rig.chest);
+
+            const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.105, 0.34, 24), primaryClothMat);
+            torsoMesh.position.y = 0.16;
+            torsoMesh.castShadow = true;
+            attachAnimeOutline(torsoMesh, 0.018);
+            rig.chest.add(torsoMesh);
+
+            // Detalles del atuendo (Cuello y Corbata futurista o armadura)
+            const collar = new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.018, 12, 24), secondaryClothMat);
+            collar.rotation.x = Math.PI / 2 + 0.15;
+            collar.position.set(0, 0.32, 0.01);
+            rig.chest.add(collar);
+
+            if (config.hasTie) {
+                const tieGroup = new THREE.Group();
+                tieGroup.position.set(0, 0.29, 0.115);
+                const tieKnot = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.035, 0.025), accentNeonMat);
+                const tieBody = new THREE.Mesh(new THREE.ConeGeometry(0.036, 0.24, 4), accentNeonMat);
+                tieBody.rotation.z = Math.PI;
+                tieBody.rotation.y = Math.PI / 4;
+                tieBody.position.y = -0.13;
+                tieGroup.add(tieKnot, tieBody);
+                rig.chest.add(tieGroup);
+                rig.tie = tieGroup;
+            }
+
+            // Chaqueta corta opcional (para Unit-02 / Aether)
+            if (config.hasCroppedJacket) {
+                const jacket = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.155, 0.22, 24, 1, true), secondaryClothMat);
+                jacket.material.side = THREE.DoubleSide;
+                jacket.position.y = 0.22;
+                rig.chest.add(jacket);
+
+                const shoulderPadL = new THREE.Mesh(new THREE.SphereGeometry(0.068, 16, 16), secondaryClothMat);
+                shoulderPadL.position.set(-0.16, 0.29, 0);
+                const shoulderPadR = shoulderPadL.clone();
+                shoulderPadR.position.x = 0.16;
+                rig.chest.add(shoulderPadL, shoulderPadR);
+            }
+
+            // --- CUELLO Y CABEZA ANIME ESTILIZADA ---
+            rig.head = new THREE.Group();
+            rig.head.position.y = 0.35;
+            rig.chest.add(rig.head);
+
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.048, 0.09, 16), skinMat);
+            neck.position.y = 0.03;
+            rig.head.add(neck);
+
+            // Cráneo estilizado ligeramente ovalado
+            const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.165, 32, 32), skinMat);
+            headMesh.scale.set(0.96, 1.04, 0.94);
+            headMesh.position.y = 0.20;
+            headMesh.castShadow = true;
+            attachAnimeOutline(headMesh, 0.015);
+            rig.head.add(headMesh);
+
+            // Ojos Anime Expresivos (con iris luminoso y pupila con brillo)
+            rig.eyes = new THREE.Group();
+            rig.eyes.position.set(0, 0.19, 0.145);
+            rig.head.add(rig.eyes);
+
+            const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const irisMat = createAnimeMaterial(config.eyeColor || config.accentNeon, { emissive: true, emissiveIntensity: 1.3 });
+            const pupilMat = new THREE.MeshBasicMaterial({ color: 0x090a14 });
+
+            [-0.056, 0.056].forEach((xPos) => {
+                const eyeGroup = new THREE.Group();
+                eyeGroup.position.set(xPos, 0, 0);
+                eyeGroup.rotation.y = xPos * 1.4;
+
+                const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.034, 16, 16), eyeWhiteMat);
+                sclera.scale.set(0.85, 1.15, 0.35);
+
+                const iris = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 16), irisMat);
+                iris.scale.set(0.82, 1.15, 0.38);
+                iris.position.set(0, -0.002, 0.005);
+
+                const sparkle = new THREE.Mesh(new THREE.SphereGeometry(0.008, 8, 8), eyeWhiteMat);
+                sparkle.position.set(-0.008, 0.012, 0.015);
+
+                // Pestaña superior estilizada
+                const lash = new THREE.Mesh(new THREE.BoxGeometry(0.062, 0.009, 0.015), pupilMat);
+                lash.position.set(0, 0.036, 0.008);
+                lash.rotation.z = xPos > 0 ? -0.12 : 0.12;
+
+                eyeGroup.add(sclera, iris, sparkle, lash);
+                rig.eyes.add(eyeGroup);
+            });
+
+            // Visor holográfico opcional (Unit-02)
+            if (config.hasVisor) {
+                const visorMat = createAnimeMaterial(config.accentNeon, { glass: true });
+                const visor = new THREE.Mesh(new THREE.CylinderGeometry(0.172, 0.172, 0.065, 32, 1, true, -Math.PI * 0.35, Math.PI * 0.7), visorMat);
+                visor.position.set(0, 0.195, 0.005);
+                rig.head.add(visor);
+            }
+
+            // Halo geométrico detrás de la cabeza opcional (Aether)
+            if (config.hasHalo) {
+                const haloGroup = new THREE.Group();
+                haloGroup.position.set(0, 0.24, -0.14);
+                const haloRing = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.008, 12, 48), accentNeonMat);
+                const haloHex = new THREE.Mesh(new THREE.RingGeometry(0.17, 0.185, 6), accentNeonMat);
+                haloGroup.add(haloRing, haloHex);
+                rig.head.add(haloGroup);
+                rig.halo = haloGroup;
+            }
+
+            // --- CABELLO ESTILIZADO Y COLETAS ARTICULADAS ---
+            // Casquete base + flequillo anime
+            const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.174, 32, 24, 0, Math.PI * 2, 0, Math.PI * 0.62), hairMat);
+            hairCap.position.set(0, 0.205, -0.008);
+            attachAnimeOutline(hairCap, 0.015);
+            rig.head.add(hairCap);
+
+            // Mechones frontales (flequillo)
+            for (let i = -2; i <= 2; i++) {
+                const bang = new THREE.Mesh(new THREE.ConeGeometry(0.034, 0.13, 8), i === 0 ? hairHighlightMat : hairMat);
+                bang.position.set(i * 0.036, 0.24, 0.155 - Math.abs(i) * 0.012);
+                bang.rotation.x = Math.PI + 0.18;
+                bang.rotation.z = i * 0.08;
+                rig.head.add(bang);
+            }
+
+            // Auriculares futuristas neón
+            if (config.hasHeadphones) {
+                [-0.175, 0.175].forEach((xSide) => {
+                    const earCup = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.052, 0.035, 24), metalMat);
+                    earCup.rotation.z = Math.PI / 2;
+                    earCup.position.set(xSide, 0.20, -0.01);
+
+                    const earGlow = new THREE.Mesh(new THREE.TorusGeometry(0.038, 0.006, 12, 24), accentNeonMat);
+                    earGlow.rotation.y = Math.PI / 2;
+                    earGlow.position.set(xSide + (xSide > 0 ? 0.018 : -0.018), 0.20, -0.01);
+
+                    rig.head.add(earCup, earGlow);
+                });
+            }
+
+            // Sistema de cabello articulado (Coletas gemelas largas tipo Miku o melena larga fluida)
+            rig.hairSegments = [];
+            if (config.hairStyle === 'twintails') {
+                [-1, 1].forEach((side) => {
+                    // Sujetador neón
+                    const holder = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.045, 0.045), accentNeonMat);
+                    holder.position.set(side * 0.185, 0.26, -0.04);
+                    rig.head.add(holder);
+
+                    // Cadena de 5 segmentos articulados por coleta
+                    let parentNode = holder;
+                    const chain = [];
+                    for (let s = 0; s < 5; s++) {
+                        const segGroup = new THREE.Group();
+                        segGroup.position.set(side * (s === 0 ? 0.04 : 0.01), s === 0 ? 0.0 : -0.19, -0.015);
+                        
+                        const radiusTop = 0.052 - s * 0.006;
+                        const radiusBot = 0.046 - s * 0.007;
+                        const segMesh = new THREE.Mesh(
+                            new THREE.CylinderGeometry(radiusTop, Math.max(0.01, radiusBot), 0.21, 16),
+                            s === 4 ? hairHighlightMat : hairMat
+                        );
+                        segMesh.position.y = -0.095;
+                        segMesh.castShadow = true;
+                        attachAnimeOutline(segMesh, 0.018);
+                        
+                        segGroup.add(segMesh);
+                        parentNode.add(segGroup);
+                        chain.push(segGroup);
+                        parentNode = segGroup;
+                    }
+                    rig.hairSegments.push({ side, chain });
+                });
+            } else if (config.hairStyle === 'long_back') {
+                // Melena trasera larga articulada en 3 capas
+                [-0.07, 0, 0.07].forEach((offsetX, idx) => {
+                    let parentNode = rig.head;
+                    const chain = [];
+                    for (let s = 0; s < 4; s++) {
+                        const segGroup = new THREE.Group();
+                        segGroup.position.set(s === 0 ? offsetX : 0, s === 0 ? 0.16 : -0.17, s === 0 ? -0.15 : -0.01);
+                        const segMesh = new THREE.Mesh(
+                            new THREE.BoxGeometry(0.095, 0.19, 0.035),
+                            s === 3 ? hairHighlightMat : hairMat
+                        );
+                        segMesh.position.y = -0.085;
+                        segMesh.castShadow = true;
+                        segGroup.add(segMesh);
+                        parentNode.add(segGroup);
+                        chain.push(segGroup);
+                        parentNode = segGroup;
+                    }
+                    rig.hairSegments.push({ side: idx - 1, chain });
+                });
+            }
+
+            // --- BRAZOS ARTICULADOS + MANGAS FUTURISTAS ---
+            function createArm(side) {
+                const shoulder = new THREE.Group();
+                shoulder.position.set(side * 0.155, 0.29, 0);
+                rig.chest.add(shoulder);
+
+                const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.030, 0.23, 16), skinMat);
+                upperArm.position.y = -0.11;
+                upperArm.castShadow = true;
+                attachAnimeOutline(upperArm, 0.02);
+                shoulder.add(upperArm);
+
+                const elbow = new THREE.Group();
+                elbow.position.y = -0.22;
+                shoulder.add(elbow);
+
+                // Manga larga futurista con ribete luminoso
+                const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.048, 0.24, 16), metalMat);
+                sleeve.position.y = -0.11;
+                sleeve.castShadow = true;
+                attachAnimeOutline(sleeve, 0.02);
+                elbow.add(sleeve);
+
+                const cuffGlow = new THREE.Mesh(new THREE.TorusGeometry(0.047, 0.005, 8, 24), accentNeonMat);
+                cuffGlow.rotation.x = Math.PI / 2;
+                cuffGlow.position.y = -0.225;
+                elbow.add(cuffGlow);
+
+                const hand = new THREE.Mesh(new THREE.SphereGeometry(0.028, 12, 12), skinMat);
+                hand.position.y = -0.245;
+                elbow.add(hand);
+
+                return { shoulder, elbow };
+            }
+
+            rig.leftArm = createArm(-1);
+            rig.rightArm = createArm(1);
+
+            // --- PIERNAS ARTICULADAS + BOTAS ALTAS CIBERNÉTICAS ---
+            function createLeg(side) {
+                const hipJoint = new THREE.Group();
+                hipJoint.position.set(side * 0.072, -0.05, 0);
+                rig.hips.add(hipJoint);
+
+                const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.042, 0.38, 16), skinMat);
+                thigh.position.y = -0.19;
+                thigh.castShadow = true;
+                attachAnimeOutline(thigh, 0.018);
+                hipJoint.add(thigh);
+
+                const kneeJoint = new THREE.Group();
+                kneeJoint.position.y = -0.38;
+                hipJoint.add(kneeJoint);
+
+                // Bota alta futurista hasta el muslo
+                const boot = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.036, 0.44, 16), metalMat);
+                boot.position.y = -0.22;
+                boot.castShadow = true;
+                attachAnimeOutline(boot, 0.018);
+                kneeJoint.add(boot);
+
+                const bootRim = new THREE.Mesh(new THREE.TorusGeometry(0.046, 0.006, 8, 24), accentNeonMat);
+                bootRim.rotation.x = Math.PI / 2;
+                bootRim.position.y = -0.01;
+                kneeJoint.add(bootRim);
+
+                const foot = new THREE.Mesh(new THREE.BoxGeometry(0.068, 0.045, 0.14), secondaryClothMat);
+                foot.position.set(0, -0.45, 0.035);
+                foot.castShadow = true;
+                kneeJoint.add(foot);
+
+                return { hipJoint, kneeJoint };
+            }
+
+            rig.leftLeg = createLeg(-1);
+            rig.rightLeg = createLeg(1);
+
+            // --- ANIMADOR DE POSES Y FÍSICA EN TIEMPO REAL ---
+            const animate = (t) => {
+                // Parpadeo natural cada ~3.8 segundos
+                const blinkCycle = t % 3.8;
+                const eyeScaleY = blinkCycle > 3.68 ? 0.08 : 1.0;
+                rig.eyes.scale.y = THREE.MathUtils.lerp(rig.eyes.scale.y, eyeScaleY, 0.45);
+
+                // Respiración base
+                const breath = Math.sin(t * 2.4);
+
+                // Valores objetivo según Pose seleccionada
+                let targetHipsY = 0.96 + breath * 0.012;
+                let targetHipsRotY = Math.sin(t * 1.1) * 0.05;
+                let targetChestRotX = breath * 0.025;
+                let targetHeadRotZ = Math.sin(t * 1.3) * 0.04;
+                let targetHeadRotY = Math.cos(t * 0.9) * 0.06;
+
+                let lShoulderZ = 0.16, lShoulderX = 0.05, lElbowX = -0.18;
+                let rShoulderZ = -0.16, rShoulderX = 0.05, rElbowX = -0.18;
+                let lHipZ = 0.03, rHipZ = -0.03, lHipX = 0, rHipX = 0, lKneeX = 0, rKneeX = 0;
+
+                if (currentPose === 'wave') {
+                    // Saludo Idol entusiasta con brazo derecho levantado
+                    rShoulderZ = -2.45 + Math.sin(t * 6.5) * 0.18;
+                    rShoulderX = -0.25;
+                    rElbowX = -0.45 + Math.cos(t * 6.5) * 0.15;
+                    lShoulderZ = 0.25;
+                    lElbowX = -0.35;
+                    targetHeadRotZ = -0.11;
+                    targetHipsY = 0.96 + Math.abs(Math.sin(t * 3.25)) * 0.025;
+                } else if (currentPose === 'concert') {
+                    // Pose dinámica de concierto vocaloid
+                    targetHipsRotY = 0.22;
+                    targetHeadRotY = -0.18;
+                    targetHeadRotZ = 0.08;
+                    lShoulderZ = 0.65;
+                    lShoulderX = -0.4;
+                    lElbowX = -1.1; // Mano cerca del micrófono/auricular
+                    rShoulderZ = -0.85;
+                    rShoulderX = 0.25;
+                    rElbowX = -0.3;
+                    lHipX = -0.12;
+                    lKneeX = 0.18;
+                    rHipX = 0.14;
+                } else if (currentPose === 'zerog') {
+                    // Flotación anti-gravedad
+                    targetHipsY = 1.14 + Math.sin(t * 1.8) * 0.07;
+                    targetChestRotX = -0.14 + breath * 0.04;
+                    lShoulderZ = 0.55 + Math.sin(t * 1.6) * 0.1;
+                    rShoulderZ = -0.55 - Math.sin(t * 1.6) * 0.1;
+                    lElbowX = -0.4;
+                    rElbowX = -0.4;
+                    lHipX = -0.25;
+                    lKneeX = 0.55;
+                    rHipX = 0.12;
+                    rKneeX = 0.25;
+                }
+
+                // Interpolación suave (Lerp) hacia la pose objetivo
+                const lerpSpeed = 0.1;
+                rig.hips.position.y = THREE.MathUtils.lerp(rig.hips.position.y, targetHipsY, lerpSpeed);
+                rig.hips.rotation.y = THREE.MathUtils.lerp(rig.hips.rotation.y, targetHipsRotY, lerpSpeed);
+                rig.chest.rotation.x = THREE.MathUtils.lerp(rig.chest.rotation.x, targetChestRotX, lerpSpeed);
+                rig.head.rotation.z = THREE.MathUtils.lerp(rig.head.rotation.z, targetHeadRotZ, lerpSpeed);
+                rig.head.rotation.y = THREE.MathUtils.lerp(rig.head.rotation.y, targetHeadRotY, lerpSpeed);
+
+                rig.leftArm.shoulder.rotation.z = THREE.MathUtils.lerp(rig.leftArm.shoulder.rotation.z, lShoulderZ, lerpSpeed);
+                rig.leftArm.shoulder.rotation.x = THREE.MathUtils.lerp(rig.leftArm.shoulder.rotation.x, lShoulderX, lerpSpeed);
+                rig.leftArm.elbow.rotation.x = THREE.MathUtils.lerp(rig.leftArm.elbow.rotation.x, lElbowX, lerpSpeed);
+
+                rig.rightArm.shoulder.rotation.z = THREE.MathUtils.lerp(rig.rightArm.shoulder.rotation.z, rShoulderZ, lerpSpeed);
+                rig.rightArm.shoulder.rotation.x = THREE.MathUtils.lerp(rig.rightArm.shoulder.rotation.x, rShoulderX, lerpSpeed);
+                rig.rightArm.elbow.rotation.x = THREE.MathUtils.lerp(rig.rightArm.elbow.rotation.x, rElbowX, lerpSpeed);
+
+                rig.leftLeg.hipJoint.rotation.z = THREE.MathUtils.lerp(rig.leftLeg.hipJoint.rotation.z, lHipZ, lerpSpeed);
+                rig.rightLeg.hipJoint.rotation.z = THREE.MathUtils.lerp(rig.rightLeg.hipJoint.rotation.z, rHipZ, lerpSpeed);
+                rig.leftLeg.hipJoint.rotation.x = THREE.MathUtils.lerp(rig.leftLeg.hipJoint.rotation.x, lHipX, lerpSpeed);
+                rig.rightLeg.hipJoint.rotation.x = THREE.MathUtils.lerp(rig.rightLeg.hipJoint.rotation.x, rHipX, lerpSpeed);
+                rig.leftLeg.kneeJoint.rotation.x = THREE.MathUtils.lerp(rig.leftLeg.kneeJoint.rotation.x, lKneeX, lerpSpeed);
+                rig.rightLeg.kneeJoint.rotation.x = THREE.MathUtils.lerp(rig.rightLeg.kneeJoint.rotation.x, rKneeX, lerpSpeed);
+
+                // Física ondulatoria continua en coletas gemelas / cabello largo
+                rig.hairSegments.forEach(({ side, chain }) => {
+                    chain.forEach((seg, idx) => {
+                        const waveZ = Math.sin(t * 2.4 - idx * 0.55) * (0.045 + idx * 0.015);
+                        const waveX = Math.cos(t * 1.9 - idx * 0.5) * 0.035;
+                        const baseSpread = idx === 0 ? side * 0.22 : side * 0.03;
+                        const zeroGLift = currentPose === 'zerog' ? side * 0.14 : 0;
+                        seg.rotation.z = baseSpread + waveZ + zeroGLift;
+                        seg.rotation.x = 0.08 + waveX;
+                    });
+                });
+
+                if (rig.tie) {
+                    rig.tie.rotation.x = -0.06 + Math.sin(t * 2.4) * 0.04;
+                }
+                if (rig.halo) {
+                    rig.halo.rotation.z = t * 0.45;
+                }
+            };
+
+            return { object: root, animate };
+        }
+
+        // Catálogo de Personajes Curados
+        const characters = [
+            {
+                code: 'UNIT 01 // VIRTUAL DIVA',
+                title: 'MIKU // CYBER DIVA 01',
+                subtitle: 'Synthesizer Vocaloid · Edición Holográfica',
+                description: 'Idol virtual futurista con coletas gemelas largas articuladas con simulación dinámica, auriculares acústicos neón, corbata cian luminosa y botas altas cibernéticas.',
+                rigInfo: 'Articulado + Twin-Tails',
+                preset: 'concert',
+                config: {
+                    skinColor: 0xffe8df,
+                    hairColor: 0x1ee3cf,
+                    hairHighlight: 0x7ef9f5,
+                    primaryCloth: 0xd8dee9,
+                    secondaryCloth: 0x181a24,
+                    accentNeon: 0x00f0ff,
+                    eyeColor: 0x00f0ff,
+                    hairStyle: 'twintails',
+                    hasTie: true,
+                    hasHeadphones: true
+                }
+            },
+            {
+                code: 'UNIT 02 // CRIMSON SYNTH',
+                title: 'UNIT-02 // CRIMSON SYNTH',
+                subtitle: 'Cyber-Mecha Valkyrie · Escuadrón Neón',
+                description: 'Personaje estilo anime cyber-mecha con melena larga carmesí fluida, visor holográfico magenta translúcido, chaqueta táctica negra y detalles energéticos.',
+                rigInfo: 'Articulado + Visor Holo',
+                preset: 'sunset',
+                config: {
+                    skinColor: 0xffe3d8,
+                    hairColor: 0xd91e5b,
+                    hairHighlight: 0xff5c93,
+                    primaryCloth: 0x1a1b26,
+                    secondaryCloth: 0x9e1946,
+                    accentNeon: 0xff2a85,
+                    eyeColor: 0xff2a85,
+                    hairStyle: 'long_back',
+                    hasCroppedJacket: true,
+                    hasVisor: true,
+                    hasHeadphones: true
+                }
+            },
+            {
+                code: 'UNIT 03 // HOLO PHANTOM',
+                title: 'AETHER // HOLO PHANTOM',
+                subtitle: 'Idol Etérea · Arquitectura Celestial',
+                description: 'Idol digital etérea de cabello plateado-violeta, halo geométrico orbital detrás de la cabeza y vestimenta futurista blanca con acentos dorado y amatista.',
+                rigInfo: 'Articulado + Halo Orbital',
+                preset: 'rim',
+                config: {
+                    skinColor: 0xfff0ea,
+                    hairColor: 0xc4b5fd,
+                    hairHighlight: 0xf5d0fe,
+                    primaryCloth: 0xf8fafc,
+                    secondaryCloth: 0x3b2d5e,
+                    accentNeon: 0xc084fc,
+                    eyeColor: 0xe879f9,
+                    hairStyle: 'twintails',
+                    hasHalo: true,
+                    hasCroppedJacket: true
+                }
+            }
+        ];
+
+        // =========================================================================
+        // 6. SELECCIÓN DE PERSONAJE & CARGA DE AVATARES EXTERNOS (.VRM/.GLB/.FBX/.OBJ)
+        // =========================================================================
+        let customCharacterEntry = null;
+
+        function countTriangles(object) {
+            let triangles = 0;
+            object.traverse((child) => {
+                if (child.isMesh && child.geometry) {
+                    const geo = child.geometry;
+                    triangles += geo.index ? geo.index.count / 3 : geo.attributes.position.count / 3;
+                }
+            });
+            return Math.round(triangles).toLocaleString('es-ES');
+        }
+
+        window.selectCharacter = function(index) {
+            // Limpiar personaje previo
+            while (characterPivot.children.length > 0) {
+                characterPivot.remove(characterPivot.children[0]);
+            }
+            outlineMeshes.length = 0;
+            customMixer = null;
+
+            const posesSection = document.getElementById('poses-section');
+
+            if (index === 3 && customCharacterEntry) {
+                currentCharacterObject = customCharacterEntry.object;
+                currentCharacterAnimator = customCharacterEntry.animate;
+                customMixer = customCharacterEntry.mixer || null;
+
+                document.getElementById('char-code').textContent = customCharacterEntry.code;
+                document.getElementById('char-title').textContent = customCharacterEntry.title;
+                document.getElementById('char-subtitle').textContent = customCharacterEntry.subtitle;
+                document.getElementById('char-description').textContent = customCharacterEntry.description;
+                document.getElementById('char-polygons').textContent = customCharacterEntry.polygons;
+                document.getElementById('char-rig-info').textContent = customCharacterEntry.rigInfo;
+                const poseable = !!customCharacterEntry.vrm;
+                posesSection.classList.toggle('opacity-50', !poseable);
+                posesSection.classList.toggle('pointer-events-none', !poseable);
+                document.getElementById('expr-section').classList.toggle('hidden', !poseable);
+            } else {
+                const entry = characters[index];
+                const built = buildStylizedAnimeCharacter(entry.config);
+                currentCharacterObject = built.object;
+                currentCharacterAnimator = built.animate;
+
+                document.getElementById('char-code').textContent = entry.code;
+                document.getElementById('char-title').textContent = entry.title;
+                document.getElementById('char-subtitle').textContent = entry.subtitle;
+                document.getElementById('char-description').textContent = entry.description;
+                document.getElementById('char-polygons').textContent = countTriangles(currentCharacterObject) + ' tris';
+                document.getElementById('char-rig-info').textContent = entry.rigInfo;
+                posesSection.classList.remove('opacity-50', 'pointer-events-none');
+                document.getElementById('expr-section').classList.add('hidden');
+
+                if (entry.preset) {
+                    setLightingPreset(entry.preset, true);
+                }
+            }
+
+            characterPivot.add(currentCharacterObject);
+
+            // Actualizar Dock activo
+            document.querySelectorAll('.char-selector-btn').forEach((btn) => {
+                const idx = parseInt(btn.getAttribute('data-char'));
+                btn.classList.toggle('active', idx === index);
+            });
+        };
+
+        // Importación de modelos externos (.vrm, .glb, .gltf, .fbx, .obj)
+        const gltfLoader = new GLTFLoader();
+        const objLoader = new OBJLoader();
+        const fbxLoader = new FBXLoader();
+
+        // =========================================================================
+        // 6b. ANIMADOR VRM: huesos humanoides, expresiones, parpadeo, mirada y springs
+        // =========================================================================
+        let VRMmod = null;
+        async function ensureVRM() {
+            if (VRMmod) return VRMmod;
+            try {
+                VRMmod = await import('@pixiv/three-vrm');
+                gltfLoader.register((parser) => new VRMmod.VRMLoaderPlugin(parser));
+            } catch (e) {
+                console.warn('three-vrm no disponible, se cargará como GLB estático', e);
+            }
+            return VRMmod;
+        }
+
+        const pointer = { x: 0, y: 0 };
+        window.addEventListener('pointermove', (e) => {
+            pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = -((e.clientY / window.innerHeight) * 2 - 1);
+        });
+        let lookAtCursor = true;
+        let exprTarget = 'neutral';
+        window.setExpression = function(name) {
+            exprTarget = name;
+            document.querySelectorAll('.expr-btn').forEach((b) => b.classList.toggle('active', b.dataset.expr === name));
+        };
+        window.toggleLookAt = function() {
+            lookAtCursor = !lookAtCursor;
+            const b = document.getElementById('look-btn');
+            b.classList.toggle('active', lookAtCursor);
+            b.textContent = '👁 Seguir cursor: ' + (lookAtCursor ? 'ON' : 'OFF');
+        };
+        const poseExpression = { idle: 'neutral', wave: 'happy', concert: 'happy', zerog: 'relaxed', bow: 'relaxed', dance: 'happy' };
+
+        // Todos los ángulos en radianes sobre huesos NORMALIZADOS (T-pose, mira a +Z).
+        // Brazo izq: z negativo = baja; brazo der: z positivo = baja.
+        function vrmPoseTargets(pose, t) {
+            const s = Math.sin, b = t * 6.2832 * 1.6; // pulso ~96 bpm
+            const p = {
+                hips: [0, s(t * 0.6) * 0.05, 0], spine: [0.02 + s(t * 1.6) * 0.012, 0, 0],
+                chest: [s(t * 1.6) * 0.02, 0, 0], neck: [0, 0, 0], head: [s(t * 0.9) * 0.02, s(t * 0.5) * 0.06, 0],
+                leftShoulder: [0, 0, 0], rightShoulder: [0, 0, 0],
+                leftUpperArm: [0, 0, -1.25 + s(t * 1.6) * 0.02], rightUpperArm: [0, 0, 1.25 - s(t * 1.6) * 0.02],
+                leftLowerArm: [0, -0.15, 0], rightLowerArm: [0, 0.15, 0],
+                leftHand: [0, 0, 0], rightHand: [0, 0, 0],
+                leftUpperLeg: [0, 0, 0.03], rightUpperLeg: [0, 0, -0.03],
+                leftLowerLeg: [0, 0, 0], rightLowerLeg: [0, 0, 0], leftFoot: [0, 0, 0], rightFoot: [0, 0, 0],
+                hipsY: 0, lift: 0
+            };
+            if (pose === 'wave') {
+                p.rightUpperArm = [0.35, 0, -0.95]; p.rightLowerArm = [0, 0, -0.55 + s(t * 9) * 0.45];
+                p.head = [0, 0.1, -0.08]; p.chest[2] = 0.04;
+            } else if (pose === 'concert') {
+                p.rightUpperArm = [0.15, 0, -1.4]; p.rightLowerArm = [0, 0.3, -0.2]; p.rightHand = [0, 0, -0.2];
+                p.leftUpperArm = [0, 0, -0.9]; p.leftLowerArm = [0, -1.7, 0];
+                p.hips = [0, 0.15, s(b / 2) * 0.05]; p.chest = [-0.05, -0.1, s(b / 2) * 0.06]; p.head = [-0.18, -0.1, 0.12 * s(b / 2)];
+                p.leftUpperLeg = [-0.05, 0, 0.14]; p.rightUpperLeg = [-0.25, 0, -0.1]; p.rightLowerLeg = [0.5, 0, 0];
+                
+            } else if (pose === 'zerog') {
+                p.hipsY = 0.12 + s(t * 1.1) * 0.06; p.hips = [0.12 + s(t * 0.7) * 0.06, s(t * 0.35) * 0.5, s(t * 0.8) * 0.06];
+                p.chest = [-0.1, 0, 0]; p.head = [-0.15, 0, s(t * 0.9) * 0.1];
+                p.leftUpperArm = [0.2, 0, -0.5 + s(t * 1.2) * 0.12]; p.rightUpperArm = [0.2, 0, 0.5 - s(t * 1.2 + 1) * 0.12];
+                p.leftLowerArm = [0, -0.4, 0]; p.rightLowerArm = [0, 0.4, 0];
+                p.leftUpperLeg = [0.25, 0, 0.1]; p.rightUpperLeg = [0.1, 0, -0.1];
+                p.leftLowerLeg = [0.7 + s(t) * 0.12, 0, 0]; p.rightLowerLeg = [0.9 + s(t + 1) * 0.12, 0, 0];
+                p.leftFoot = [0.5, 0, 0]; p.rightFoot = [0.5, 0, 0];
+            } else if (pose === 'bow') {
+                const k = (s(t * 0.9) + 1) / 2;
+                p.spine = [0.45 * k, 0, 0]; p.chest = [0.25 * k, 0, 0]; p.head = [0.2 * k, 0, 0];
+                p.leftUpperArm = [0, 0, -1.25]; p.rightUpperArm = [0, 0, 1.25];
+                p.leftLowerArm = [0, -0.5 * k, 0]; p.rightLowerArm = [0, 0.5 * k, 0];
+            } else if (pose === 'dance') {
+                const h = s(b / 2);
+                p.lift = Math.abs(s(b)) * 0.03; p.hips = [0, h * 0.25, h * 0.06];
+                p.chest = [0, -h * 0.2, -h * 0.1]; p.head = [s(b) * 0.06, -h * 0.15, -h * 0.1];
+                p.leftUpperArm = [0, 0, 0.3 + h * 0.9]; p.rightUpperArm = [0, 0, -0.3 + h * 0.9];
+                p.leftLowerArm = [0, -0.6, 0]; p.rightLowerArm = [0, 0.6, 0];
+                p.leftUpperLeg = [-0.1 + s(b / 2 + 1.57) * 0.15, 0, 0.12]; p.rightUpperLeg = [-0.1 - s(b / 2 + 1.57) * 0.15, 0, -0.12];
+                p.leftLowerLeg = [Math.max(0, h) * 0.5 + 0.1, 0, 0]; p.rightLowerLeg = [Math.max(0, -h) * 0.5 + 0.1, 0, 0];
+            }
+            return p;
+        }
+
+        function makeVRMAnimator(vrm) {
+            const BONES = ['hips','spine','chest','neck','head','leftShoulder','rightShoulder','leftUpperArm','rightUpperArm','leftLowerArm','rightLowerArm','leftHand','rightHand','leftUpperLeg','rightUpperLeg','leftLowerLeg','rightLowerLeg','leftFoot','rightFoot'];
+            const nodes = {};
+            BONES.forEach((n) => { nodes[n] = vrm.humanoid.getNormalizedBoneNode(n); });
+            const hipsRestY = nodes.hips ? nodes.hips.position.y : 0;
+            const tq = new THREE.Quaternion(), te = new THREE.Euler();
+            const EXPR = ['happy', 'angry', 'sad', 'surprised', 'relaxed'];
+            const cur = { happy: 0, angry: 0, sad: 0, surprised: 0, relaxed: 0, aa: 0, blink: 0 };
+            const lookTarget = new THREE.Object3D(); scene.add(lookTarget);
+            if (vrm.lookAt) vrm.lookAt.target = lookTarget;
+            let lastPose = null, nextBlink = 2.5, blinkStart = -1;
+            const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), vs = new THREE.Vector3();
+            let ankleRest = null;
+            const ankleY = () => {
+                vrm.scene.updateMatrixWorld(true);
+                nodes.leftFoot.getWorldPosition(v1); nodes.rightFoot.getWorldPosition(v2);
+                vrm.scene.getWorldPosition(vs);
+                return Math.min(v1.y, v2.y) - vs.y;
+            };
+
+            return (t, delta) => {
+                delta = Math.min(delta || 0.016, 0.05);
+                if (currentPose !== lastPose) { lastPose = currentPose; setExpression(poseExpression[currentPose] || 'neutral'); }
+                const k = 1 - Math.exp(-delta * 7);
+                const tg = vrmPoseTargets(currentPose, t);
+                const grounded = currentPose !== 'zerog' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
+                if (grounded && ankleRest === null) ankleRest = ankleY();
+                if (grounded) {
+                    // piernas sin giro heredado de la cadera y pies siempre planos
+                    tg.leftUpperLeg[1] -= tg.hips[1]; tg.rightUpperLeg[1] -= tg.hips[1];
+                    tg.leftFoot[0] = -(tg.leftUpperLeg[0] + tg.leftLowerLeg[0]);
+                    tg.rightFoot[0] = -(tg.rightUpperLeg[0] + tg.rightLowerLeg[0]);
+                }
+                if (lookAtCursor) { tg.head[1] += pointer.x * 0.35; tg.head[0] -= pointer.y * 0.2; tg.neck[1] += pointer.x * 0.15; }
+                BONES.forEach((n) => {
+                    const node = nodes[n]; if (!node) return;
+                    te.set(tg[n][0], tg[n][1], tg[n][2]); tq.setFromEuler(te);
+                    node.quaternion.slerp(tq, k);
+                });
+                if (grounded) {
+                    // anclaje al suelo: el pie más bajo toca la plataforma (más el salto del baile)
+                    const sc = vrm.scene.scale.y || 1;
+                    for (let i = 0; i < 2; i++) {
+                        const err = (ankleY() - ankleRest) / sc - tg.lift;
+                        nodes.hips.position.y -= err;
+                    }
+                } else if (nodes.hips) {
+                    nodes.hips.position.y += ((hipsRestY + tg.hipsY) - nodes.hips.position.y) * k;
+                }
+
+                // Mirada: hacia el cursor o hacia la cámara
+                lookTarget.position.set(lookAtCursor ? pointer.x * 1.2 : 0, 1.4 + (lookAtCursor ? pointer.y * 0.6 : 0), 3);
+
+                const em = vrm.expressionManager;
+                if (em) {
+                    EXPR.forEach((n) => { cur[n] += ((exprTarget === n ? 1 : 0) - cur[n]) * k; em.setValue(n, cur[n]); });
+                    const singing = currentPose === 'concert' || currentPose === 'dance';
+                    cur.aa += ((singing ? Math.max(0, Math.sin(t * 9)) * 0.55 : 0) - cur.aa) * 0.4; em.setValue('aa', cur.aa);
+                    if (blinkStart < 0 && t > nextBlink) blinkStart = t;
+                    if (blinkStart >= 0) {
+                        const x = (t - blinkStart) / 0.18;
+                        cur.blink = x >= 1 ? 0 : Math.sin(x * Math.PI);
+                        if (x >= 1) { blinkStart = -1; nextBlink = t + 2 + Math.random() * 3; }
+                        em.setValue('blink', cur.blink);
+                    }
+                }
+                vrm.update(delta);
+            };
+        }
+
+        function mountImportedCharacter(modelRoot, animations, fileName, vrm = null) {
+            modelRoot.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    if (!child.material) {
+                        child.material = createAnimeMaterial(0xe2e8f0);
+                    }
+                }
+            });
+
+            // Calcular Bounding Box para apoyar los pies exactamente sobre y = 0 del escenario y escalar a ~1.72m
+            const box = new THREE.Box3().setFromObject(modelRoot);
+            const size = new THREE.Vector3();
+            const center = new THREE.Vector3();
+            box.getSize(size);
+            box.getCenter(center);
+
+            const targetHeight = 1.72;
+            const scaleFactor = size.y > 0 ? targetHeight / size.y : 1;
+
+            const wrapper = new THREE.Group();
+            modelRoot.scale.setScalar(scaleFactor);
+
+            // Recalcular caja tras escalar para alinear base al suelo (y=0) y centrar X/Z
+            const scaledBox = new THREE.Box3().setFromObject(modelRoot);
+            const scaledCenter = new THREE.Vector3();
+            scaledBox.getCenter(scaledCenter);
+
+            modelRoot.position.x -= scaledCenter.x;
+            modelRoot.position.z -= scaledCenter.z;
+            modelRoot.position.y -= scaledBox.min.y;
+
+            wrapper.add(modelRoot);
+
+            // Reproducir animaciones embebidas si el archivo las incluye
+            let mixer = null;
+            let hasEmbeddedAnim = false;
+            if (animations && animations.length > 0) {
+                mixer = new THREE.AnimationMixer(modelRoot);
+                const action = mixer.clipAction(animations[0]);
+                action.play();
+                hasEmbeddedAnim = true;
+            }
+
+            const animate = vrm ? makeVRMAnimator(vrm) : (t) => {
+                if (!hasEmbeddedAnim) {
+                    // Respiración / levitación sutil si es una malla estática
+                    wrapper.position.y = Math.sin(t * 1.8) * 0.015;
+                }
+            };
+
+            const cleanName = fileName.replace(/\.[^/.]+$/, "");
+            const ext = fileName.split('.').pop().toUpperCase();
+
+            customCharacterEntry = {
+                object: wrapper,
+                animate,
+                mixer,
+                vrm,
+                code: `UNIT 04 // AVATAR ${ext}`,
+                title: cleanName,
+                subtitle: `Modelo Externo Importado (${ext})`,
+                description: vrm
+                    ? 'Avatar VRM con rig humanoide: poses, gestos, expresiones faciales, parpadeo, mirada y física de cabello activos.'
+                    : hasEmbeddedAnim
+                    ? `Personaje 3D importado con ${animations.length} pista(s) de animación embebida reproduciéndose automáticamente.`
+                    : 'Personaje 3D calibrado en altura (1.72m) y centrado automáticamente sobre la plataforma holográfica.',
+                polygons: countTriangles(wrapper) + ' tris',
+                rigInfo: vrm ? 'Humanoide VRM + SpringBones' : hasEmbeddedAnim ? `Animación (${animations.length} clips)` : `Malla ${ext}`
+            };
+
+            const customTab = document.getElementById('custom-char-tab');
+            document.getElementById('custom-char-tab-title').textContent = cleanName;
+            customTab.classList.remove('hidden');
+
+            selectCharacter(3);
+            setCameraFraming('full');
+            showToast(`Personaje "${cleanName}" proyectado en escenario`);
+        }
+
+        function handleCharacterFile(file) {
+            if (!file) return;
+            const fileName = file.name;
+            const ext = fileName.split('.').pop().toLowerCase();
+            const url = URL.createObjectURL(file);
+
+            showToast(`Cargando avatar ${fileName}...`);
+
+            if (ext === 'glb' || ext === 'gltf' || ext === 'vrm') {
+                ensureVRM().then(() => gltfLoader.load(
+                    url,
+                    (gltf) => {
+                        const vrm = gltf.userData.vrm || null;
+                        if (vrm) {
+                            const U = VRMmod.VRMUtils;
+                            try { U.removeUnnecessaryVertices && U.removeUnnecessaryVertices(gltf.scene); U.removeUnnecessaryJoints && U.removeUnnecessaryJoints(gltf.scene); } catch (e) { console.warn(e); }
+                            U.rotateVRM0 && U.rotateVRM0(vrm);
+                            vrm.scene.traverse((o) => { o.frustumCulled = false; });
+                            mountImportedCharacter(vrm.scene, [], fileName, vrm);
+                            URL.revokeObjectURL(url);
+                            return;
+                        }
+                        mountImportedCharacter(gltf.scene, gltf.animations, fileName);
+                        URL.revokeObjectURL(url);
+                    },
+                    undefined,
+                    (err) => {
+                        console.error(err);
+                        showToast('Error al procesar archivo GLB/VRM', true);
+                    }
+                ));
+            } else if (ext === 'fbx') {
+                fbxLoader.load(
+                    url,
+                    (fbx) => {
+                        mountImportedCharacter(fbx, fbx.animations, fileName);
+                        URL.revokeObjectURL(url);
+                    },
+                    undefined,
+                    (err) => {
+                        console.error(err);
+                        showToast('Error al procesar archivo FBX', true);
+                    }
+                );
+            } else if (ext === 'obj') {
+                objLoader.load(
+                    url,
+                    (obj) => {
+                        mountImportedCharacter(obj, [], fileName);
+                        URL.revokeObjectURL(url);
+                    },
+                    undefined,
+                    (err) => {
+                        console.error(err);
+                        showToast('Error al procesar archivo OBJ', true);
+                    }
+                );
+            } else {
+                showToast('Formato no soportado. Usa .vrm, .glb, .gltf, .fbx o .obj', true);
+            }
+        }
+
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleCharacterFile(e.target.files[0]);
+            }
+        });
+
+        // Drag & Drop global
+        const dropZone = document.getElementById('drop-zone');
+        let dragDepth = 0;
+
+        window.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dragDepth++;
+            dropZone.classList.remove('hidden');
+            dropZone.classList.add('flex');
+        });
+
+        window.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragDepth--;
+            if (dragDepth === 0) {
+                dropZone.classList.add('hidden');
+                dropZone.classList.remove('flex');
+            }
+        });
+
+        window.addEventListener('dragover', (e) => e.preventDefault());
+
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragDepth = 0;
+            dropZone.classList.add('hidden');
+            dropZone.classList.remove('flex');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleCharacterFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // =========================================================================
+        // 7. CONTROLES INTERACTIVOS: POSES, CÁMARA, ILUMINACIÓN Y SHADERS
+        // =========================================================================
+        window.setCharacterPose = function(pose) {
+            currentPose = pose;
+            document.querySelectorAll('.pose-btn').forEach((btn) => {
+                const isActive = btn.getAttribute('data-pose') === pose;
+                btn.classList.toggle('active', isActive);
+                const dot = btn.querySelector('span');
+                if (dot) {
+                    dot.className = isActive ? 'w-1.5 h-1.5 rounded-full bg-[#00f0ff]' : 'w-1.5 h-1.5 rounded-full bg-zinc-500';
+                }
+            });
+        };
+
+        window.setCameraFraming = function(frameType) {
+            isUserInteracting = false;
+            if (frameType === 'full') {
+                desiredCameraPos.set(0, 1.32, 3.65);
+                desiredTargetPos.set(0, 1.08, 0);
+            } else if (frameType === 'bust') {
+                desiredCameraPos.set(0.25, 1.56, 1.65);
+                desiredTargetPos.set(0, 1.48, 0);
+            } else if (frameType === 'low') {
+                desiredCameraPos.set(-0.85, 0.72, 2.75);
+                desiredTargetPos.set(0, 1.22, 0);
+            }
+
+            document.querySelectorAll('.frame-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.getAttribute('data-frame') === frameType);
+            });
+        };
+
+        const lightingPresets = {
+            concert: {
+                bg: 0x08080c,
+                keyColor: 0xffffff,
+                keyInt: 2.1,
+                rimL: 0x00f0ff,
+                rimR: 0xff2a85,
+                ring1: 0x00f0ff,
+                ring2: 0xff2a85,
+                particles: 0x00f0ff
+            },
+            studio: {
+                bg: 0x0d0f14,
+                keyColor: 0xfff8f0,
+                keyInt: 2.6,
+                rimL: 0xe0f2fe,
+                rimR: 0xfde68a,
+                ring1: 0x38bdf8,
+                ring2: 0xffffff,
+                particles: 0xe0f2fe
+            },
+            sunset: {
+                bg: 0x0c070b,
+                keyColor: 0xffedd5,
+                keyInt: 2.2,
+                rimL: 0xff2a85,
+                rimR: 0xf59e0b,
+                ring1: 0xff2a85,
+                ring2: 0xf59e0b,
+                particles: 0xfbbf24
+            },
+            rim: {
+                bg: 0x050508,
+                keyColor: 0xc4b5fd,
+                keyInt: 1.1,
+                rimL: 0x8b5cf6,
+                rimR: 0x00f0ff,
+                ring1: 0xa855f7,
+                ring2: 0x00f0ff,
+                particles: 0xc084fc
+            }
+        };
+
+        window.setLightingPreset = function(key, silent = false) {
+            const p = lightingPresets[key];
+            if (!p) return;
+
+            scene.background.setHex(p.bg);
+            scene.fog.color.setHex(p.bg);
+            keyLight.color.setHex(p.keyColor);
+            keyLight.intensity = p.keyInt;
+            rimLightLeft.color.setHex(p.rimL);
+            rimLightRight.color.setHex(p.rimR);
+            underGlowLight.color.setHex(p.rimL);
+            holoRing1Mat.color.setHex(p.ring1);
+            holoRing2Mat.color.setHex(p.ring2);
+            particleMat.color.setHex(p.particles);
+
+            document.querySelectorAll('.lighting-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.getAttribute('data-preset') === key);
+            });
+
+            if (!silent) {
+                const labels = { concert: 'Concierto Cian/Magenta', studio: 'Estudio Fotográfico', sunset: 'Atardecer Neón', rim: 'Silueta Rim-Light' };
+                showToast(`Iluminación: ${labels[key]}`);
+            }
+        };
+
+        window.toggleToonOutline = function() {
+            toonOutlineEnabled = !toonOutlineEnabled;
+            outlineMeshes.forEach((m) => { m.visible = toonOutlineEnabled; });
+            const btn = document.getElementById('toggle-outline');
+            const st = document.getElementById('status-outline');
+            btn.classList.toggle('active', toonOutlineEnabled);
+            st.textContent = toonOutlineEnabled ? 'ON' : 'OFF';
+            st.className = toonOutlineEnabled ? 'text-[10px] font-mono text-[#00f0ff]' : 'text-[10px] font-mono text-zinc-500';
+        };
+
+        window.toggleAutoRotate = function() {
+            controls.autoRotate = !controls.autoRotate;
+            const btn = document.getElementById('toggle-rotate');
+            const st = document.getElementById('status-rotate');
+            btn.classList.toggle('active', controls.autoRotate);
+            st.textContent = controls.autoRotate ? 'ON' : 'OFF';
+            st.className = controls.autoRotate ? 'text-[10px] font-mono text-[#00f0ff]' : 'text-[10px] font-mono text-zinc-500';
+        };
+
+        let stageActive = true;
+        window.toggleStage = function() {
+            stageActive = !stageActive;
+            stageGroup.visible = stageActive;
+            const btn = document.getElementById('toggle-stage');
+            const st = document.getElementById('status-stage');
+            btn.classList.toggle('active', stageActive);
+            st.textContent = stageActive ? 'ON' : 'OFF';
+            st.className = stageActive ? 'text-[10px] font-mono text-[#00f0ff]' : 'text-[10px] font-mono text-zinc-500';
+        };
+
+        window.toggleCuratorDrawer = function() {
+            document.getElementById('ui-curator-panel').classList.toggle('hidden');
+        };
+
+        let isImmersive = false;
+        window.toggleImmersiveMode = function() {
+            isImmersive = !isImmersive;
+            document.getElementById('ui-header').classList.toggle('immersive-hidden-top', isImmersive);
+            document.getElementById('ui-character-card').classList.toggle('immersive-hidden', isImmersive);
+            document.getElementById('ui-curator-panel').classList.toggle('immersive-hidden', isImmersive);
+            document.getElementById('ui-dock').classList.toggle('immersive-hidden', isImmersive);
+
+            const exitBtn = document.getElementById('exit-immersive-btn');
+            if (isImmersive) {
+                exitBtn.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                exitBtn.classList.add('opacity-0', 'pointer-events-none');
+            }
+        };
+
+        let toastTimer;
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            document.getElementById('toast-dot').className = isError
+                ? 'w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]'
+                : 'w-2 h-2 rounded-full bg-[#00f0ff] shadow-[0_0_8px_#00f0ff]';
+
+            toast.classList.remove('opacity-0', 'translate-y-[-8px]');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-8px]');
+            }, 2800);
+        }
+
+        // =========================================================================
+        // 8. BUCLE DE ANIMACIÓN PRINCIPAL & RESPONSIVIDAD
+        // =========================================================================
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const elapsed = clock.getElapsedTime();
+            // No ejecutar renders GPU si la pestaña está en segundo plano.
+            if (document.hidden) return;
+
+            // Animación del personaje activo o del mixer de archivo importado
+            if (customMixer) {
+                customMixer.update(delta);
+            }
+            if (currentCharacterAnimator) {
+                currentCharacterAnimator(elapsed, delta);
+            }
+
+            // Animación reactiva del escenario y ecualizador circular
+            if (stageActive) {
+                holoRing1.rotation.z = elapsed * 0.4;
+                holoRing2.rotation.z = -elapsed * 0.25;
+
+                for (let i = 0; i < eqBars.length; i++) {
+                    const b = eqBars[i];
+                    const h = 0.04 + Math.abs(Math.sin(elapsed * 4.5 + b.phase) * Math.cos(elapsed * 2.1 - b.phase * 0.5)) * 0.22;
+                    b.mesh.scale.y = h;
+                    b.mesh.position.y = 0.06 + h * 0.5;
+                }
+
+                // Ascenso continuo de partículas holográficas
+                const posAttr = particleGeo.attributes.position;
+                for (let i = 0; i < particleCount; i++) {
+                    let y = posAttr.getY(i) + particleSpeeds[i] * delta;
+                    if (y > 3.0) y = 0.1;
+                    posAttr.setY(i, y);
+                }
+                posAttr.needsUpdate = true;
+            }
+
+            // Transición suave de encuadre de cámara cuando se selecciona un preset
+            if (!isUserInteracting) {
+                camera.position.lerp(desiredCameraPos, 0.07);
+                controls.target.lerp(desiredTargetPos, 0.07);
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        async function bootOriginalMikuVrm() {
+            const remoteModelPath = './models/8665009645295209918.vrm';
+            const hint = document.getElementById('model-file-prompt');
+            document.getElementById('quick-model-upload')?.addEventListener('click', () => {
+                document.getElementById('file-input')?.click();
+            });
+
+            // Si el propietario publica el asset VRM en /models, se carga de forma automática.
+            // Si no está disponible, mantenemos el escenario original y permitimos importarlo.
+            try {
+                const response = await fetch(remoteModelPath, {cache: 'force-cache'});
+                if (!response.ok) throw new Error('VRM no alojado (' + response.status + ')');
+                const blob = await response.blob();
+                const file = new File([blob], 'Hatsune Miku - RemiX3.vrm', {type:'model/gltf-binary'});
+                handleCharacterFile(file);
+                hint?.classList.add('hidden');
+            } catch (error) {
+                console.info('BVH3 Retrato 3D: modelo exacto disponible mediante importación local', error.message);
+                hint?.classList.remove('hidden');
+            }
+        }
+
+        window.onload = function() {
+            selectCharacter(0);
+            animate();
+            bootOriginalMikuVrm();
+        };
+    </script>
+</body>
+</html>
