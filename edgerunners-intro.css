@@ -508,3 +508,164 @@ body.bvh3-future-core.bvh3-edgerunners.low-power-mode #home .hero-logo-img {anim
 }
 @keyframes eg-reveal-left {from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
 @keyframes eg-reveal-right {from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:translateX(0)}}
+
+
+/* ==============================================================
+   BVH3 3.2 · COMPACT // EDGERUNNERS × MIKU
+   Visual-only refinement, no DOM/JS/command handlers touched.
+   ==============================================================
+   Desktop: a centered nav independent of logo width.
+   Yellow = Edgerunners, turquoise = Miku; equal design accents.
+*/
+body.bvh3-future-core.bvh3-edgerunners {
+  --eg-yellow:#fcee0a;
+  --eg-cyan:#29eadc;
+  --eg-pink:#ff29bc;
+}
+body.bvh3-future-core.bvh3-edgerunners .cyber-nav::after {
+  background:linear-gradient(90deg,var(--eg-yellow) 0% 49.8%,var(--eg-cyan) 50.2% 100%);
+}
+body.bvh3-future-core.bvh3-edgerunners #home .hero-content::before {
+  background:linear-gradient(90deg,var(--eg-yellow) 0 50%,var(--eg-cyan) 50% 100%);
+}
+body.bvh3-future-core.bvh3-edgerunners #home .hero-content::after {
+  background:repeating-linear-gradient(118deg,var(--eg-yellow) 0 12px,#08090d 12px 23px,var(--eg-cyan) 23px 35px,#08090d 35px 46px);
+}
+body.bvh3-future-core.bvh3-edgerunners #home .title-main {
+  background:linear-gradient(180deg,var(--eg-cyan) 0 43%,var(--eg-yellow) 56% 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-shadow:none!important;
+  filter:drop-shadow(3px 3px 0 rgba(255,41,188,.48))!important;
+}
+body.bvh3-future-core.bvh3-edgerunners #home .title-sub {
+  color:var(--eg-cyan);
+  border-bottom-color:var(--eg-yellow);
+}
+body.bvh3-future-core.bvh3-edgerunners #home .hero-description {
+  border-left-color:var(--eg-cyan);
+}
+body.bvh3-future-core.bvh3-edgerunners #home .hero-logo {
+  border-color:rgba(41,234,220,.63);
+  background:
+    linear-gradient(135deg,rgba(41,234,220,.13),transparent 30%),
+    repeating-linear-gradient(130deg,transparent 0 53px,rgba(252,238,10,.043) 53px 54px,transparent 54px 97px),
+    radial-gradient(circle at 50% 50%,rgba(41,234,220,.19),transparent 59%),
+    #0d111d;
+}
+body.bvh3-future-core.bvh3-edgerunners #home .hero-logo::before {
+  border-color:rgba(41,234,220,.72);
+  box-shadow:0 0 0 24px rgba(41,234,220,.025),0 0 55px rgba(41,234,220,.10);
+}
+body.bvh3-future-core.bvh3-edgerunners #home .hero-logo::after {
+  background:var(--eg-cyan);
+}
+body.bvh3-future-core.bvh3-edgerunners #home .stat:nth-child(2) {
+  border-color:rgba(41,234,220,.52);
+}
+body.bvh3-future-core.bvh3-edgerunners #home .stat:nth-child(2)::before {background:var(--eg-cyan);}
+body.bvh3-future-core.bvh3-edgerunners #home .stat:nth-child(2) .stat-number {color:var(--eg-cyan);}
+body.bvh3-future-core.bvh3-edgerunners .bvh3-action--secondary {border-color:var(--eg-cyan);}
+body.bvh3-future-core.bvh3-edgerunners #projects .portfolio-feature-visual {border-right-color:var(--eg-cyan);}
+body.bvh3-future-core.bvh3-edgerunners #apps .app-tile:nth-child(even) {border-top-color:var(--eg-cyan);}
+body.bvh3-future-core.bvh3-edgerunners #skills .tech-chip:nth-child(even) {border-left-color:var(--eg-yellow);}
+body.bvh3-future-core.bvh3-edgerunners .cyber-footer::before {
+  background:repeating-linear-gradient(-45deg,var(--eg-yellow) 0 14px,#08090d 14px 26px,var(--eg-cyan) 26px 40px,#08090d 40px 52px);
+}
+
+/* Scale down the opening just enough to keep the whole card above the fold. */
+@media (min-width:1101px) {
+  body.bvh3-future-core.bvh3-edgerunners .nav-container {
+    position:relative;
+    justify-content:center;
+    max-width:1600px;
+  }
+  body.bvh3-future-core.bvh3-edgerunners .logo {
+    position:absolute;
+    left:clamp(1rem,2vw,2.2rem);
+    top:50%;
+    transform:translateY(-50%);
+    margin:0;
+    z-index:1;
+  }
+  body.bvh3-future-core.bvh3-edgerunners .nav-menu {
+    flex:0 1 auto;
+    width:max-content;
+    max-width:calc(100% - 124px);
+    margin-inline:auto;
+    justify-content:center;
+    gap:clamp(.14rem,.45vw,.55rem);
+  }
+  body.bvh3-future-core.bvh3-edgerunners .nav-btn {
+    padding:.58rem clamp(.40rem,.70vw,.78rem);
+    font-size:clamp(.60rem,.71vw,.73rem);
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home.active {
+    padding:clamp(.8rem,1.7vw,1.7rem) 0;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-content {
+    max-width:1300px;
+    min-height:0;
+    gap:0 clamp(1.3rem,3.6vw,4rem);
+    padding:clamp(1.65rem,3.5vw,3.35rem);
+    grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .title-main {
+    font-size:clamp(2.15rem,4.25vw,4.55rem);
+    line-height:1.08;
+    margin-bottom:.72rem;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .title-line {margin-bottom:.9rem;}
+  body.bvh3-future-core.bvh3-edgerunners #home .cyber-title {margin-bottom:.85rem;}
+  body.bvh3-future-core.bvh3-edgerunners #home .title-sub {font-size:clamp(.86rem,1.2vw,1.07rem);}
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-description {
+    font-size:clamp(1.08rem,1.35vw,1.22rem);
+    margin-bottom:1.2rem;
+  }
+  body.bvh3-future-core.bvh3-edgerunners .bvh3-hero-actions {
+    gap:.7rem;
+    margin-bottom:1.25rem;
+  }
+  body.bvh3-future-core.bvh3-edgerunners .bvh3-action {
+    min-height:46px;
+    padding:.72rem .95rem;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-stats {gap:.6rem;}
+  body.bvh3-future-core.bvh3-edgerunners #home .stat {
+    min-height:82px;
+    padding:.75rem .7rem;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .stat-number {font-size:clamp(1.35rem,1.85vw,1.85rem);}
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-logo {
+    min-height:310px;
+    max-height:480px;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-logo-img {width:clamp(150px,17.5vw,230px);}
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-content::after {height:16px;}
+}
+
+/* Keep tablet and Android layouts unclipped; retain their original drawer logic. */
+@media (min-width:701px) and (max-width:1100px) {
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-content {
+    min-height:0;
+    padding:clamp(1.2rem,3vw,2.2rem);
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .title-main {font-size:clamp(2rem,4.6vw,3.3rem);}
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-logo {min-height:290px;}
+}
+@media (max-width:700px) {
+  body.bvh3-future-core.bvh3-edgerunners #home .title-main {
+    background:linear-gradient(180deg,var(--eg-cyan) 0 43%,var(--eg-yellow) 56% 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+    filter:drop-shadow(1px 2px 0 rgba(255,41,188,.40))!important;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-description {
+    border-bottom-color:var(--eg-cyan);
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-logo::after {
+    background:var(--eg-cyan);
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home .hero-content::after {height:8px;}
+}
