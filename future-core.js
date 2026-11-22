@@ -10,7 +10,7 @@
 
     const navMenu = document.querySelector('#mainNav .nav-menu');
     const navToggle = document.getElementById('navToggle');
-    const mobileQuery = window.matchMedia('(max-width: 980px)');
+    const mobileQuery = window.matchMedia('(max-width: 1100px)');
 
     // Hero calls into the *existing* navigation button and therefore uses
     // the original navigation handlers, section lifecycle and hash updates.
@@ -45,8 +45,8 @@
       }
     });
 
-    // The legacy outside-click handler covers <=768px. Complete the 769–980px
-    // tablet range introduced by the new responsive menu.
+    // The legacy outside-click handler covers <=768px. Complete the 769–1100px
+    // tablet range used by the Edgerunners responsive menu.
     document.addEventListener('click', (event) => {
       if (window.innerWidth <= 768 || !mobileQuery.matches) return;
       if (!navMenu.classList.contains('active')) return;
