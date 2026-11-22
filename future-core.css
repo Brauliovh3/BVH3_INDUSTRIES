@@ -1,0 +1,323 @@
+/*
+ * BVH3 INDUSTRIES · FUTURE CORE / 3.0
+ * Additive visual layer. Keep the legacy DOM contract and application logic.
+ * Remove this stylesheet and the body class to revert the redesign.
+ */
+body.bvh3-future-core {
+  --primary-cyan: #39e6d2;
+  --primary-pink: #ff2bd6;
+  --secondary-green: #39e6d2;
+  --primary-yellow: #fcee0a;
+  --dark-bg: #080e19;
+  --darker-bg: #070c14;
+  --text-light: #eefbff;
+  --text-muted: #afbfca;
+  --border-glow: #39e6d2;
+  --shadow-glow: 0 0 18px rgba(57,230,210,.13);
+  --fc-surface: #101b2b;
+  --fc-panel: rgba(17,30,46,.94);
+  --fc-stroke: rgba(96,185,196,.24);
+  --fc-muted: #afbfca;
+  color: #edf9ff;
+  background: #070c14;
+  background-image: radial-gradient(ellipse at 80% 2%, rgba(35,144,156,.11),transparent 44%),linear-gradient(145deg,#070c14,#0b1321 70%,#080d17);
+  background-attachment: scroll;
+  font-family: 'Rajdhani',system-ui,sans-serif;
+  overflow-x: clip;
+}
+.bvh3-future-core *, .bvh3-future-core *::before, .bvh3-future-core *::after { box-sizing: border-box; }
+.bvh3-future-core img,.bvh3-future-core video { max-width:100%; }
+.bvh3-future-core :is(button,input,select,textarea) { font: inherit; }
+.bvh3-future-core :is(a,button,input,select,textarea):focus-visible { outline:2px solid #fcee0a;outline-offset:3px; }
+.bvh3-future-core ::selection { background:#39e6d2;color:#07111b; }
+.bvh3-future-core #matrix-bg { background:radial-gradient(circle at 82% 12%,rgba(57,230,210,.07),transparent 38%),radial-gradient(circle at 12% 88%,rgba(255,43,214,.06),transparent 45%);opacity:1; }
+.bvh3-future-core #matrix-bg::before { content:none!important;animation:none!important; }
+.bvh3-future-core #matrix-bg::after {background:linear-gradient(rgba(57,230,210,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(57,230,210,.014) 1px,transparent 1px);background-size:68px 68px;opacity:.65; }
+.bvh3-future-core #particles-canvas {opacity:.36;}
+
+/* The existing JS still owns the navigation, unlock flow and active state. */
+.bvh3-future-core .cyber-nav {
+  height:76px; padding:0; border:0;border-bottom:1px solid rgba(57,230,210,.28);
+  background:rgba(7,12,20,.97); box-shadow:0 10px 35px rgba(0,0,0,.28);
+}
+.bvh3-future-core .cyber-nav::after {content:'';position:absolute;inset:auto 0 0;height:2px;background:linear-gradient(90deg,transparent,#39e6d2 30%,#ff2bd6 72%,transparent);opacity:.58;pointer-events:none;}
+.bvh3-future-core .nav-container {height:100%;max-width:1480px;flex-wrap:nowrap;gap:clamp(.65rem,2vw,2rem);padding:0 clamp(1rem,3vw,2.8rem);}
+.bvh3-future-core .logo {display:flex;align-items:center;}
+.bvh3-future-core .logo-img {height:47px;width:47px;object-fit:contain;animation:none;filter:drop-shadow(0 0 9px rgba(57,230,210,.36));}
+.bvh3-future-core .nav-menu {flex:1 1 auto;max-width:none;flex-wrap:nowrap;gap:clamp(.1rem,.45vw,.48rem);justify-content:flex-end;overflow:visible;}
+.bvh3-future-core .nav-btn {
+  margin:0;flex:0 0 auto;width:auto;max-width:none;min-height:41px;
+  padding:.6rem clamp(.5rem,.85vw,.96rem);font-size:clamp(.61rem,.69vw,.77rem);
+  font-family:'Orbitron',monospace;font-weight:700;letter-spacing:.035em;
+  border:1px solid transparent;border-radius:8px;background:transparent;
+  box-shadow:none;color:#beced8;clip-path:none;transform:none;
+  text-shadow:none;transition:background-color .18s ease,color .18s ease,border-color .18s ease;
+}
+.bvh3-future-core .nav-btn::before,.bvh3-future-core .nav-btn::after,.bvh3-future-core .nav-btn .btn-glitch {display:none!important;}
+.bvh3-future-core .nav-btn:is(:hover,:focus-visible) {background:rgba(57,230,210,.10);color:#fff;border-color:rgba(57,230,210,.3);transform:none;box-shadow:none;}
+.bvh3-future-core .nav-btn.active {background:rgba(57,230,210,.13);border-color:rgba(57,230,210,.55);box-shadow:inset 0 -2px 0 #39e6d2;color:#bafff8;transform:none;}
+.bvh3-future-core .nav-btn--hidden,.bvh3-future-core .nav-btn[hidden] {display:none!important;}
+.bvh3-future-core .nav-btn--revealed {background:rgba(255,43,214,.13);border-color:rgba(255,43,214,.45);color:#fff;animation:none;}
+.bvh3-future-core .nav-toggle {border:1px solid rgba(57,230,210,.4);border-radius:9px;min-width:44px;min-height:44px;justify-content:center;align-items:center;cursor:pointer;}
+.bvh3-future-core .main-content {margin-top:76px;}
+.bvh3-future-core .section {min-height:calc(100svh - 76px);padding:clamp(2rem,4vw,4.8rem) 0 4rem;}
+.bvh3-future-core .section > .container {width:min(100% - 2.5rem,1340px);max-width:1340px;margin-inline:auto;min-width:0;}
+.bvh3-future-core .section-header {position:relative;padding:0 0 1.45rem;margin-bottom:clamp(1.4rem,3vw,2.9rem);text-align:left;border-bottom:1px solid rgba(57,230,210,.18);overflow:visible;}
+.bvh3-future-core .section-header::before,.bvh3-future-core .section-header::after {content:none!important;animation:none!important;}
+.bvh3-future-core .section-title {display:flex;align-items:baseline;gap:.78rem;margin:0 0 .55rem;font:800 clamp(1.65rem,3.4vw,3.1rem)/1.25 'Orbitron',monospace;letter-spacing:.025em;text-align:left;color:#f0fcff;text-shadow:none;}
+.bvh3-future-core .section-title::before {font:700 .43em 'Orbitron',monospace;letter-spacing:.16em;color:#39e6d2;align-self:center;}
+.bvh3-future-core #about .section-title::before {content:'01 /';}
+.bvh3-future-core #projects .section-title::before {content:'02 /';}
+.bvh3-future-core #project-view .section-title::before {content:'02.1 /';}
+.bvh3-future-core #memories .section-title::before {content:'03 /';}
+.bvh3-future-core #apps .section-title::before {content:'04 /';}
+.bvh3-future-core #skills .section-title::before {content:'05 /';}
+.bvh3-future-core #depool .section-title::before {content:'06 /';}
+.bvh3-future-core #contact .section-title::before {content:'07 /';}
+.bvh3-future-core .section-subtitle {font-size:clamp(1rem,1.55vw,1.25rem);letter-spacing:.02em;color:#acc3cd;text-align:left;line-height:1.5;}
+
+/* Hero · one clear message and a quieter technical visual. */
+.bvh3-future-core #home {display:flex;align-items:center;padding:clamp(1.2rem,3vw,3.5rem) 0;}
+.bvh3-future-core #home .hero-content {
+  position:relative;display:grid;align-content:center;align-items:center;
+  grid-template-columns:minmax(0,1.14fr) minmax(0,.86fr);
+  grid-template-areas:'headline visual' 'description visual' 'actions visual' 'stats visual';
+  gap:0 clamp(2rem,5vw,5rem);
+  max-width:1320px;min-height:min(690px,calc(100svh - 122px));
+  padding:clamp(2rem,4.7vw,5.25rem);margin:0 auto;
+  background:linear-gradient(115deg,rgba(18,33,49,.94),rgba(9,17,29,.91));
+  border:1px solid rgba(57,230,210,.25);border-radius:26px;
+  box-shadow:0 18px 76px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.055);
+  text-align:left;overflow:hidden;transform:none;
+}
+.bvh3-future-core #home .hero-content::before {content:''!important;display:block!important;position:absolute;left:0;top:0;width:165px;height:3px;background:linear-gradient(90deg,#39e6d2,#ff2bd6,transparent);animation:none!important;transform:none!important;}
+.bvh3-future-core #home .hero-content::after {content:none!important;animation:none!important;}
+.bvh3-future-core #home .hero-logo {
+  grid-area:visual;display:grid;place-items:center;position:relative;
+  width:100%;height:100%;min-height:370px;max-width:460px;margin:0 auto;
+  border:1px solid rgba(57,230,210,.19);border-radius:30px;
+  background:radial-gradient(circle at 50% 48%,rgba(57,230,210,.16),transparent 46%),linear-gradient(140deg,rgba(24,47,61,.70),rgba(8,14,25,.52));
+  isolation:isolate;overflow:hidden;
+}
+.bvh3-future-core #home .hero-logo::before {content:'';position:absolute;inset:13%;border:1px solid rgba(57,230,210,.28);border-radius:50%;box-shadow:0 0 0 34px rgba(57,230,210,.035),0 0 0 72px rgba(255,43,214,.025);pointer-events:none;}
+.bvh3-future-core #home .hero-logo::after {content:'';position:absolute;inset:8%;border:1px dashed rgba(255,43,214,.26);border-radius:50%;pointer-events:none;}
+.bvh3-future-core #home .hero-logo-img {position:relative;z-index:1;width:clamp(154px,18vw,248px);height:auto;max-width:74%;margin:auto;transform:none;animation:bvh3-fc-float 7s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(57,230,210,.3));}
+.bvh3-future-core #home .cyber-title {grid-area:headline;margin:0 0 1.25rem;font-family:'Orbitron',monospace;text-align:left;}
+.bvh3-future-core #home .title-line {display:block;margin:0 0 1.1rem;color:#fcee0a;font-size:clamp(.7rem,.9vw,.95rem);letter-spacing:.33em;font-weight:700;}
+.bvh3-future-core #home .title-main {
+  display:block;font:900 clamp(2.05rem,4.1vw,4.75rem)/1.13 'Orbitron',monospace;
+  letter-spacing:-.035em;overflow-wrap:normal;word-break:normal;text-wrap:balance;
+  margin:0 0 1rem;text-shadow:none!important;filter:none!important;animation:none!important;will-change:auto;
+  color:#f3fcff;background:linear-gradient(118deg,#fff 5%,#a2f5ee 59%,#39e6d2 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.bvh3-future-core #home .title-main::before,.bvh3-future-core #home .title-main::after {content:none!important;animation:none!important;}
+.bvh3-future-core #home .title-sub {display:block;color:#39e6d2;font:600 clamp(.9rem,1.4vw,1.22rem)/1.55 'Rajdhani',sans-serif;letter-spacing:.075em;text-transform:none;text-shadow:none;}
+.bvh3-future-core #home .hero-description {grid-area:description;color:#b5c7d1;font-size:clamp(1.05rem,1.5vw,1.34rem);max-width:44ch;line-height:1.5;margin:0 0 1.7rem;text-align:left;}
+.bvh3-future-core .bvh3-hero-actions {grid-area:actions;display:flex;flex-wrap:wrap;gap:.8rem;margin-bottom:2.1rem;}
+.bvh3-future-core .bvh3-action {border:1px solid rgba(57,230,210,.45);border-radius:10px;padding:.93rem 1.18rem;min-height:47px;display:inline-flex;align-items:center;justify-content:center;gap:.9rem;color:#c6fdf7;background:rgba(57,230,210,.065);font:700 .75rem/1.3 'Orbitron',monospace;letter-spacing:.02em;cursor:pointer;transition:transform .2s ease,border-color .2s ease,background-color .2s ease;}
+.bvh3-future-core .bvh3-action--primary {color:#061822;background:#39e6d2;border-color:#39e6d2;box-shadow:0 10px 32px rgba(57,230,210,.12);}
+.bvh3-future-core #home .hero-stats {grid-area:stats;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;margin:0;justify-content:stretch;width:100%;max-width:620px;}
+.bvh3-future-core #home .stat {position:relative;margin:0;padding:1.05rem .85rem;min-width:0;min-height:89px;border:1px solid rgba(57,230,210,.2);border-radius:12px;background:rgba(6,14,24,.72);box-shadow:none;clip-path:none;transform:none;text-align:left;}
+.bvh3-future-core #home .stat::before,.bvh3-future-core #home .stat::after {content:none!important;}
+.bvh3-future-core #home .stat-number {display:block;color:#fff;font:800 clamp(1.45rem,2.3vw,2rem)/1.3 'Orbitron',monospace;text-shadow:none;}
+.bvh3-future-core #home .stat-label {display:block;margin-top:.32rem;color:#a8c6ca;font:700 .64rem/1.4 'Orbitron',monospace;letter-spacing:.06em;}
+
+/* Shared surface language across script-generated sections. */
+.bvh3-future-core :is(#about,#projects,#project-view,#memories,#apps,#skills,#contact) :is(.panel,.card,.portfolio-card,.portfolio-feature,.portfolio-detail,.profile-identity,.profile-service,.profile-principle,.memory-card,.contact-card,.tech-chip,.skill-domain-panel) {
+  border:1px solid var(--fc-stroke);border-radius:16px;background-color:var(--fc-panel);box-shadow:0 14px 34px rgba(0,0,0,.13);clip-path:none;
+}
+.bvh3-future-core :is(#about,#projects,#project-view,#memories,#apps,#skills,#contact) :is(.panel,.card,.portfolio-card,.portfolio-detail,.profile-identity,.profile-service,.contact-card,.tech-chip)::before {animation:none;}
+.bvh3-future-core :is(#about,#projects,#memories,#apps,#skills,#contact) :is(.portfolio-card,.profile-service,.app-tile,.memory-card,.tech-chip,.contact-card) {transition:transform .22s ease,border-color .22s ease,background-color .22s ease;min-width:0;}
+.bvh3-future-core :is(#about,#projects,#project-view,#memories,#apps,#skills,#contact) :is(p,.card-text,.portfolio-description,.profile-intro,.profile-role) {line-height:1.55;}
+.bvh3-future-core :is(.portfolio-tags,.tag-row,.profile-stack) :is(li,span) {border-radius:7px;border-color:rgba(57,230,210,.26);}
+.bvh3-future-core :is(#about,#projects,#project-view,#memories,#apps,#skills,#contact) :is(button,a).portfolio-button,
+.bvh3-future-core :is(#about,#projects,#project-view,#memories,#apps,#skills,#contact) :is(button,a).portfolio-card-action,
+.bvh3-future-core #apps .app-download-btn,
+.bvh3-future-core #contact .submit-btn {border-radius:9px;min-height:46px;transition:transform .2s ease,background-color .2s ease,border-color .2s ease;}
+
+/* Profile · clear identity hierarchy. */
+.bvh3-future-core #about .profile-layout {display:grid;grid-template-columns:minmax(300px,.9fr) minmax(0,1.1fr);gap:clamp(1rem,2.6vw,2rem);align-items:start;}
+.bvh3-future-core #about .profile-identity {overflow:hidden;background:linear-gradient(155deg,rgba(16,37,50,.98),rgba(8,16,28,.95));}
+.bvh3-future-core #about .profile-cover {background:linear-gradient(120deg,rgba(57,230,210,.15),rgba(255,43,214,.09)),#0c1725;min-height:105px;}
+.bvh3-future-core #about .profile-identity-body {padding:clamp(1.15rem,2.1vw,2rem);}
+.bvh3-future-core #about .profile-brand {animation:none;filter:drop-shadow(0 0 12px rgba(57,230,210,.25));}
+.bvh3-future-core #about .profile-person-name {font-size:clamp(1.4rem,2.2vw,2rem);overflow-wrap:anywhere;}
+.bvh3-future-core #about .profile-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;}
+.bvh3-future-core #about .profile-metrics > div {min-width:0;padding:.8rem .6rem;background:#0a1826;border:1px solid rgba(57,230,210,.16);border-radius:10px;}
+.bvh3-future-core #about .profile-details {min-width:0;}
+.bvh3-future-core #about .profile-details-header {margin-bottom:1rem;}
+.bvh3-future-core #about .profile-services {display:grid;gap:.8rem;}
+.bvh3-future-core #about .profile-service {padding:1.1rem 1.25rem;}
+.bvh3-future-core #about .profile-principle {margin-top:1rem;padding:1.2rem 1.4rem;border-left:3px solid #ff2bd6;}
+
+/* Portfolio · featured work and quiet high-contrast cards. */
+.bvh3-future-core #projects .portfolio-intro {padding:0 0 1.3rem;}
+.bvh3-future-core #projects .portfolio-feature {display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:0;overflow:hidden;background:linear-gradient(130deg,#111f30,#0d1624);}
+.bvh3-future-core #projects .portfolio-feature-visual {position:relative;min-height:340px;border:0;border-radius:0;background:radial-gradient(circle at center,rgba(57,230,210,.17),transparent 55%),linear-gradient(140deg,#10293b,#08111e);overflow:hidden;}
+.bvh3-future-core #projects .portfolio-feature-visual::after {animation:none!important;border-color:rgba(57,230,210,.3);}
+.bvh3-future-core #projects .portfolio-feature-visual img {width:min(155px,40%);height:auto;animation:none!important;filter:drop-shadow(0 0 25px rgba(57,230,210,.28));}
+.bvh3-future-core #projects .portfolio-feature-body {padding:clamp(1.25rem,2.7vw,2.45rem);min-width:0;}
+.bvh3-future-core #projects .portfolio-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(.85rem,1.4vw,1.35rem);}
+.bvh3-future-core #projects .portfolio-card {min-width:0;padding:clamp(1.1rem,1.6vw,1.6rem);background:linear-gradient(145deg,#111e2e,#0d1725);}
+.bvh3-future-core #projects .portfolio-card h3 {font-size:clamp(1.05rem,1.5vw,1.4rem);line-height:1.35;overflow-wrap:anywhere;color:#f1faff;}
+.bvh3-future-core #projects .portfolio-status {color:#39e6d2;}
+.bvh3-future-core #projects .portfolio-collection-heading {margin-block:2.5rem 1.1rem;}
+.bvh3-future-core #project-view .portfolio-detail {padding:clamp(1rem,2.5vw,2rem);}
+
+/* Media archive · editorial grid, existing viewer untouched. */
+.bvh3-future-core #memories .card-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.15rem;}
+.bvh3-future-core #memories .memory-card {min-width:0;overflow:hidden;cursor:pointer;}
+.bvh3-future-core #memories .memory-thumbnail {aspect-ratio:16/10;background:#0c1724;overflow:hidden;}
+.bvh3-future-core #memories .memory-thumbnail img {width:100%;height:100%;object-fit:cover;}
+.bvh3-future-core #memories .memory-card .card-title {overflow-wrap:anywhere;color:#f5fcff;}
+
+/* App hub · downloadable cards; preserve original anchors. */
+.bvh3-future-core #apps .card-grid--apps {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.15rem;}
+.bvh3-future-core #apps .app-tile {position:relative;min-width:0;display:flex;flex-direction:column;padding:1.45rem;background:linear-gradient(155deg,#122339,#0c1726);overflow:hidden;}
+.bvh3-future-core #apps .app-tile::before {content:'';display:block;position:absolute;top:0;left:0;width:40%;height:2px;background:linear-gradient(90deg,#39e6d2,transparent);pointer-events:none;}
+.bvh3-future-core #apps .app-tile::after {animation:none!important;opacity:.08;}
+.bvh3-future-core #apps .app-tile-head {display:flex;align-items:center;gap:.8rem;}
+.bvh3-future-core #apps .app-tile-icon {flex-shrink:0;border-radius:12px;border:1px solid rgba(57,230,210,.24);background:#081420;}
+.bvh3-future-core #apps .app-tile-icon img {object-fit:contain;}
+.bvh3-future-core #apps .card-title {font-size:clamp(1rem,1.3vw,1.25rem);line-height:1.35;overflow-wrap:anywhere;}
+.bvh3-future-core #apps .app-tile-footer {margin-top:auto;padding-top:1.4rem;}
+.bvh3-future-core #apps .app-download-btn {display:inline-flex;align-items:center;justify-content:center;min-height:46px;white-space:normal;}
+.bvh3-future-core #apps .app-note-inline {line-height:1.45;}
+
+/* Skills · command deck. */
+.bvh3-future-core #skills .skills-command-deck {min-width:0;}
+.bvh3-future-core #skills .skills-stack-header {padding:clamp(1.2rem,2.7vw,2.1rem);border:1px solid rgba(57,230,210,.22);border-radius:17px;background:linear-gradient(110deg,rgba(18,42,54,.8),rgba(11,19,31,.94));}
+.bvh3-future-core #skills .skills-deck-title {font-size:clamp(1.35rem,2.5vw,2.25rem);line-height:1.3;overflow-wrap:anywhere;}
+.bvh3-future-core #skills .tech-stack-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.9rem;margin:1.3rem 0;}
+.bvh3-future-core #skills .tech-chip {min-width:0;padding:1rem;background:#101e2d;}
+.bvh3-future-core #skills .skills-metrics-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;}
+.bvh3-future-core #skills .skill-domain-panel {padding:1.2rem;min-width:0;}
+.bvh3-future-core #skills .meter {background:#071421;border-radius:20px;overflow:hidden;}
+.bvh3-future-core #skills .meter-fill {background:linear-gradient(90deg,#238f92,#39e6d2);animation:none;}
+
+/* Depool · preserve neural/secret/Android handlers, reskin only outer panels. */
+.bvh3-future-core #depool .section-header {border-bottom-color:rgba(255,43,214,.25);}
+.bvh3-future-core #depool .section-title::before {color:#ff74e6;}
+.bvh3-future-core #depool .depool-interface {min-width:0;display:grid;gap:1.25rem;}
+.bvh3-future-core #depool .depool-cover {overflow:hidden;border:1px solid rgba(255,43,214,.28);border-radius:18px;background:#0a1020;box-shadow:0 18px 44px rgba(0,0,0,.2);}
+.bvh3-future-core #depool .depool-cover-image {width:100%;height:auto;max-height:480px;object-fit:cover;}
+.bvh3-future-core #depool :is(.android-bay,.android-readout,.depool-secret-cmd,.music-panel) {border-radius:17px;border-color:rgba(57,230,210,.25);}
+.bvh3-future-core #depool .depool-secret-cmd {overflow:hidden;background:linear-gradient(160deg,#101c2e,#090f1a);}
+.bvh3-future-core #depool .cerebral-interface {max-width:100%;min-width:0;}
+
+/* Contact · legible controls and untouched submit handlers. */
+.bvh3-future-core #contact .layout-grid--2 {display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:1.25rem;align-items:start;}
+.bvh3-future-core #contact .panel {padding:clamp(1.2rem,2.5vw,2rem);min-width:0;background:linear-gradient(160deg,#122137,#0c1625);}
+.bvh3-future-core #contact .contact-cards {display:grid;gap:.8rem;}
+.bvh3-future-core #contact .contact-card {padding:1rem;display:flex;align-items:center;gap:1rem;min-width:0;text-decoration:none;}
+.bvh3-future-core #contact .contact-value {overflow-wrap:anywhere;}
+.bvh3-future-core #contact :is(input,select,textarea) {width:100%;max-width:100%;min-width:0;min-height:46px;border:1px solid rgba(91,159,174,.36);border-radius:9px;background:#081320;color:#f4fcff;padding:.65rem .8rem;box-shadow:none;}
+.bvh3-future-core #contact textarea {min-height:138px;resize:vertical;}
+.bvh3-future-core #contact :is(input,select,textarea):focus {border-color:#39e6d2;outline:none;box-shadow:0 0 0 2px rgba(57,230,210,.15);}
+.bvh3-future-core #contact .form-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem;}
+.bvh3-future-core #contact .contact-submit-options {display:flex;flex-wrap:wrap;gap:.8rem;}
+.bvh3-future-core #contact .submit-btn {min-width:0;flex:1 1 180px;}
+
+/* Footers and floating UI. */
+.bvh3-future-core .cyber-footer {background:#070d17;border-top:1px solid rgba(57,230,210,.22);box-shadow:none;}
+.bvh3-future-core .cyber-footer::before {content:'';height:2px;background:linear-gradient(90deg,transparent,#39e6d2 40%,#ff2bd6 75%,transparent);}
+.bvh3-future-core :is(.cyber-footer,.cyber-footer p) {color:#b8cbd5;}
+
+/* Interactive polish for devices that actually have hover. */
+@media (hover:hover) and (pointer:fine) {
+  .bvh3-future-core .bvh3-action:hover {transform:translateY(-3px);border-color:#fcee0a;}
+  .bvh3-future-core :is(#about,#projects,#memories,#apps,#skills,#contact) :is(.portfolio-card,.profile-service,.app-tile,.memory-card,.tech-chip,.contact-card):hover {transform:translateY(-4px);border-color:rgba(57,230,210,.6);}
+}
+
+/* Tablet: keep panels breathable and navigation genuinely usable. */
+@media (max-width:1180px) {
+  .bvh3-future-core #projects .portfolio-grid,.bvh3-future-core #memories .card-grid,.bvh3-future-core #apps .card-grid--apps {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .bvh3-future-core #skills .skills-metrics-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .bvh3-future-core #home .hero-content {grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);padding:clamp(1.8rem,3.7vw,3rem);}
+}
+@media (max-width:980px) {
+  .bvh3-future-core .cyber-nav {height:68px;}
+  .bvh3-future-core .nav-container {flex-direction:row;flex-wrap:nowrap;justify-content:space-between;padding:0 1.15rem;}
+  .bvh3-future-core .logo {order:0;}
+  .bvh3-future-core .logo-img {height:42px;width:42px;}
+  .bvh3-future-core .nav-toggle {display:flex;order:2;flex:0 0 44px;}
+  .bvh3-future-core .nav-menu {
+    position:fixed;top:68px;bottom:0;left:auto;right:0;
+    width:min(88vw,360px);height:calc(100dvh - 68px);max-width:none;
+    padding:1.15rem;display:flex;flex-direction:column;justify-content:flex-start;
+    align-items:stretch;gap:.5rem;flex-wrap:nowrap;overflow-y:auto;
+    border-left:1px solid rgba(57,230,210,.25);
+    background:rgba(8,15,25,.99);
+    box-shadow:-18px 20px 55px rgba(0,0,0,.45);
+    transform:translateX(104%);transition:transform .23s ease;
+    margin:0;z-index:1001;
+  }
+  .bvh3-future-core .nav-menu.active {transform:translateX(0);}
+  .bvh3-future-core .nav-btn {width:100%;max-width:none;min-height:48px;text-align:left;justify-content:flex-start;padding:.85rem 1rem;font-size:.75rem;border:1px solid rgba(57,230,210,.12);}
+  .bvh3-future-core .main-content {margin-top:68px;}
+  .bvh3-future-core .section {min-height:calc(100svh - 68px);}
+  .bvh3-future-core #about .profile-layout {grid-template-columns:1fr;}
+  .bvh3-future-core #contact .layout-grid--2 {grid-template-columns:1fr;}
+  .bvh3-future-core #home .hero-content {min-height:auto;}
+}
+
+/* Android-first: no cramped columns, giant blur or endless moving background. */
+@media (max-width:700px) {
+  .bvh3-future-core .section > .container {width:min(100% - 1.5rem,620px);}
+  .bvh3-future-core .section {padding:1.6rem 0 3rem;}
+  .bvh3-future-core .section-title {font-size:clamp(1.35rem,6vw,2rem);flex-wrap:wrap;gap:.45rem;}
+  .bvh3-future-core .section-subtitle {font-size:1.02rem;}
+  .bvh3-future-core #home {padding:1rem 0 2rem;}
+  .bvh3-future-core #home .hero-content {
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:'visual' 'headline' 'description' 'actions' 'stats';
+    padding:1.2rem;gap:0;min-height:auto;text-align:center;border-radius:19px;
+  }
+  .bvh3-future-core #home .hero-logo {height:210px;min-height:210px;max-width:none;margin:0 0 1.55rem;border-radius:16px;}
+  .bvh3-future-core #home .hero-logo::before {inset:12% 27%;box-shadow:0 0 0 27px rgba(57,230,210,.03);}
+  .bvh3-future-core #home .hero-logo::after {inset:9% 24%;}
+  .bvh3-future-core #home .hero-logo-img {max-width:135px;width:135px;animation:none!important;}
+  .bvh3-future-core #home .cyber-title {margin-bottom:.75rem;text-align:center;}
+  .bvh3-future-core #home .title-line {font-size:.66rem;letter-spacing:.18em;margin-bottom:.6rem;}
+  .bvh3-future-core #home .title-main {font-size:clamp(1.55rem,7.25vw,2.65rem);letter-spacing:-.045em;overflow-wrap:anywhere;}
+  .bvh3-future-core #home .title-sub {font-size:.98rem;letter-spacing:.025em;line-height:1.35;}
+  .bvh3-future-core #home .hero-description {font-size:1.08rem;text-align:center;max-width:none;margin-bottom:1.15rem;}
+  .bvh3-future-core .bvh3-hero-actions {justify-content:center;gap:.65rem;margin-bottom:1.2rem;}
+  .bvh3-future-core .bvh3-action {flex:1 1 100%;font-size:.7rem;}
+  .bvh3-future-core #home .hero-stats {grid-template-columns:repeat(3,minmax(0,1fr));gap:.43rem;max-width:none;}
+  .bvh3-future-core #home .stat {min-height:78px;padding:.68rem .36rem;text-align:center;}
+  .bvh3-future-core #home .stat-number {font-size:clamp(1.12rem,5vw,1.55rem);}
+  .bvh3-future-core #home .stat-label {font-size:.51rem;letter-spacing:.015em;}
+  .bvh3-future-core #projects .portfolio-feature {grid-template-columns:1fr;}
+  .bvh3-future-core #projects .portfolio-feature-visual {min-height:220px;}
+  .bvh3-future-core #projects .portfolio-grid,.bvh3-future-core #memories .card-grid,.bvh3-future-core #apps .card-grid--apps,.bvh3-future-core #skills .skills-metrics-grid {grid-template-columns:minmax(0,1fr);}
+  .bvh3-future-core #skills .tech-stack-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;}
+  .bvh3-future-core #contact .form-row {grid-template-columns:1fr;}
+  .bvh3-future-core #contact .contact-submit-options {flex-direction:column;}
+  .bvh3-future-core #contact .submit-btn {flex:none;width:100%;}
+  .bvh3-future-core #depool .depool-cover-image {max-height:300px;}
+  .bvh3-future-core #depool .android-stage {max-width:100%;}
+  .bvh3-future-core #depool .depool-secret-cmd {max-width:100%;min-width:0;}
+  .bvh3-future-core :is(#home,#about,#projects,#memories,#apps,#skills,#contact) :is(.portfolio-card,.profile-service,.app-tile,.memory-card,.tech-chip,.contact-card) {transform:none!important;}
+  .bvh3-future-core #particles-canvas {opacity:.15;}
+}
+@media (max-width:380px) {
+  .bvh3-future-core #home .hero-content {padding:.9rem;}
+  .bvh3-future-core #home .title-main {font-size:clamp(1.45rem,7vw,1.85rem);}
+  .bvh3-future-core #skills .tech-stack-grid {grid-template-columns:1fr;}
+  .bvh3-future-core #about .profile-metrics {grid-template-columns:repeat(3,minmax(0,1fr));gap:.35rem;}
+}
+
+/* User preferences and low-resource devices take precedence over decoration. */
+@media (prefers-reduced-motion:reduce) {
+  .bvh3-future-core *, .bvh3-future-core *::before, .bvh3-future-core *::after {
+    animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+  .bvh3-future-core #particles-canvas {display:none!important;}
+}
+.bvh3-future-core.performance-low #particles-canvas,
+.bvh3-future-core.low-power-mode #particles-canvas {display:none!important;}
+.bvh3-future-core.performance-low #home .hero-logo-img,
+.bvh3-future-core.low-power-mode #home .hero-logo-img {animation:none!important;}
+@keyframes bvh3-fc-float {0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
