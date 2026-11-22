@@ -1,39 +1,50 @@
-# Avatar VRM original
+# BVH3 · Retrato 3D · Carpeta de modelos
 
-**Archivo esperado:** `models/8665009645295209918.vrm`
+Esta carpeta está preparada para la **carga automática** del avatar VRM en `/retrato-3d.html`.
 
-El visor `/retrato-3d.html` busca automáticamente esa ruta. Si no existe, muestra el escenario y permite cargar el archivo `.vrm` desde el dispositivo del visitante, sin transmitirlo al servidor.
+## Coloca aquí el archivo original
 
-El archivo original compartido en esta conversación ocupa aproximadamente **16,9 MiB**. No está adjuntado a este repositorio porque la integración de GitHub utilizada para estas modificaciones solo permite crear archivos de texto; la carga de binarios se realiza por otro medio.
+Ruta exacta dentro de GitHub:
 
-## Publicación opcional del modelo
+```
+BVH3_INDUSTRIES/
+├── retrato-3d.html
+└── models/
+    ├── README.md
+    └── 8665009645295209918.vrm   ← Colocar aquí
+```
 
-Sube el archivo original, sin modificar, al directorio `models/` con el nombre exacto `8665009645295209918.vrm`. GitHub lo publicará en el siguiente despliegue de Vercel y el visor lo cargará automáticamente.
+**Pasos:**
+1. Abre la carpeta `models` en GitHub.
+2. Selecciona **Add file → Upload files**.
+3. Sube el archivo **8665009645295209918.vrm** original, sin renombrarlo ni modificarlo.
+4. Confirma los cambios en `main` (puedes usar el mensaje `UPDATE`).
+5. Cuando termine el despliegue de Vercel, abre `https://www.bvh3-industries.com/#retrato-3d` y pulsa **INICIAR RETRATO 3D**.
 
-Importante: antes de publicarlo como recurso de una web empresarial, verifica que el uso que pretendes hacer esté permitido por el autor.
+El visor solicitará `/models/8665009645295209918.vrm` y, si está disponible, Miku se cargará por sí sola, aparecerá caminando por la nueva **pasarela sólida** y se detendrá en pose Idle. También puedes seleccionar el escenario holográfico anterior.
 
-## Crédito y licencia del archivo proporcionado
+Si el archivo no se encuentra, el visor conserva la importación manual y los personajes de muestra, sin bloquear la web.
 
-- **Título:** Hatsune Miku!
-- **Autor del archivo VRM:** RemiX3
-- **Fuente:** https://hub.vroid.com/characters/3414801470945035921/models/4457759225556181866
-- **Condiciones declaradas en el VRM:** atribución obligatoria; redistribución permitida; modificaciones prohibidas; uso comercial personal o corporativo no permitido.
+**Importante:** este commit no contiene el binario .vrm; se deja la ruta, el código y la carpeta listos para que lo subas.
 
-Se conserva el modelo original sin alteraciones. La página demuestra un visor técnico, no una cesión de derechos sobre el personaje o su modelo.
+## Expresiones adaptadas
 
-## Rendimiento
+El archivo VRM original tiene estos nombres de expresiones VRM 0.x: Neutral, Angry, Fun, Joy, Sorrow y Surprised. El visor busca esos nombres y sus equivalentes comunes (happy, relaxed, sad) en el mapa real cargado y desactiva los botones de expresiones ausentes. La boca y el parpadeo utilizan los nombres disponibles en ese mapa.
 
-Para PC y Android se ha aislado el visor dentro de un iframe que solo se crea al pulsar **Iniciar Retrato 3D**. Al salir de la sección se elimina el iframe, lo que detiene el render 3D. En Android se reduce la resolución de render, las sombras y el número de partículas.
+## Licencia y crédito
 
-Dependencias del visor original (cargadas solo cuando se abre): Three.js r160, three-vrm, Tailwind CDN, Lucide.
+- Título del modelo: **Hatsune Miku!**
+- Autor: **RemiX3**
+- Fuente: https://hub.vroid.com/characters/3414801470945035921/models/4457759225556181866
+- Condiciones de licencia incluidas en el VRM original: crédito obligatorio, uso no comercial, prohibida la modificación, redistribución permitida.
 
-## Pruebas antes de publicar
+**Comprueba que el uso que pretendes hacer en la web de BVH3 sea no comercial y cumpla todos los términos antes de publicar el modelo**, especialmente por tratarse de una marca/proyecto empresarial. El código de esta mejora no incluye ni modifica el archivo.
 
-1. Abrir `/#retrato-3d` directamente y desde el navbar, tanto en PC como en Android.
-2. Pulsar **Iniciar Retrato 3D**: comprobar que aparece el escenario y no hay errores de JavaScript.
-3. Si el archivo VRM está alojado, comprobar que aparece el avatar Miku exacto. Si no, probar el botón **Cargar mi VRM** usando el archivo local.
-4. Probar poses, expresiones, controles de cámara, iluminación y modo inmersivo.
-5. Salir a otras secciones, comprobar que el iframe desaparece y que Depool, la Zona Prohibida, los formularios y las descargas siguen funcionando.
-6. Verificar rendimiento y controles táctiles con un dispositivo Android real.
+## Rendimiento y compatibilidad
 
-**Rollback:** revertir los cambios de `index.html` y borrar `retrato-3d-section.js`, `retrato-3d.css` y `retrato-3d.html`; los scripts y estilos previos no han sido alterados.
+- La página principal solo inicia el visor al pulsar el botón. Cuando cambias de sección, destruye su iframe para detener WebGL.
+- Android utiliza menos partículas, menos sombras y menor resolución de render.
+- En escenario sólido no se actualizan partículas del escenario holográfico oculto.
+- Se conservan el backend (si lo hubiera), Depool, Zona Prohibida, descargas y formularios sin modificaciones.
+
+**Pruebas recomendadas:** carga automática al desplegar el VRM, escena 3D en Chrome/Edge PC y Android, entrada caminando, botones de expresión/poses, reinicio al cambiar de personaje, selección de escenario y liberación de GPU al salir.

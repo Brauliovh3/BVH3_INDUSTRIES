@@ -362,6 +362,24 @@
                 </div>
             </div>
 
+            <!-- Escenarios: pasarela sólida o plataforma original -->
+            <div class="pt-3.5 border-t border-white/10">
+                <span class="block text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 mb-2.5">
+                    TIPO DE ESCENARIO
+                </span>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <button onclick="setStageMode('solid')" data-stage="solid"
+                            class="stage-mode-btn glass-pill active rounded-xl px-2.5 py-2 text-[11px] font-medium cursor-pointer">
+                        ▰ Suelo sólido
+                    </button>
+                    <button onclick="setStageMode('hologram')" data-stage="hologram"
+                            class="stage-mode-btn glass-pill rounded-xl px-2.5 py-2 text-[11px] font-medium cursor-pointer">
+                        ◉ Holográfico
+                    </button>
+                </div>
+                <p id="stage-mode-status" class="text-[10px] text-zinc-400 mt-2">Pasarela sólida · Entrada caminando</p>
+            </div>
+
             <!-- Toggles de Renderizado Anime & Escenario -->
             <div class="pt-3.5 border-t border-white/10 space-y-2">
                 <span class="block text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 mb-1.5">
@@ -521,6 +539,54 @@
         const stageGroup = new THREE.Group();
         scene.add(stageGroup);
 
+        // Segundo escenario original BVH3: pasarela física sólida con iluminación industrial.
+        // Se conserva completamente la plataforma holográfica anterior como alternativa.
+        const solidStageGroup = new THREE.Group();
+        scene.add(solidStageGroup);
+        const solidFloor = new THREE.Mesh(
+            new THREE.BoxGeometry(18, 0.24, 18),
+            new THREE.MeshStandardMaterial({
+                color: 0x151b25, roughness: 0.88, metalness: 0.10
+            })
+        );
+        solidFloor.position.y = 0;
+        solidFloor.receiveShadow = true;
+        solidStageGroup.add(solidFloor);
+
+        const runway = new THREE.Mesh(
+            new THREE.BoxGeometry(2.7, 0.025, 10),
+            new THREE.MeshStandardMaterial({
+                color: 0x232b35, roughness: 0.72, metalness: 0.18
+            })
+        );
+        runway.position.set(0, 0.13, -1.25);
+        runway.receiveShadow = true;
+        solidStageGroup.add(runway);
+
+        const runwayEdgeMatCyan = new THREE.MeshBasicMaterial({ color: 0x24ebde });
+        const runwayEdgeMatPink = new THREE.MeshBasicMaterial({ color: 0xff2a85 });
+        [-1.33, 1.33].forEach((x, i) => {
+            const edge = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.023, 10), i === 0 ? runwayEdgeMatCyan : runwayEdgeMatPink);
+            edge.position.set(x, 0.16, -1.25);
+            solidStageGroup.add(edge);
+        });
+        for (let z = -5.5; z < 3; z += 0.8) {
+            const stripe = new THREE.Mesh(
+                new THREE.BoxGeometry(0.36, 0.012, 0.085),
+                new THREE.MeshBasicMaterial({ color: (Math.round(z * 10) % 2 === 0) ? 0xfcee0a : 0x24ebde })
+            );
+            stripe.position.set(0, 0.153, z);
+            solidStageGroup.add(stripe);
+        }
+        const solidGrid = new THREE.GridHelper(18, 18, 0x2cbdbd, 0x25313d);
+        solidGrid.position.y = 0.122;
+        solidStageGroup.add(solidGrid);
+        const entranceBacklight = new THREE.PointLight(0x00e3db, 4, 9);
+        entranceBacklight.position.set(0, 2.9, -3.7);
+        solidStageGroup.add(entranceBacklight);
+        let stageMode = 'solid';
+        stageGroup.visible = false;
+
         // Suelo reflectante oscuro
         const floor = new THREE.Mesh(
             new THREE.CircleGeometry(24, 64),
@@ -670,6 +736,47 @@
         scene.add(characterPivot);
 
         let currentPose = 'idle';
+        const entranceWalk = { active: false, elapsed: 0, duration: 3.1, resumeOrbit: false };
+        function syncOrbitUI() {
+            const btn = document.getElementById('toggle-rotate');
+            const status = document.getElementById('status-rotate');
+            if (btn) btn.classList.toggle('active', controls.autoRotate);
+            if (status) {
+                status.textContent = controls.autoRotate ? 'ON' : 'OFF';
+                status.className = controls.autoRotate
+                    ? 'text-[10px] font-mono text-[#00f0ff]'
+                    : 'text-[10px] font-mono text-zinc-500';
+            }
+        }
+        function startEntranceWalk(vrm) {
+            if (!vrm || !currentCharacterObject) return;
+            entranceWalk.active = true;
+            entranceWalk.elapsed = 0;
+            entranceWalk.resumeOrbit = controls.autoRotate;
+            currentPose = 'walk';
+            currentCharacterObject.position.set(0, 0, -2.4);
+            currentCharacterObject.rotation.y = 0;
+            document.getElementById('anim-status-tag').textContent = 'ENTRANDO';
+            controls.autoRotate = false;
+            syncOrbitUI();
+            document.querySelectorAll('.pose-btn').forEach(btn => btn.classList.remove('active'));
+        }
+        function updateEntranceWalk(delta) {
+            if (!entranceWalk.active || !currentCharacterObject) return;
+            entranceWalk.elapsed += Math.min(delta, 0.05);
+            const q = Math.min(1, entranceWalk.elapsed / entranceWalk.duration);
+            const smooth = q * q * (3 - 2 * q);
+            currentCharacterObject.position.z = -2.4 * (1 - smooth);
+            currentCharacterObject.position.y = Math.abs(Math.sin(entranceWalk.elapsed * 8)) * 0.012 * (1 - q);
+            if (q >= 1) {
+                entranceWalk.active = false;
+                currentCharacterObject.position.set(0, 0, 0);
+                controls.autoRotate = entranceWalk.resumeOrbit;
+                syncOrbitUI();
+                setCharacterPose('idle');
+                document.getElementById('anim-status-tag').textContent = 'ACTIVA';
+            }
+        }
         let currentCharacterAnimator = null;
         let currentCharacterObject = null;
         let customMixer = null; // Para animaciones de archivos .GLB / .FBX / .VRM
@@ -1174,6 +1281,11 @@
         }
 
         window.selectCharacter = function(index) {
+            if (entranceWalk.active) {
+                entranceWalk.active = false;
+                controls.autoRotate = entranceWalk.resumeOrbit;
+                syncOrbitUI();
+            }
             // Limpiar personaje previo
             while (characterPivot.children.length > 0) {
                 characterPivot.remove(characterPivot.children[0]);
@@ -1198,6 +1310,7 @@
                 posesSection.classList.toggle('opacity-50', !poseable);
                 posesSection.classList.toggle('pointer-events-none', !poseable);
                 document.getElementById('expr-section').classList.toggle('hidden', !poseable);
+                if (poseable) configureAvailableExpressions(customCharacterEntry.vrm);
             } else {
                 const entry = characters[index];
                 const built = buildStylizedAnimeCharacter(entry.config);
@@ -1254,9 +1367,53 @@
         });
         let lookAtCursor = true;
         let exprTarget = 'neutral';
-        window.setExpression = function(name) {
+        let manualExpression = false;
+        let activeExpressionManager = null;
+        // El archivo VRM 0.x original utiliza Joy, Fun, Sorrow y Surprised
+        // además de los presets habituales. Resolver aliases en tiempo real.
+        const expressionAliases = {
+            neutral: ['neutral'],
+            happy: ['happy', 'joy', 'Joy'],
+            surprised: ['surprised', 'Surprised'],
+            angry: ['angry', 'Angry'],
+            sad: ['sad', 'sorrow', 'Sorrow'],
+            relaxed: ['relaxed', 'fun', 'Fun']
+        };
+        const resolveExpressionKey = (manager, intent) => {
+            const keys = Object.keys(manager?.expressionMap || {});
+            const options = expressionAliases[intent] || [intent];
+            for (const candidate of options) {
+                const match = keys.find(key => key.toLowerCase() === candidate.toLowerCase());
+                if (match) return match;
+            }
+            return null;
+        };
+        function configureAvailableExpressions(vrm) {
+            activeExpressionManager = vrm?.expressionManager || null;
+            manualExpression = false;
+            document.querySelectorAll('.expr-btn').forEach(button => {
+                const intent = button.dataset.expr;
+                const available = intent === 'neutral' || !!resolveExpressionKey(activeExpressionManager, intent);
+                button.disabled = !available;
+                button.setAttribute('aria-disabled', String(!available));
+                button.title = available ? 'Expresión: ' + intent : 'Esta expresión no existe en el modelo VRM';
+                button.classList.toggle('opacity-40', !available);
+                button.classList.toggle('cursor-not-allowed', !available);
+            });
+            window.setExpression('neutral', false);
+        }
+        window.setExpression = function(name, manual = true) {
+            if (name !== 'neutral' && !resolveExpressionKey(activeExpressionManager, name)) {
+                showToast('Expresión no disponible en este VRM', true);
+                return;
+            }
             exprTarget = name;
-            document.querySelectorAll('.expr-btn').forEach((b) => b.classList.toggle('active', b.dataset.expr === name));
+            if (manual) manualExpression = true;
+            document.querySelectorAll('.expr-btn').forEach((button) => {
+                const isSelected = button.dataset.expr === name;
+                button.classList.toggle('active', isSelected);
+                button.setAttribute('aria-pressed', String(isSelected));
+            });
         };
         window.toggleLookAt = function() {
             lookAtCursor = !lookAtCursor;
@@ -1281,7 +1438,20 @@
                 leftLowerLeg: [0, 0, 0], rightLowerLeg: [0, 0, 0], leftFoot: [0, 0, 0], rightFoot: [0, 0, 0],
                 hipsY: 0, lift: 0
             };
-            if (pose === 'wave') {
+            if (pose === 'walk') {
+                const stride = Math.sin(t * 8);
+                p.hips = [0, 0, Math.sin(t * 8) * 0.025];
+                p.chest = [0.035, 0, -stride * 0.025];
+                p.head = [0, Math.sin(t * 2) * 0.02, 0];
+                p.leftUpperLeg = [stride * 0.43, 0, 0.025];
+                p.rightUpperLeg = [-stride * 0.43, 0, -0.025];
+                p.leftLowerLeg = [Math.max(0, -stride) * 0.48, 0, 0];
+                p.rightLowerLeg = [Math.max(0, stride) * 0.48, 0, 0];
+                p.leftUpperArm = [-stride * 0.30, 0, -0.98];
+                p.rightUpperArm = [stride * 0.30, 0, 0.98];
+                p.leftLowerArm = [-0.12, -0.12, 0];
+                p.rightLowerArm = [-0.12, 0.12, 0];
+            } else if (pose === 'wave') {
                 p.rightUpperArm = [0.35, 0, -0.95]; p.rightLowerArm = [0, 0, -0.55 + s(t * 9) * 0.45];
                 p.head = [0, 0.1, -0.08]; p.chest[2] = 0.04;
             } else if (pose === 'concert') {
@@ -1322,6 +1492,20 @@
             const hipsRestY = nodes.hips ? nodes.hips.position.y : 0;
             const tq = new THREE.Quaternion(), te = new THREE.Euler();
             const EXPR = ['happy', 'angry', 'sad', 'surprised', 'relaxed'];
+            const em = vrm.expressionManager;
+            const availableKeys = Object.keys(em?.expressionMap || {});
+            const findExpression = names => {
+                for (const n of names) {
+                    const found = availableKeys.find(key => key.toLowerCase() === n.toLowerCase());
+                    if (found) return found;
+                }
+                return null;
+            };
+            const emotionKeys = Object.fromEntries(EXPR.map(intent => [
+                intent, resolveExpressionKey(em, intent)
+            ]));
+            const mouthKey = findExpression(['aa', 'a']);
+            const blinkKey = findExpression(['blink']);
             const cur = { happy: 0, angry: 0, sad: 0, surprised: 0, relaxed: 0, aa: 0, blink: 0 };
             const lookTarget = new THREE.Object3D(); scene.add(lookTarget);
             if (vrm.lookAt) vrm.lookAt.target = lookTarget;
@@ -1337,10 +1521,16 @@
 
             return (t, delta) => {
                 delta = Math.min(delta || 0.016, 0.05);
-                if (currentPose !== lastPose) { lastPose = currentPose; setExpression(poseExpression[currentPose] || 'neutral'); }
+                if (currentPose !== lastPose) {
+                    lastPose = currentPose;
+                    if (!manualExpression) {
+                        const suggestion = poseExpression[currentPose] || 'neutral';
+                        window.setExpression(resolveExpressionKey(em, suggestion) ? suggestion : 'neutral', false);
+                    }
+                }
                 const k = 1 - Math.exp(-delta * 7);
                 const tg = vrmPoseTargets(currentPose, t);
-                const grounded = currentPose !== 'zerog' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
+                const grounded = currentPose !== 'zerog' && currentPose !== 'walk' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
                 if (grounded && ankleRest === null) ankleRest = ankleY();
                 if (grounded) {
                     // piernas sin giro heredado de la cadera y pies siempre planos
@@ -1368,17 +1558,26 @@
                 // Mirada: hacia el cursor o hacia la cámara
                 lookTarget.position.set(lookAtCursor ? pointer.x * 1.2 : 0, 1.4 + (lookAtCursor ? pointer.y * 0.6 : 0), 3);
 
-                const em = vrm.expressionManager;
                 if (em) {
-                    EXPR.forEach((n) => { cur[n] += ((exprTarget === n ? 1 : 0) - cur[n]) * k; em.setValue(n, cur[n]); });
+                    EXPR.forEach((intent) => {
+                        const key = emotionKeys[intent];
+                        if (!key) return;
+                        cur[intent] += ((exprTarget === intent ? 1 : 0) - cur[intent]) * k;
+                        em.setValue(key, cur[intent]);
+                    });
                     const singing = currentPose === 'concert' || currentPose === 'dance';
-                    cur.aa += ((singing ? Math.max(0, Math.sin(t * 9)) * 0.55 : 0) - cur.aa) * 0.4; em.setValue('aa', cur.aa);
-                    if (blinkStart < 0 && t > nextBlink) blinkStart = t;
-                    if (blinkStart >= 0) {
-                        const x = (t - blinkStart) / 0.18;
-                        cur.blink = x >= 1 ? 0 : Math.sin(x * Math.PI);
-                        if (x >= 1) { blinkStart = -1; nextBlink = t + 2 + Math.random() * 3; }
-                        em.setValue('blink', cur.blink);
+                    if (mouthKey) {
+                        cur.aa += ((singing ? Math.max(0, Math.sin(t * 9)) * 0.5 : 0) - cur.aa) * k;
+                        em.setValue(mouthKey, cur.aa);
+                    }
+                    if (blinkKey) {
+                        if (blinkStart < 0 && t > nextBlink) blinkStart = t;
+                        if (blinkStart >= 0) {
+                            const x = (t - blinkStart) / 0.18;
+                            cur.blink = x >= 1 ? 0 : Math.sin(x * Math.PI);
+                            if (x >= 1) { blinkStart = -1; nextBlink = t + 2 + Math.random() * 3; }
+                        }
+                        em.setValue(blinkKey, cur.blink);
                     }
                 }
                 vrm.update(delta);
@@ -1463,6 +1662,10 @@
 
             selectCharacter(3);
             setCameraFraming('full');
+            if (vrm) {
+                setStageMode('solid');
+                startEntranceWalk(vrm);
+            }
             showToast(`Personaje "${cleanName}" proyectado en escenario`);
         }
 
@@ -1570,6 +1773,14 @@
         // 7. CONTROLES INTERACTIVOS: POSES, CÁMARA, ILUMINACIÓN Y SHADERS
         // =========================================================================
         window.setCharacterPose = function(pose) {
+            // Una pose elegida por el visitante cancela la entrada automática.
+            if (entranceWalk.active) {
+                entranceWalk.active = false;
+                if (currentCharacterObject) currentCharacterObject.position.set(0, 0, 0);
+                controls.autoRotate = entranceWalk.resumeOrbit;
+                syncOrbitUI();
+                document.getElementById('anim-status-tag').textContent = 'ACTIVA';
+            }
             currentPose = pose;
             document.querySelectorAll('.pose-btn').forEach((btn) => {
                 const isActive = btn.getAttribute('data-pose') === pose;
@@ -1679,17 +1890,31 @@
 
         window.toggleAutoRotate = function() {
             controls.autoRotate = !controls.autoRotate;
-            const btn = document.getElementById('toggle-rotate');
-            const st = document.getElementById('status-rotate');
-            btn.classList.toggle('active', controls.autoRotate);
-            st.textContent = controls.autoRotate ? 'ON' : 'OFF';
-            st.className = controls.autoRotate ? 'text-[10px] font-mono text-[#00f0ff]' : 'text-[10px] font-mono text-zinc-500';
+            if (entranceWalk.active) entranceWalk.resumeOrbit = controls.autoRotate;
+            syncOrbitUI();
         };
 
         let stageActive = true;
+        function refreshStageVisibility() {
+            stageGroup.visible = stageActive && stageMode === 'hologram';
+            solidStageGroup.visible = stageActive && stageMode === 'solid';
+        }
+        window.setStageMode = function(mode) {
+            if (mode !== 'solid' && mode !== 'hologram') return;
+            stageMode = mode;
+            refreshStageVisibility();
+            document.querySelectorAll('.stage-mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.stage === mode);
+                btn.setAttribute('aria-pressed', String(btn.dataset.stage === mode));
+            });
+            const status = document.getElementById('stage-mode-status');
+            if (status) status.textContent = mode === 'solid'
+                ? 'Pasarela sólida · Entrada caminando'
+                : 'Escenario holográfico · Plataforma original';
+        };
         window.toggleStage = function() {
             stageActive = !stageActive;
-            stageGroup.visible = stageActive;
+            refreshStageVisibility();
             const btn = document.getElementById('toggle-stage');
             const st = document.getElementById('status-stage');
             btn.classList.toggle('active', stageActive);
@@ -1757,9 +1982,10 @@
             if (currentCharacterAnimator) {
                 currentCharacterAnimator(elapsed, delta);
             }
+            updateEntranceWalk(delta);
 
             // Animación reactiva del escenario y ecualizador circular
-            if (stageActive) {
+            if (stageActive && stageMode === 'hologram') {
                 holoRing1.rotation.z = elapsed * 0.4;
                 holoRing2.rotation.z = -elapsed * 0.25;
 
@@ -1803,20 +2029,21 @@
             // Si el propietario publica el asset VRM en /models, se carga de forma automática.
             // Si no está disponible, mantenemos el escenario original y permitimos importarlo.
             try {
-                const response = await fetch(remoteModelPath, {cache: 'force-cache'});
+                const response = await fetch(remoteModelPath, {cache: 'no-cache'});
                 if (!response.ok) throw new Error('VRM no alojado (' + response.status + ')');
                 const blob = await response.blob();
                 const file = new File([blob], 'Hatsune Miku - RemiX3.vrm', {type:'model/gltf-binary'});
                 handleCharacterFile(file);
                 hint?.classList.add('hidden');
             } catch (error) {
-                console.info('BVH3 Retrato 3D: modelo exacto disponible mediante importación local', error.message);
+                console.info('BVH3 Retrato 3D: coloca el archivo en /models/8665009645295209918.vrm para carga automática', error.message);
                 hint?.classList.remove('hidden');
             }
         }
 
         window.onload = function() {
             selectCharacter(0);
+            setStageMode('solid');
             animate();
             bootOriginalMikuVrm();
         };
