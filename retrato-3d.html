@@ -1545,8 +1545,8 @@
                 hips: [0, s(t * 0.6) * 0.05, 0], spine: [0.02 + s(t * 1.6) * 0.012, 0, 0],
                 chest: [s(t * 1.6) * 0.02, 0, 0], neck: [0, 0, 0], head: [s(t * 0.9) * 0.02, s(t * 0.5) * 0.06, 0],
                 leftShoulder: [0.02, 0, 0.035], rightShoulder: [0.02, 0, -0.035],
-                leftUpperArm: [0.08, 0, 1.22 + s(t * 1.25) * 0.018],
-                rightUpperArm: [0.08, 0, -1.22 - s(t * 1.25) * 0.018],
+                leftUpperArm: [0.08, 0, 1.36 + s(t * 1.25) * 0.016],
+                rightUpperArm: [0.08, 0, -1.36 - s(t * 1.25) * 0.016],
                 leftLowerArm: [-0.14, -0.08, 0], rightLowerArm: [-0.14, 0.08, 0],
                 leftHand: [0, 0, 0], rightHand: [0, 0, 0],
                 leftUpperLeg: [0, 0, 0.03], rightUpperLeg: [0, 0, -0.03],
@@ -1563,8 +1563,8 @@
                 p.leftLowerLeg = [Math.max(0, -stride) * 0.48, 0, 0];
                 p.rightLowerLeg = [Math.max(0, stride) * 0.48, 0, 0];
                 // Marcha natural desde la pose con brazos abajo, sin volver a la T-pose.
-                p.leftUpperArm = [0.07 - stride * 0.19, 0, 1.20];
-                p.rightUpperArm = [0.07 + stride * 0.19, 0, -1.20];
+                p.leftUpperArm = [0.07 - stride * 0.19, 0, 1.34];
+                p.rightUpperArm = [0.07 + stride * 0.19, 0, -1.34];
                 p.leftLowerArm = [-0.21, -0.08, 0];
                 p.rightLowerArm = [-0.21, 0.08, 0];
             } else if (pose === 'wave') {
@@ -1588,7 +1588,7 @@
             } else if (pose === 'bow') {
                 const k = (s(t * 0.9) + 1) / 2;
                 p.spine = [0.45 * k, 0, 0]; p.chest = [0.25 * k, 0, 0]; p.head = [0.2 * k, 0, 0];
-                p.leftUpperArm = [0, 0, 1.22]; p.rightUpperArm = [0, 0, -1.22];
+                p.leftUpperArm = [0, 0, 1.36]; p.rightUpperArm = [0, 0, -1.36];
                 p.leftLowerArm = [0, -0.5 * k, 0]; p.rightLowerArm = [0, 0.5 * k, 0];
             } else if (pose === 'dance') {
                 const h = s(b / 2);
