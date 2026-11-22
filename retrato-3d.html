@@ -1266,6 +1266,7 @@
         }
 
         window.selectCharacter = function(index) {
+            entranceWalk.active = false;
             // Limpiar personaje previo
             while (characterPivot.children.length > 0) {
                 characterPivot.remove(characterPivot.children[0]);
@@ -1643,7 +1644,6 @@
             selectCharacter(3);
             setCameraFraming('full');
             if (vrm) {
-                configureAvailableExpressions(vrm);
                 setStageMode('solid');
                 startEntranceWalk(vrm);
             }
@@ -1754,6 +1754,12 @@
         // 7. CONTROLES INTERACTIVOS: POSES, CÁMARA, ILUMINACIÓN Y SHADERS
         // =========================================================================
         window.setCharacterPose = function(pose) {
+            // Una pose elegida por el visitante cancela la entrada automática.
+            if (entranceWalk.active) {
+                entranceWalk.active = false;
+                if (currentCharacterObject) currentCharacterObject.position.set(0, 0, 0);
+                document.getElementById('anim-status-tag').textContent = 'ACTIVA';
+            }
             currentPose = pose;
             document.querySelectorAll('.pose-btn').forEach((btn) => {
                 const isActive = btn.getAttribute('data-pose') === pose;
