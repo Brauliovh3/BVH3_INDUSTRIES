@@ -818,6 +818,7 @@
                 currentPose = 'idle';
                 currentCharacterObject.position.set(0, 0, 0);
                 autoLife.action = null;
+                autoLife.gazeTarget = 0;
                 autoLife.nextAt = t + 9 + Math.random() * 12;
             }
             if (!autoLife.action && currentPose === 'idle' && t >= autoLife.nextAt) {
@@ -1661,8 +1662,10 @@
                 const k = 1 - Math.exp(-delta * 7);
                 // Empezar el ciclo de pasos desde el mismo segundo cero
                 // de la entrada evita que las piernas salten de fase al cargar.
-                const poseTime = currentPose === 'walk' && entranceWalk.active
-                    ? entranceWalk.elapsed : t;
+                const poseTime = currentPose === 'walk'
+                    ? (entranceWalk.active ? entranceWalk.elapsed :
+                      autoLife.action === 'step' ? t - autoLife.started : t)
+                    : t;
                 const tg = vrmPoseTargets(currentPose, poseTime);
                 if (autoLife.enabled && currentPose === 'idle' && !entranceWalk.active) {
                     // Respiración, balanceo de peso y mirada natural de bajo costo.
