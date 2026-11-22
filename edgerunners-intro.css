@@ -486,3 +486,25 @@ body.bvh3-future-core.bvh3-edgerunners.performance-low #home .title-main,
 body.bvh3-future-core.bvh3-edgerunners.low-power-mode #home .title-main,
 body.bvh3-future-core.bvh3-edgerunners.performance-low #home .hero-logo-img,
 body.bvh3-future-core.bvh3-edgerunners.low-power-mode #home .hero-logo-img {animation:none!important;}
+
+
+/* Opening sequence: once on section entry, never perpetual work. */
+@media (min-width:701px) and (prefers-reduced-motion:no-preference) {
+  body.bvh3-future-core.bvh3-edgerunners #home.active .cyber-title {
+    animation:eg-reveal-left .68s cubic-bezier(.2,.85,.2,1) both;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home.active .hero-description {
+    animation:eg-reveal-left .65s .13s both;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home.active .bvh3-hero-actions {
+    animation:eg-reveal-left .65s .24s both;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home.active .hero-stats {
+    animation:eg-reveal-left .65s .34s both;
+  }
+  body.bvh3-future-core.bvh3-edgerunners #home.active .hero-logo {
+    animation:eg-reveal-right .85s .12s both;
+  }
+}
+@keyframes eg-reveal-left {from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes eg-reveal-right {from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:translateX(0)}}
