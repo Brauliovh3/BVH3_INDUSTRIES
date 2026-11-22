@@ -1796,6 +1796,9 @@
             document.getElementById('quick-model-upload')?.addEventListener('click', () => {
                 document.getElementById('file-input')?.click();
             });
+            document.getElementById('file-input')?.addEventListener('change', (event) => {
+                if (event.target.files?.length) hint?.classList.add('hidden');
+            });
 
             // Si el propietario publica el asset VRM en /models, se carga de forma automática.
             // Si no está disponible, mantenemos el escenario original y permitimos importarlo.
