@@ -362,6 +362,24 @@
                 </div>
             </div>
 
+            <!-- Escenarios: pasarela sólida o plataforma original -->
+            <div class="pt-3.5 border-t border-white/10">
+                <span class="block text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 mb-2.5">
+                    TIPO DE ESCENARIO
+                </span>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <button onclick="setStageMode('solid')" data-stage="solid"
+                            class="stage-mode-btn glass-pill active rounded-xl px-2.5 py-2 text-[11px] font-medium cursor-pointer">
+                        ▰ Suelo sólido
+                    </button>
+                    <button onclick="setStageMode('hologram')" data-stage="hologram"
+                            class="stage-mode-btn glass-pill rounded-xl px-2.5 py-2 text-[11px] font-medium cursor-pointer">
+                        ◉ Holográfico
+                    </button>
+                </div>
+                <p id="stage-mode-status" class="text-[10px] text-zinc-400 mt-2">Pasarela sólida · Entrada caminando</p>
+            </div>
+
             <!-- Toggles de Renderizado Anime & Escenario -->
             <div class="pt-3.5 border-t border-white/10 space-y-2">
                 <span class="block text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 mb-1.5">
@@ -521,6 +539,54 @@
         const stageGroup = new THREE.Group();
         scene.add(stageGroup);
 
+        // Segundo escenario original BVH3: pasarela física sólida con iluminación industrial.
+        // Se conserva completamente la plataforma holográfica anterior como alternativa.
+        const solidStageGroup = new THREE.Group();
+        scene.add(solidStageGroup);
+        const solidFloor = new THREE.Mesh(
+            new THREE.BoxGeometry(18, 0.24, 18),
+            new THREE.MeshStandardMaterial({
+                color: 0x151b25, roughness: 0.88, metalness: 0.10
+            })
+        );
+        solidFloor.position.y = 0;
+        solidFloor.receiveShadow = true;
+        solidStageGroup.add(solidFloor);
+
+        const runway = new THREE.Mesh(
+            new THREE.BoxGeometry(2.7, 0.025, 10),
+            new THREE.MeshStandardMaterial({
+                color: 0x232b35, roughness: 0.72, metalness: 0.18
+            })
+        );
+        runway.position.set(0, 0.13, -1.25);
+        runway.receiveShadow = true;
+        solidStageGroup.add(runway);
+
+        const runwayEdgeMatCyan = new THREE.MeshBasicMaterial({ color: 0x24ebde });
+        const runwayEdgeMatPink = new THREE.MeshBasicMaterial({ color: 0xff2a85 });
+        [-1.33, 1.33].forEach((x, i) => {
+            const edge = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.023, 10), i === 0 ? runwayEdgeMatCyan : runwayEdgeMatPink);
+            edge.position.set(x, 0.16, -1.25);
+            solidStageGroup.add(edge);
+        });
+        for (let z = -5.5; z < 3; z += 0.8) {
+            const stripe = new THREE.Mesh(
+                new THREE.BoxGeometry(0.36, 0.012, 0.085),
+                new THREE.MeshBasicMaterial({ color: (Math.round(z * 10) % 2 === 0) ? 0xfcee0a : 0x24ebde })
+            );
+            stripe.position.set(0, 0.153, z);
+            solidStageGroup.add(stripe);
+        }
+        const solidGrid = new THREE.GridHelper(18, 18, 0x2cbdbd, 0x25313d);
+        solidGrid.position.y = 0.122;
+        solidStageGroup.add(solidGrid);
+        const entranceBacklight = new THREE.PointLight(0x00e3db, 4, 9);
+        entranceBacklight.position.set(0, 2.9, -3.7);
+        solidStageGroup.add(entranceBacklight);
+        let stageMode = 'solid';
+        stageGroup.visible = false;
+
         // Suelo reflectante oscuro
         const floor = new THREE.Mesh(
             new THREE.CircleGeometry(24, 64),
@@ -670,6 +736,32 @@
         scene.add(characterPivot);
 
         let currentPose = 'idle';
+        const entranceWalk = { active: false, elapsed: 0, duration: 3.1 };
+        function startEntranceWalk(vrm) {
+            if (!vrm || !currentCharacterObject) return;
+            entranceWalk.active = true;
+            entranceWalk.elapsed = 0;
+            currentPose = 'walk';
+            currentCharacterObject.position.set(0, 0, -2.4);
+            currentCharacterObject.rotation.y = 0;
+            document.getElementById('anim-status-tag').textContent = 'ENTRANDO';
+            controls.autoRotate = false;
+            document.querySelectorAll('.pose-btn').forEach(btn => btn.classList.remove('active'));
+        }
+        function updateEntranceWalk(delta) {
+            if (!entranceWalk.active || !currentCharacterObject) return;
+            entranceWalk.elapsed += Math.min(delta, 0.05);
+            const q = Math.min(1, entranceWalk.elapsed / entranceWalk.duration);
+            const smooth = q * q * (3 - 2 * q);
+            currentCharacterObject.position.z = -2.4 * (1 - smooth);
+            currentCharacterObject.position.y = Math.abs(Math.sin(entranceWalk.elapsed * 8)) * 0.012 * (1 - q);
+            if (q >= 1) {
+                entranceWalk.active = false;
+                currentCharacterObject.position.set(0, 0, 0);
+                setCharacterPose('idle');
+                document.getElementById('anim-status-tag').textContent = 'ACTIVA';
+            }
+        }
         let currentCharacterAnimator = null;
         let currentCharacterObject = null;
         let customMixer = null; // Para animaciones de archivos .GLB / .FBX / .VRM
@@ -1281,7 +1373,20 @@
                 leftLowerLeg: [0, 0, 0], rightLowerLeg: [0, 0, 0], leftFoot: [0, 0, 0], rightFoot: [0, 0, 0],
                 hipsY: 0, lift: 0
             };
-            if (pose === 'wave') {
+            if (pose === 'walk') {
+                const stride = Math.sin(t * 8);
+                p.hips = [0, 0, Math.sin(t * 8) * 0.025];
+                p.chest = [0.035, 0, -stride * 0.025];
+                p.head = [0, Math.sin(t * 2) * 0.02, 0];
+                p.leftUpperLeg = [stride * 0.43, 0, 0.025];
+                p.rightUpperLeg = [-stride * 0.43, 0, -0.025];
+                p.leftLowerLeg = [Math.max(0, -stride) * 0.48, 0, 0];
+                p.rightLowerLeg = [Math.max(0, stride) * 0.48, 0, 0];
+                p.leftUpperArm = [-stride * 0.30, 0, -0.98];
+                p.rightUpperArm = [stride * 0.30, 0, 0.98];
+                p.leftLowerArm = [-0.12, -0.12, 0];
+                p.rightLowerArm = [-0.12, 0.12, 0];
+            } else if (pose === 'wave') {
                 p.rightUpperArm = [0.35, 0, -0.95]; p.rightLowerArm = [0, 0, -0.55 + s(t * 9) * 0.45];
                 p.head = [0, 0.1, -0.08]; p.chest[2] = 0.04;
             } else if (pose === 'concert') {
@@ -1340,7 +1445,7 @@
                 if (currentPose !== lastPose) { lastPose = currentPose; setExpression(poseExpression[currentPose] || 'neutral'); }
                 const k = 1 - Math.exp(-delta * 7);
                 const tg = vrmPoseTargets(currentPose, t);
-                const grounded = currentPose !== 'zerog' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
+                const grounded = currentPose !== 'zerog' && currentPose !== 'walk' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
                 if (grounded && ankleRest === null) ankleRest = ankleY();
                 if (grounded) {
                     // piernas sin giro heredado de la cadera y pies siempre planos
@@ -1463,6 +1568,11 @@
 
             selectCharacter(3);
             setCameraFraming('full');
+            if (vrm) {
+                configureAvailableExpressions(vrm);
+                setStageMode('solid');
+                startEntranceWalk(vrm);
+            }
             showToast(`Personaje "${cleanName}" proyectado en escenario`);
         }
 
@@ -1687,9 +1797,26 @@
         };
 
         let stageActive = true;
+        function refreshStageVisibility() {
+            stageGroup.visible = stageActive && stageMode === 'hologram';
+            solidStageGroup.visible = stageActive && stageMode === 'solid';
+        }
+        window.setStageMode = function(mode) {
+            if (mode !== 'solid' && mode !== 'hologram') return;
+            stageMode = mode;
+            refreshStageVisibility();
+            document.querySelectorAll('.stage-mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.stage === mode);
+                btn.setAttribute('aria-pressed', String(btn.dataset.stage === mode));
+            });
+            const status = document.getElementById('stage-mode-status');
+            if (status) status.textContent = mode === 'solid'
+                ? 'Pasarela sólida · Entrada caminando'
+                : 'Escenario holográfico · Plataforma original';
+        };
         window.toggleStage = function() {
             stageActive = !stageActive;
-            stageGroup.visible = stageActive;
+            refreshStageVisibility();
             const btn = document.getElementById('toggle-stage');
             const st = document.getElementById('status-stage');
             btn.classList.toggle('active', stageActive);
@@ -1757,6 +1884,7 @@
             if (currentCharacterAnimator) {
                 currentCharacterAnimator(elapsed, delta);
             }
+            updateEntranceWalk(delta);
 
             // Animación reactiva del escenario y ecualizador circular
             if (stageActive) {
@@ -1817,6 +1945,7 @@
 
         window.onload = function() {
             selectCharacter(0);
+            setStageMode('solid');
             animate();
             bootOriginalMikuVrm();
         };
