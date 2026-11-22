@@ -234,42 +234,41 @@
             </div>
         </section>
 
-        <!-- Retrato 3D · loader aislado, se monta solo cuando el usuario lo solicita. -->
+        <!-- BVH3 INDUSTRIES // MIKU CORE: escenario 3D a pantalla de sección -->
         <section class="section" id="retrato-3d">
             <div class="container">
-                <header class="section-header">
-                    <h2 class="section-title">3D RETRATO</h2>
-                    <p class="section-subtitle">MIKU // STAGE 3D · Galería holográfica interactiva</p>
-                </header>
-                <div class="bvh3-portrait-shell">
-                    <div class="bvh3-portrait-intro">
-                        <div class="bvh3-portrait-copy">
-                            <span class="bvh3-portrait-kicker">BVH3 // HOLOGRAM UNIT 01</span>
-                            <h3>MIKU <span>EN OTRA DIMENSIÓN.</span></h3>
-                            <p>Escenario 3D interactivo con cámara orbital, poses, expresiones faciales VRM, iluminación holográfica y modo inmersivo. Compatible con PC y Android.</p>
-                            <div class="bvh3-portrait-buttons">
-                                <button type="button" class="bvh3-portrait-action bvh3-portrait-action--primary" id="portrait-start">INICIAR RETRATO 3D <span aria-hidden="true">↗</span></button>
-                                <a class="bvh3-portrait-action" href="retrato-3d.html" target="_blank" rel="noopener noreferrer">PANTALLA COMPLETA ↗</a>
-                            </div>
-                            <div class="bvh3-portrait-tags" aria-label="Funciones">
-                                <span>VRM / Three.js</span><span>POSES</span><span>EXPRESIONES</span><span>ANIMACIÓN</span><span>WEBGL</span>
+                <div class="bvh3-portrait-shell bvh3-portrait-shell--immersive">
+                    <header class="bvh3-portrait-toolbar">
+                        <div class="bvh3-portrait-identity">
+                            <span class="bvh3-portrait-index">BVH3 // 08</span>
+                            <div>
+                                <h2 class="bvh3-portrait-heading">3D RETRATO <span>MIKU CORE</span></h2>
+                                <p>Escenario interactivo · Pasarela sólida · Expresiones VRM</p>
                             </div>
                         </div>
-                        <div class="bvh3-portrait-preview" aria-hidden="true">
-                            <span class="bvh3-portrait-orbit"></span>
-                            <img src="src/images/logo.png" alt="" width="135" height="135" loading="lazy" decoding="async">
-                            <small>PROYECCIÓN VRM // MIKU CORE</small>
+                        <div class="bvh3-portrait-toolbar-actions">
+                            <span class="bvh3-portrait-online"><span aria-hidden="true"></span> STAGE ONLINE</span>
+                            <button type="button" id="portrait-start" class="bvh3-portrait-action">REINICIAR VISOR ↻</button>
+                            <a class="bvh3-portrait-action bvh3-portrait-action--primary"
+                               href="retrato-3d.html" target="_blank" rel="noopener noreferrer">PANTALLA COMPLETA ↗</a>
+                            <button type="button" id="portrait-stop" class="bvh3-portrait-action" hidden>CERRAR</button>
                         </div>
-                    </div>
+                    </header>
                     <div class="bvh3-portrait-stage" id="portrait-stage">
-                        <div class="bvh3-portrait-placeholder" id="portrait-placeholder">
-                            <strong>ESCENARIO 3D EN ESPERA</strong>
-                            <p>Activa el visor para cargar el entorno. El archivo VRM original se puede importar desde el propio escenario.</p>
+                        <div class="bvh3-portrait-placeholder" id="portrait-placeholder" role="status">
+                            <div class="bvh3-portrait-loading-mark" aria-hidden="true">BVH3</div>
+                            <strong>INICIANDO ESCENARIO 3D</strong>
+                            <p>Preparando la pasarela y el avatar de Miku...</p>
                         </div>
                         <div id="portrait-frame-host" class="bvh3-portrait-frame-host"></div>
-                        <button type="button" class="bvh3-portrait-close" id="portrait-stop" hidden>CERRAR VISOR 3D ×</button>
                     </div>
-                    <p class="bvh3-portrait-credit">Modelo VRM «Hatsune Miku!» por <a href="https://hub.vroid.com/characters/3414801470945035921/models/4457759225556181866" target="_blank" rel="noopener noreferrer">RemiX3 · VRoid Hub</a>. Uso no comercial, crédito obligatorio; no se modifica el modelo original.</p>
+                    <footer class="bvh3-portrait-credit">
+                        <span>BVH3 INDUSTRIES // INTERACTIVE STAGE</span>
+                        <span>Avatar «Hatsune Miku!» por
+                            <a href="https://hub.vroid.com/characters/3414801470945035921/models/4457759225556181866" target="_blank" rel="noopener noreferrer">RemiX3 · VRoid Hub</a>
+                            · Uso no comercial, crédito obligatorio.
+                        </span>
+                    </footer>
                 </div>
             </div>
         </section>
