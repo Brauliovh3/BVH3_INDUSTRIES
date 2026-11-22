@@ -19,7 +19,7 @@ BVH3_INDUSTRIES/
 2. Selecciona **Add file → Upload files**.
 3. Sube el archivo **8665009645295209918.vrm** original, sin renombrarlo ni modificarlo.
 4. Confirma los cambios en `main` (puedes usar el mensaje `UPDATE`).
-5. Cuando termine el despliegue de Vercel, abre `https://www.bvh3-industries.com/#retrato-3d` y pulsa **INICIAR RETRATO 3D**.
+5. Cuando termine el despliegue de Vercel, abre `https://www.bvh3-industries.com/#retrato-3d`. El escenario se abrirá **automáticamente al entrar en la sección**, sin botones extra ni un panel introductorio.
 
 El visor solicitará `/models/8665009645295209918.vrm` y, si está disponible, Miku se cargará por sí sola, aparecerá caminando por la nueva **pasarela sólida** y se detendrá en pose Idle. También puedes seleccionar el escenario holográfico anterior.
 
@@ -48,3 +48,13 @@ El archivo VRM original tiene estos nombres de expresiones VRM 0.x: Neutral, Ang
 - Se conservan el backend (si lo hubiera), Depool, Zona Prohibida, descargas y formularios sin modificaciones.
 
 **Pruebas recomendadas:** carga automática al desplegar el VRM, escena 3D en Chrome/Edge PC y Android, entrada caminando, botones de expresión/poses, reinicio al cambiar de personaje, selección de escenario y liberación de GPU al salir.
+
+## Ajuste de interfaz y suelo (noviembre 2026)
+
+- Se eliminó el panel introductorio grande de «Miku en otra dimensión»; ahora aparece directamente el escenario 3D ocupando la sección.
+- Un encabezado pequeño BVH3 conserva el acceso a **Reiniciar visor** y **Pantalla completa**.
+- La pasarela es geometría fija independiente del avatar. Los pies se anclan al plano superior del suelo incluso durante la caminata; la cámara no comienza girando sola en este escenario.
+- El modelo se inicializa en pose neutral con brazos abajo antes de entrar caminando; se evita heredar una pose anterior de gravedad cero.
+- Se añade una sombra de contacto discreta que acompaña al avatar sobre la superficie sin mover el piso.
+- Al salir de 3D Retrato se libera el iframe y se detiene su contexto WebGL.
+- La licencia del avatar sigue siendo independiente de las modificaciones al visor.
