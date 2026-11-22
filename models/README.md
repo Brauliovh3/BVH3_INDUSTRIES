@@ -58,3 +58,15 @@ El archivo VRM original tiene estos nombres de expresiones VRM 0.x: Neutral, Ang
 - Se añade una sombra de contacto discreta que acompaña al avatar sobre la superficie sin mover el piso.
 - Al salir de 3D Retrato se libera el iframe y se detiene su contexto WebGL.
 - La licencia del avatar sigue siendo independiente de las modificaciones al visor.
+
+
+## Miku Core: postura natural y Modo Vivo
+
+- Se corrigió el signo de rotación Z de los brazos superiores del avatar. En el rig original del VRM los brazos parten de una T-pose, con el brazo izquierdo extendido hacia X negativo y el derecho hacia X positivo. En reposo se rotan hacia abajo con Z positivo para el brazo izquierdo y negativo para el derecho (aprox. 1,36 radianes).
+- La caminata de entrada utiliza los mismos signos, así no vuelve a elevar ambos brazos durante los pasos. Saludo y concierto siguen siendo poses intencionadamente diferentes.
+- Se añadió **✦ MODO VIVO** junto al control de mirada, visible cuando hay un avatar VRM. Está activado de forma predeterminada salvo que el dispositivo solicite `prefers-reduced-motion`.
+- Este modo usa movimientos procedimentales ligeros, no inteligencia artificial: respiración, balanceo de peso, pequeños cambios de mirada y cabeza, guiños/parpadeo del animador original, saludos ocasionales y pasos cortos sobre la pasarela.
+- Los movimientos autónomos no se ejecutan cuando está activa la entrada, cuando se seleccionó una pose manual distinta de Idle, cuando la pestaña está oculta ni si se apaga **MODO VIVO**. Las expresiones seleccionadas manualmente conservan prioridad.
+- No se añaden bibliotecas, modelos, servicios en red ni temporizadores independientes. Se reutiliza el bucle de render ya existente. El escenario sigue descargándose al salir de la sección.
+
+**Prueba visual pendiente:** abrir la web en PC y Android con el archivo VRM original, comprobar que los brazos descansan a ambos lados del cuerpo al aparecer y durante la caminata, y observar las acciones espontáneas durante al menos un minuto. El código está escrito y comprobado estáticamente, pero la postura final debe validarse visualmente en un navegador con WebGL.
