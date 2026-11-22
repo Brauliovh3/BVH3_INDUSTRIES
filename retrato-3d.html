@@ -731,8 +731,12 @@
         // =========================================================================
         // 5. CONSTRUCCIÓN DE PERSONAJES ESTILIZADOS ARTICULADOS
         // =========================================================================
+        // La raíz del avatar siempre coincide con el plano superior REAL
+        // de la pasarela; el piso es independiente y no sigue al personaje.
+        const SOLID_RUNWAY_TOP = runway.position.y + runway.geometry.parameters.height / 2;
+        const HOLOGRAM_FLOOR_TOP = 0.12;
         const characterPivot = new THREE.Group();
-        characterPivot.position.set(0, 0.12, 0); // Sobre la plataforma
+        characterPivot.position.set(0, SOLID_RUNWAY_TOP, 0);
         scene.add(characterPivot);
 
         let currentPose = 'idle';
@@ -767,7 +771,9 @@
             const q = Math.min(1, entranceWalk.elapsed / entranceWalk.duration);
             const smooth = q * q * (3 - 2 * q);
             currentCharacterObject.position.z = -2.4 * (1 - smooth);
-            currentCharacterObject.position.y = Math.abs(Math.sin(entranceWalk.elapsed * 8)) * 0.012 * (1 - q);
+            // No elevar el cuerpo artificialmente: mantener los pies anclados
+            // al suelo desde la animación de huesos, sin levitación del root.
+            currentCharacterObject.position.y = 0;
             if (q >= 1) {
                 entranceWalk.active = false;
                 currentCharacterObject.position.set(0, 0, 0);
@@ -1447,8 +1453,9 @@
                 p.rightUpperLeg = [-stride * 0.43, 0, -0.025];
                 p.leftLowerLeg = [Math.max(0, -stride) * 0.48, 0, 0];
                 p.rightLowerLeg = [Math.max(0, stride) * 0.48, 0, 0];
-                p.leftUpperArm = [-stride * 0.30, 0, -0.98];
-                p.rightUpperArm = [stride * 0.30, 0, 0.98];
+                // Brazos hacia ABAJO; solo un balanceo corto natural.
+                p.leftUpperArm = [-stride * 0.22, 0, -1.43];
+                p.rightUpperArm = [stride * 0.22, 0, 1.43];
                 p.leftLowerArm = [-0.12, -0.12, 0];
                 p.rightLowerArm = [-0.12, 0.12, 0];
             } else if (pose === 'wave') {
@@ -1483,6 +1490,19 @@
                 p.leftLowerLeg = [Math.max(0, h) * 0.5 + 0.1, 0, 0]; p.rightLowerLeg = [Math.max(0, -h) * 0.5 + 0.1, 0, 0];
             }
             return p;
+        }
+
+        // El VRM se entrega a menudo en T-pose. Forzar la postura natural
+        // ANTES de presentarlo evita que aparezca con los brazos levantados.
+        function primeVRMNeutralPose(vrm) {
+            if (!vrm?.humanoid) return;
+            const neutral = vrmPoseTargets('idle', 0);
+            for (const [name, angles] of Object.entries(neutral)) {
+                if (!Array.isArray(angles)) continue;
+                const bone = vrm.humanoid.getNormalizedBoneNode(name);
+                if (bone) bone.rotation.set(angles[0], angles[1], angles[2]);
+            }
+            vrm.update(0);
         }
 
         function makeVRMAnimator(vrm) {
@@ -1530,7 +1550,9 @@
                 }
                 const k = 1 - Math.exp(-delta * 7);
                 const tg = vrmPoseTargets(currentPose, t);
-                const grounded = currentPose !== 'zerog' && currentPose !== 'walk' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
+                // La caminata requiere la misma corrección de contacto
+                // que la pose idle: sin esto, Miku "camina" en el aire.
+                const grounded = currentPose !== 'zerog' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
                 if (grounded && ankleRest === null) ankleRest = ankleY();
                 if (grounded) {
                     // piernas sin giro heredado de la cadera y pies siempre planos
@@ -1585,6 +1607,11 @@
         }
 
         function mountImportedCharacter(modelRoot, animations, fileName, vrm = null) {
+            if (vrm) {
+                currentPose = 'idle';
+                manualExpression = false;
+                primeVRMNeutralPose(vrm);
+            }
             modelRoot.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
@@ -1618,6 +1645,11 @@
             modelRoot.position.y -= scaledBox.min.y;
 
             wrapper.add(modelRoot);
+            // Primero situar los pies en la superficie de la pasarela, y
+            // después desplazar el personaje sobre el eje Z para entrar.
+            wrapper.position.set(0, 0, 0);
+            characterPivot.position.y = stageMode === 'solid'
+                ? SOLID_RUNWAY_TOP : HOLOGRAM_FLOOR_TOP;
 
             // Reproducir animaciones embebidas si el archivo las incluye
             let mixer = null;
@@ -1661,6 +1693,8 @@
             customTab.classList.remove('hidden');
 
             selectCharacter(3);
+            // Evitar heredar Zero-G/Concierto de un personaje anterior.
+            window.setCharacterPose('idle');
             setCameraFraming('full');
             if (vrm) {
                 setStageMode('solid');
@@ -1902,6 +1936,8 @@
         window.setStageMode = function(mode) {
             if (mode !== 'solid' && mode !== 'hologram') return;
             stageMode = mode;
+            characterPivot.position.y = mode === 'solid'
+                ? SOLID_RUNWAY_TOP : HOLOGRAM_FLOOR_TOP;
             refreshStageVisibility();
             document.querySelectorAll('.stage-mode-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.stage === mode);
