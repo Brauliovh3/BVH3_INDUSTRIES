@@ -297,6 +297,13 @@
                 <span class="text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 block mb-2">Expresión & Mirada (VRM)</span>
                 <div class="grid grid-cols-6 gap-1"><button onclick="setExpression('neutral')" data-expr="neutral" title="neutral" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😐</button><button onclick="setExpression('happy')" data-expr="happy" title="happy" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😊</button><button onclick="setExpression('surprised')" data-expr="surprised" title="surprised" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😮</button><button onclick="setExpression('angry')" data-expr="angry" title="angry" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😠</button><button onclick="setExpression('sad')" data-expr="sad" title="sad" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😢</button><button onclick="setExpression('relaxed')" data-expr="relaxed" title="relaxed" class="expr-btn glass-pill rounded-lg py-1.5 text-sm cursor-pointer">😌</button></div>
                 <button id="look-btn" onclick="toggleLookAt()" class="glass-pill active mt-2 w-full rounded-xl px-2.5 py-2 text-[11px] font-medium cursor-pointer">👁 Seguir cursor: ON</button>
+                <button id="auto-life-btn" onclick="toggleAutoLife()" aria-pressed="true"
+                        class="glass-pill active mt-2 w-full rounded-xl px-2.5 py-2 text-[11px] font-medium cursor-pointer">
+                    ✦ MODO VIVO: ON
+                </button>
+                <p class="text-[10px] leading-relaxed text-zinc-500 mt-1.5">
+                    Miradas, respiración, pequeños pasos y saludos espontáneos. Los controles manuales tienen prioridad.
+                </p>
             </div>
 
             <!-- Metadatos Técnicos -->
@@ -768,6 +775,76 @@
 
         let currentPose = 'idle';
         const entranceWalk = { active: false, elapsed: 0, duration: 3.1, resumeOrbit: false };
+
+        // Coreografía ligera, no IA ni movimiento independiente real: gestos
+        // programados con intervalos variables, disponibles para cancelar.
+        const autoLife = {
+            enabled: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+            action: null, until: 0, started: 0, nextAt: 10, gaze: 0,
+            gazeTarget: 0, nextLook: 3.5, lastTick: 0
+        };
+        function syncAutoLifeUI() {
+            const button = document.getElementById('auto-life-btn');
+            if (!button) return;
+            button.classList.toggle('active', autoLife.enabled);
+            button.setAttribute('aria-pressed', String(autoLife.enabled));
+            button.textContent = '✦ MODO VIVO: ' + (autoLife.enabled ? 'ON' : 'OFF');
+        }
+        function stopAutonomousGesture(delay = 10) {
+            if (autoLife.action && currentCharacterObject) {
+                currentCharacterObject.position.set(0, 0, 0);
+                currentPose = 'idle';
+            }
+            autoLife.action = null;
+            autoLife.gazeTarget = 0;
+            autoLife.nextAt = Math.max(autoLife.lastTick, 0) + delay;
+        }
+        window.toggleAutoLife = function() {
+            autoLife.enabled = !autoLife.enabled;
+            stopAutonomousGesture(6);
+            if (autoLife.enabled) autoLife.nextAt = autoLife.lastTick + 5;
+            syncAutoLifeUI();
+        };
+        function updateAutonomousLife(t, delta) {
+            autoLife.lastTick = t;
+            if (!autoLife.enabled || !customCharacterEntry?.vrm ||
+                currentCharacterObject !== customCharacterEntry.object ||
+                entranceWalk.active || document.hidden) return;
+            // Una selección manual permanece tal cual: solo intervenimos en Idle
+            // o mientras se reproduce nuestro propio gesto temporizado.
+            if (!autoLife.action && currentPose !== 'idle') return;
+
+            if (autoLife.action && t >= autoLife.until) {
+                currentPose = 'idle';
+                currentCharacterObject.position.set(0, 0, 0);
+                autoLife.action = null;
+                autoLife.gazeTarget = 0;
+                autoLife.nextAt = t + 9 + Math.random() * 12;
+            }
+            if (!autoLife.action && currentPose === 'idle' && t >= autoLife.nextAt) {
+                const roll = Math.random();
+                autoLife.action = roll < .34 ? 'wave' : roll < .70 ? 'step' : 'look';
+                autoLife.started = t;
+                autoLife.until = t + (autoLife.action === 'wave' ? 1.85 :
+                    autoLife.action === 'step' ? 2.5 : 2.2);
+                if (autoLife.action === 'wave') currentPose = 'wave';
+                if (autoLife.action === 'step') currentPose = 'walk';
+                if (autoLife.action === 'look')
+                    autoLife.gazeTarget = (Math.random() - .5) * 1.2;
+            }
+            if (autoLife.action === 'step') {
+                const progress = Math.min(1, (t - autoLife.started) / 2.5);
+                // Dos pasos cortos dentro de la superficie física.
+                currentCharacterObject.position.z = -.2 * Math.sin(Math.PI * progress);
+                currentCharacterObject.position.y = 0;
+            }
+            if (!autoLife.action && t >= autoLife.nextLook) {
+                autoLife.gazeTarget = (Math.random() - .5) * .8;
+                autoLife.nextLook = t + 4 + Math.random() * 4;
+            }
+            autoLife.gaze += (autoLife.gazeTarget - autoLife.gaze) *
+                (1 - Math.exp(-Math.min(delta, .05) * 2.1));
+        }
         function syncOrbitUI() {
             const btn = document.getElementById('toggle-rotate');
             const status = document.getElementById('status-rotate');
@@ -781,6 +858,7 @@
         }
         function startEntranceWalk(vrm) {
             if (!vrm || !currentCharacterObject) return;
+            stopAutonomousGesture(9);
             entranceWalk.active = true;
             entranceWalk.elapsed = 0;
             entranceWalk.resumeOrbit = controls.autoRotate;
@@ -807,6 +885,7 @@
                 controls.autoRotate = entranceWalk.resumeOrbit;
                 syncOrbitUI();
                 setCharacterPose('idle');
+                autoLife.nextAt = autoLife.lastTick + 7;
                 document.getElementById('anim-status-tag').textContent = 'ACTIVA';
             }
         }
@@ -1314,6 +1393,7 @@
         }
 
         window.selectCharacter = function(index) {
+            stopAutonomousGesture(9);
             if (entranceWalk.active) {
                 entranceWalk.active = false;
                 controls.autoRotate = entranceWalk.resumeOrbit;
@@ -1456,16 +1536,18 @@
         };
         const poseExpression = { idle: 'neutral', wave: 'happy', concert: 'happy', zerog: 'relaxed', bow: 'relaxed', dance: 'happy' };
 
-        // Todos los ángulos en radianes sobre huesos NORMALIZADOS (T-pose, mira a +Z).
-        // Brazo izq: z negativo = baja; brazo der: z positivo = baja.
+        // VRM normalizado, reposo desde T-pose: este avatar necesitaba invertir
+        // el signo Z respecto a la versión antigua (que levantaba ambos brazos).
+        // Izquierdo Z positivo / derecho Z negativo = brazos hacia abajo.
         function vrmPoseTargets(pose, t) {
             const s = Math.sin, b = t * 6.2832 * 1.6; // pulso ~96 bpm
             const p = {
                 hips: [0, s(t * 0.6) * 0.05, 0], spine: [0.02 + s(t * 1.6) * 0.012, 0, 0],
                 chest: [s(t * 1.6) * 0.02, 0, 0], neck: [0, 0, 0], head: [s(t * 0.9) * 0.02, s(t * 0.5) * 0.06, 0],
-                leftShoulder: [0, 0, 0], rightShoulder: [0, 0, 0],
-                leftUpperArm: [0, 0, -1.25 + s(t * 1.6) * 0.02], rightUpperArm: [0, 0, 1.25 - s(t * 1.6) * 0.02],
-                leftLowerArm: [0, -0.15, 0], rightLowerArm: [0, 0.15, 0],
+                leftShoulder: [0.02, 0, 0.035], rightShoulder: [0.02, 0, -0.035],
+                leftUpperArm: [0.08, 0, 1.36 + s(t * 1.25) * 0.016],
+                rightUpperArm: [0.08, 0, -1.36 - s(t * 1.25) * 0.016],
+                leftLowerArm: [-0.14, -0.08, 0], rightLowerArm: [-0.14, 0.08, 0],
                 leftHand: [0, 0, 0], rightHand: [0, 0, 0],
                 leftUpperLeg: [0, 0, 0.03], rightUpperLeg: [0, 0, -0.03],
                 leftLowerLeg: [0, 0, 0], rightLowerLeg: [0, 0, 0], leftFoot: [0, 0, 0], rightFoot: [0, 0, 0],
@@ -1480,13 +1562,14 @@
                 p.rightUpperLeg = [-stride * 0.43, 0, -0.025];
                 p.leftLowerLeg = [Math.max(0, -stride) * 0.48, 0, 0];
                 p.rightLowerLeg = [Math.max(0, stride) * 0.48, 0, 0];
-                // Brazos hacia ABAJO; solo un balanceo corto natural.
-                p.leftUpperArm = [-stride * 0.22, 0, -1.43];
-                p.rightUpperArm = [stride * 0.22, 0, 1.43];
-                p.leftLowerArm = [-0.12, -0.12, 0];
-                p.rightLowerArm = [-0.12, 0.12, 0];
+                // Marcha natural desde la pose con brazos abajo, sin volver a la T-pose.
+                p.leftUpperArm = [0.07 - stride * 0.19, 0, 1.34];
+                p.rightUpperArm = [0.07 + stride * 0.19, 0, -1.34];
+                p.leftLowerArm = [-0.21, -0.08, 0];
+                p.rightLowerArm = [-0.21, 0.08, 0];
             } else if (pose === 'wave') {
-                p.rightUpperArm = [0.35, 0, -0.95]; p.rightLowerArm = [0, 0, -0.55 + s(t * 9) * 0.45];
+                // Saludo intencional con un solo brazo elevado.
+                p.rightUpperArm = [0.12, 0, 0.48]; p.rightLowerArm = [0, 0, -0.5 + s(t * 7) * 0.16];
                 p.head = [0, 0.1, -0.08]; p.chest[2] = 0.04;
             } else if (pose === 'concert') {
                 p.rightUpperArm = [0.15, 0, -1.4]; p.rightLowerArm = [0, 0.3, -0.2]; p.rightHand = [0, 0, -0.2];
@@ -1505,7 +1588,7 @@
             } else if (pose === 'bow') {
                 const k = (s(t * 0.9) + 1) / 2;
                 p.spine = [0.45 * k, 0, 0]; p.chest = [0.25 * k, 0, 0]; p.head = [0.2 * k, 0, 0];
-                p.leftUpperArm = [0, 0, -1.25]; p.rightUpperArm = [0, 0, 1.25];
+                p.leftUpperArm = [0, 0, 1.36]; p.rightUpperArm = [0, 0, -1.36];
                 p.leftLowerArm = [0, -0.5 * k, 0]; p.rightLowerArm = [0, 0.5 * k, 0];
             } else if (pose === 'dance') {
                 const h = s(b / 2);
@@ -1568,6 +1651,7 @@
 
             return (t, delta) => {
                 delta = Math.min(delta || 0.016, 0.05);
+                updateAutonomousLife(t, delta);
                 if (currentPose !== lastPose) {
                     lastPose = currentPose;
                     if (!manualExpression) {
@@ -1578,9 +1662,22 @@
                 const k = 1 - Math.exp(-delta * 7);
                 // Empezar el ciclo de pasos desde el mismo segundo cero
                 // de la entrada evita que las piernas salten de fase al cargar.
-                const poseTime = currentPose === 'walk' && entranceWalk.active
-                    ? entranceWalk.elapsed : t;
+                const poseTime = currentPose === 'walk'
+                    ? (entranceWalk.active ? entranceWalk.elapsed :
+                      autoLife.action === 'step' ? t - autoLife.started : t)
+                    : t;
                 const tg = vrmPoseTargets(currentPose, poseTime);
+                if (autoLife.enabled && currentPose === 'idle' && !entranceWalk.active) {
+                    // Respiración, balanceo de peso y mirada natural de bajo costo.
+                    tg.spine[0] += Math.sin(t * 1.4) * .009;
+                    tg.chest[0] += Math.sin(t * 1.4 + .35) * .011;
+                    tg.hips[2] += Math.sin(t * .62) * .014;
+                    tg.head[1] += autoLife.gaze * .20;
+                    tg.head[2] += Math.sin(t * .8) * .018;
+                    tg.neck[1] += autoLife.gaze * .08;
+                    tg.leftUpperArm[0] += Math.sin(t * 1.1) * .014;
+                    tg.rightUpperArm[0] -= Math.sin(t * 1.1) * .014;
+                }
                 // La caminata requiere la misma corrección de contacto
                 // que la pose idle: sin esto, Miku "camina" en el aire.
                 const grounded = currentPose !== 'zerog' && nodes.leftFoot && nodes.rightFoot && nodes.hips;
@@ -1838,6 +1935,8 @@
         // 7. CONTROLES INTERACTIVOS: POSES, CÁMARA, ILUMINACIÓN Y SHADERS
         // =========================================================================
         window.setCharacterPose = function(pose) {
+            // Las decisiones manuales siempre interrumpen los gestos autónomos.
+            stopAutonomousGesture(14);
             // Una pose elegida por el visitante cancela la entrada automática.
             if (entranceWalk.active) {
                 entranceWalk.active = false;
@@ -2125,6 +2224,7 @@
         }
 
         window.onload = function() {
+            syncAutoLifeUI();
             selectCharacter(0);
             setStageMode('solid');
             animate();
